@@ -17,12 +17,12 @@ class ConnectionPool;
 class Async {
 public:
     Async(const std::string &method,const std::string &host,const std::string &port, 
-            const std::string &target,const std::string &req, 
-            const std::function<void(const std::string&, const std::string&)> &onDone);
+            const std::string &target,const std::string &req);
     ~Async() = default;
+    void SetOnDone(const std::function<void(const std::string&, const std::string&)> &onDone);
     void setQueryStrings(std::shared_ptr<QueryStrings> queryStrings);
     void setHeaders(std::shared_ptr<Headers> headers);
-    void doReq();
+    void doReq(const std::function<void(const std::string&, const std::string&)> &onDone);
 private:
     void onWrite(const std::string &errMsg);
     void onRead(const std::string &errMsg);
@@ -35,6 +35,6 @@ private:
     const std::string target_;
     boost::beast::http::request<boost::beast::http::string_body> req_;
     boost::beast::http::response<boost::beast::http::string_body> resp_;
-    const std::function<void(const std::string&, const std::string&)> onDone_;
+    std::function<void(const std::string&, const std::string&)> onDone_;
 };
 }//namespace small_http_client

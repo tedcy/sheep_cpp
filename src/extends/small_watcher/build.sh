@@ -7,6 +7,3 @@ build_type="DEBUG"
 $cmake_path/cmake .. -DCMAKE_BUILD_TYPE=$build_type -DCMAKE_TOOLCHAIN_FILE=$vcpkg_path -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
 make -j8
 cd -
-
-
-mkdir -pv build/log

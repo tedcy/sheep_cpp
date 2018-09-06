@@ -19,6 +19,14 @@ set(CMAKE_MODULE_PATH ${MAIN_PROJECT_SOURCE_DIR}/cmake)
 aux_source_directory(${PROJECT_SOURCE_DIR}/ LIST_SRC)
 add_executable(${TARGET} ${LIST_SRC})
 
+find_package(small_watcher REQUIRED)
+include_directories(${TARGET} ${small_watcher_INCLUDE_DIRS})
+target_link_libraries(${TARGET} ${small_watcher_LIBRARIES})
+
+find_package(small_timer REQUIRED)
+include_directories(${TARGET} ${small_timer_INCLUDE_DIRS})
+target_link_libraries(${TARGET} ${small_timer_LIBRARIES})
+
 find_package(small_http_client REQUIRED)
 include_directories(${TARGET} ${small_http_client_INCLUDE_DIRS})
 target_link_libraries(${TARGET} ${small_http_client_LIBRARIES})

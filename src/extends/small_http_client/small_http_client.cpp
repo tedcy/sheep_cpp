@@ -8,23 +8,24 @@ namespace http = boost::beast::http;
 
 namespace small_http_client{
 Async::Async(const std::string &method,const std::string &host,const std::string &port, 
-            const std::string &target,const std::string &req, 
-            const std::function<void(const std::string&, const std::string&)> &onDone):
-    host_(host), port_(port), target_(target), req_(), resp_(), onDone_(onDone) {
+            const std::string &target,const std::string &req):
+    host_(host), port_(port), target_(target), req_(), resp_(), onDone_() {
     setMethod(method);
     req_.set(http::field::host, host);
     setReq(req);
+    req_.target(target);
 }
 
-void Async::doReq() {
+void Async::doReq(const std::function<void(const std::string&, const std::string&)> &onDone) {
+    onDone_ = onDone;
     connectionPool_ = ConnectionPoolManager::getInstance()->get(host_, port_);
     if (connectionPool_ == nullptr) {
-        onDone_("", "find connectionPool failed: " + host_ + "/t" + port_);
+        onDone_("", "find connectionPool failed: " + host_ + ":" + port_);
         return;
     }
     connection_ = connectionPool_->get();
     if (connection_ == nullptr) {
-        onDone_("", "find connection failed: " + host_ + "/t" + port_);
+        onDone_("", "find connection failed: " + host_ + ":" + port_);
         return;
     }
     std::function<void(const std::string&)> onWriteCB = [this](const std::string& errMsg) {
@@ -56,13 +57,18 @@ void Async::onRead(const std::string &errMsg) {
 }
 
 //default as get
+//todo add all method
 void Async::setMethod(const string &method) {
-    if (method == "GET") {
+    if (method == "GET" || method == "get") {
         req_.method(http::verb::get);
         return;
     }
-    if (method == "POST") {
+    if (method == "POST" || method == "post") {
         req_.method(http::verb::post);
+        return;
+    }
+    if (method == "PUT" || method == "put") {
+        req_.method(http::verb::put);
         return;
     }
     req_.method(http::verb::get);
@@ -93,5 +99,6 @@ void Async::setHeaders(std::shared_ptr<Headers> headers) {
 }
 void Async::setReq(const string &req) {
     req_.body() = req;
+    req_.set(http::field::content_length, req.size());
 }
 }

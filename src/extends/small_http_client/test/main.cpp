@@ -8,14 +8,15 @@
 #include <thread>
 #include <iostream>
 
-#include <boost/asio/connect.hpp>
-#include <boost/asio/ip/tcp.hpp>
+//#include <boost/asio/connect.hpp>
+//#include <boost/asio/ip/tcp.hpp>
 
 int main() {
     //small_log::Init();
     small_http_client::ConnectionPoolManager::getInstance()->add("api.orion.meizu.com", "80", 100);
 	small_http_client::ConnectionPoolManager::getInstance()->work();
     std::this_thread::sleep_for(std::chrono::seconds(1));
+
 	Json::Value dmpReq;
     dmpReq["outTags"].append("sex");
     dmpReq["outTags"].append("user_age");
@@ -31,8 +32,7 @@ int main() {
             {"uid","dsp"}
         }));
     auto headers = std::shared_ptr<small_http_client::Headers>(new small_http_client::Headers({
-            {"Content-Type","application/json"}, 
-            {"Content-Length",std::to_string(reqStr.size())}
+            {"Content-Type","application/json"}
         }));
 
     auto onDone = [](const std::string &respStr, const std::string &errMsg) {
@@ -61,16 +61,15 @@ int main() {
     };
     
     std::vector<std::shared_ptr<small_http_client::Async>> cs;
-    for (int i = 0;i < 100;i++) {
+    for (int i = 0;i < 1;i++) {
         std::shared_ptr<small_http_client::Async> c = std::make_shared<small_http_client::Async>("POST",
             "api.orion.meizu.com", 
             "80", 
             "/dmp/api/tag/getTagsByUserId",
-            reqStr,
-            onDone);
+            reqStr);
         c->setQueryStrings(queryStrings);
         c->setHeaders(headers);
-        c->doReq();
+        c->doReq(onDone);
         cs.push_back(std::move(c));
     }
     
