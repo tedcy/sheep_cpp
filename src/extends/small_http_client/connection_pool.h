@@ -17,6 +17,7 @@ public:
     void init();
     std::shared_ptr<Connection> get();
     void put(std::shared_ptr<Connection> connection);
+    void GetLocalIp(std::string &ip);
 private:
     boost::asio::io_service &ios_;
     std::string host_;

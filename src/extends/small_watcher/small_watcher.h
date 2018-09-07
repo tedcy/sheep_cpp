@@ -18,6 +18,7 @@ public:
     WatcherI() = default;
     virtual ~WatcherI() = default;
     virtual void Init(std::string &errMsg) = 0;
+    virtual void GetLocalIp(std::string &ip) = 0;
     //virtual void Create(const std::string &path, const std::string &value,
     //        std::function<void(WatcherCtxI &ctx)> onDone) = 0;
     //virtual void Remove(WatcherCtxI &ctx, 

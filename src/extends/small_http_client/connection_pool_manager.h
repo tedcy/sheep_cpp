@@ -1,5 +1,7 @@
 #pragma once
 
+#include "connection_pool.h"
+
 #include <boost/asio.hpp>
 
 #include <memory>
@@ -8,8 +10,6 @@
 #include <thread>
 
 namespace small_http_client {
-class ConnectionPool;
-
 class ConnectionPoolManager {
 public:
     static std::shared_ptr<ConnectionPoolManager> getInstance();

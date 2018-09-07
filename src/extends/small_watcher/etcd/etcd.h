@@ -14,6 +14,7 @@ public:
     void Init(std::string &errMsg) override;
     void CreateEphemeral(const std::string &path, 
             const std::string &value) override;
+    void GetLocalIp(std::string &ip) override;
 private:
     void createEphemeral(const std::string &path, 
             const std::string &value, const std::string &errMsg);

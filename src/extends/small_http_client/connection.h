@@ -19,6 +19,7 @@ public:
             const argErrMsgCallback &callback);
     void asyncRead(boost::beast::http::response<boost::beast::http::string_body> &resp, 
             const argErrMsgCallback &callback);
+    void GetLocalIp(std::string &ip);
 private:
     friend class ConnectionPool;
     Connection(boost::asio::io_service &ios,

@@ -27,6 +27,11 @@ void Etcd::Init(std::string &errMsg) {
     //todo errMsg test
     errMsg = "";
 }
+void Etcd::GetLocalIp(std::string &ip) {
+    auto connectionPoolManager = small_http_client::ConnectionPoolManager::getInstance();
+    auto connectionPool = connectionPoolManager->get(ips_[0], std::to_string(port_));
+    connectionPool->GetLocalIp(ip);
+}
 /*createEphemeral
  * ok
  *  sleep long to refresh
@@ -49,7 +54,7 @@ void Etcd::createEphemeral(const std::string &path, const std::string &value, co
     }
     //TODO rand ips
     auto c = std::make_shared<small_http_client::Async>("PUT", ips_[0], std::to_string(port_), 
-        "/v2/keys/" + path, "value=" + value + "&ttl=12");
+        "/v2/keys" + path, "value=" + value + "&ttl=12");
     auto headers = std::shared_ptr<small_http_client::Headers>(new small_http_client::Headers({
                             {"Content-Type","application/x-www-form-urlencoded"}
                         }));
@@ -95,9 +100,10 @@ void Etcd::refresh(const std::string &path, const std::string &value,
         nextCreateEphemral(path, value);
         return;
     }
+    LOG(INFO) << path;
     //TODO rand ips
     auto c = std::make_shared<small_http_client::Async>("PUT", ips_[0], std::to_string(port_), 
-        "/v2/keys/" + path, "value=" + value + "&ttl=12&refresh=true");
+        "/v2/keys" + path, "value=" + value + "&ttl=12&refresh=true");
     auto headers = std::shared_ptr<small_http_client::Headers>(new small_http_client::Headers({
                             {"Content-Type","application/x-www-form-urlencoded"}
                         }));

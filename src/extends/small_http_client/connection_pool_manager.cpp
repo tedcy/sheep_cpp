@@ -25,6 +25,9 @@ std::shared_ptr<ConnectionPool> ConnectionPoolManager::get(const std::string &ho
     return poolPtr->second;
 }
 void ConnectionPoolManager::work() {
+    if (thread_ != nullptr) {
+        return;
+    }
     thread_ = std::make_shared<std::thread>([this](){
                 work_ = std::make_shared<boost::asio::io_service::work>(ios_);
                 ios_.run();

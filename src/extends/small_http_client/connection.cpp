@@ -19,6 +19,9 @@ void Connection::init(const argErrMsgCallback &connectedCallback){
                 std::placeholders::_1,
                 std::placeholders::_2));
 }
+void Connection::GetLocalIp(std::string &ip) {
+    ip = socket_.local_endpoint().address().to_v4().to_string();
+}
 void Connection::asyncWrite(http::request<http::string_body> &req, 
         const argErrMsgCallback &callback) {
     rwCallback_ = callback;

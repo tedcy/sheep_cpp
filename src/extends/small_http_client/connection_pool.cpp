@@ -22,6 +22,14 @@ void ConnectionPool::init() {
     }
 }
 
+void ConnectionPool::GetLocalIp(std::string &ip) {
+    auto connection = get();
+    if(connection != nullptr) {
+        connection->GetLocalIp(ip);
+        put(connection);
+    }
+}
+
 std::shared_ptr<Connection> ConnectionPool::get() {
     if (connections_.empty()) {
         return nullptr;

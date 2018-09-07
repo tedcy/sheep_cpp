@@ -15,6 +15,6 @@ int main() {
     if (errMsg != "") {
         LOG(ERROR) << errMsg;
     }
-    w->CreateEphemeral("test_watcher", "");
+    w->CreateEphemeral("/test_watcher", "");
     std::this_thread::sleep_for(std::chrono::seconds(100));
 }
