@@ -35,7 +35,7 @@ find_package(log REQUIRED)
 include_directories(${TARGET} ${log_INCLUDE_DIRS})
 target_link_libraries(${TARGET} ${log_LIBRARIES})
 
-find_package(Boost REQUIRED COMPONENTS system thread locale random)
+find_package(Boost REQUIRED COMPONENTS system)
 if (Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
     link_directories(${Boost_LIBRARY_DIRS})

@@ -21,7 +21,7 @@ add_library(${TARGET} STATIC ${LIST_SRC})
 
 include_directories(${PROJECT_SOURCE_DIR}/)
 
-find_package(Boost REQUIRED COMPONENTS system thread locale random)
+find_package(Boost REQUIRED COMPONENTS system)
 if (Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})
     link_directories(${Boost_LIBRARY_DIRS})

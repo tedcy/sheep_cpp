@@ -14,7 +14,7 @@ void ConnectionPool::init() {
         auto connection = std::shared_ptr<Connection>(new Connection(ios_, host_, port_));
         onConnect = [this,connection](const std::string &errMsg) {
             if (errMsg != "") {
-                LOG(ERROR) << errMsg;
+                LOG(ERROR) << host_ << ":" << port_ << " " << errMsg;
             }
             connections_.push_back(connection);
         };
