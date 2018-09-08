@@ -16,6 +16,7 @@ void ConnectionPool::init() {
             if (errMsg != "") {
                 LOG(ERROR) << host_ << ":" << port_ << " " << errMsg;
             }
+            LOG(INFO) << host_ << ":" << port_ << " connected";
             connections_.push_back(connection);
         };
         connection->init(onConnect);

@@ -11,7 +11,7 @@
 
 namespace small_http_client{
 //TODO timeout
-class Connection {
+class Connection: public std::enable_shared_from_this<Connection> {
     using argErrMsgCallback = std::function<void(const std::string& errMsg)>;
 public:
     ~Connection() = default;
@@ -39,6 +39,7 @@ private:
     boost::asio::ip::tcp::socket socket_;
     boost::asio::ip::tcp::resolver resolver_;
     argErrMsgCallback connectedCallback_;
-    argErrMsgCallback rwCallback_;
+    argErrMsgCallback rCallback_;
+    argErrMsgCallback wCallback_;
 };
 }//namespace small_http_client

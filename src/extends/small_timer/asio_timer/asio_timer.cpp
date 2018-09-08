@@ -1,5 +1,6 @@
 #include "asio_timer.h"
 #include "asio_timer_manager.h"
+#include "log.h"
 
 namespace small_timer{
 AsioTimer::AsioTimer() {

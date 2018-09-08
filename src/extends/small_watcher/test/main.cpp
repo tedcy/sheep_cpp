@@ -7,7 +7,7 @@
 
 int main() {
     //small_log::Init();
-    std::vector<std::string> ips{"172.16.176.38"};
+    std::vector<std::string> ips{"172.16.187.149"};
     uint32_t port = 2379;
     auto w = small_watcher::MakeWatcher(ips, port);
     std::string errMsg;

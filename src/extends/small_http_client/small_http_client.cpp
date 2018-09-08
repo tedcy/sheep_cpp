@@ -2,6 +2,7 @@
 #include "connection.h"
 #include "connection_pool.h"
 #include "connection_pool_manager.h"
+#include "log.h"
 
 using std::string;
 namespace http = boost::beast::http;
@@ -14,6 +15,9 @@ Async::Async(const std::string &method,const std::string &host,const std::string
     req_.set(http::field::host, host);
     setReq(req);
     req_.target(target);
+}
+Async::~Async() {
+    LOG(INFO) << "~ASYNC";
 }
 
 void Async::doReq(const std::function<void(const std::string&, const std::string&)> &onDone) {
@@ -28,10 +32,11 @@ void Async::doReq(const std::function<void(const std::string&, const std::string
         onDone_("", "find connection failed: " + host_ + ":" + port_);
         return;
     }
-    std::function<void(const std::string&)> onWriteCB = [this](const std::string& errMsg) {
+    auto self(shared_from_this());
+    connection_->asyncWrite(req_,
+    [this, self](const std::string& errMsg) {
         onWrite(errMsg);
-    };
-    connection_->asyncWrite(req_, onWriteCB);
+    });
     return;
 }
 
@@ -39,21 +44,25 @@ void Async::onWrite(const std::string &errMsg) {
     if (errMsg != "") {
         connectionPool_->put(connection_);
         onDone_("", errMsg);
+        onDone_ = nullptr;
         return;
     }
-    std::function<void(const std::string &errMsg)> onReadCB = [this](const std::string& errMsg) {
+    auto self(shared_from_this());
+    connection_->asyncRead(resp_, 
+    [this, self](const std::string& errMsg) {
         onRead(errMsg);
-    };
-    connection_->asyncRead(resp_, onReadCB);
+    });
 }
 
 void Async::onRead(const std::string &errMsg) {
     connectionPool_->put(connection_);
     if (errMsg != "") {
         onDone_("", errMsg);
+        onDone_ = nullptr;
         return;
     }
     onDone_(resp_.body(), "");
+    onDone_ = nullptr;
 }
 
 //default as get

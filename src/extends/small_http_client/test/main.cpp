@@ -35,42 +35,42 @@ int main() {
             {"Content-Type","application/json"}
         }));
 
-    auto onDone = [](const std::string &respStr, const std::string &errMsg) {
-        if (errMsg != "") {
-            LOG(ERROR) << errMsg;
-            return;
-        }
-        Json::Value resp;
-		Json::CharReaderBuilder builder;
-        builder["collectComments"] = false;
-        auto reader = builder.newCharReader();
-        std::string errMsg1;
-        auto b = (char*)respStr.c_str();
-        if (!reader->parse(b, b + respStr.size(), &resp, &errMsg1)) {
-            LOG(ERROR) << errMsg1;
-            return;
-        }
-        LOG(INFO) << resp["code"];
-		auto userProfiles = resp["tags"];
-    	auto mem = userProfiles.getMemberNames();
-    	for (auto iter = mem.begin(); iter != mem.end(); iter++) {
-       		std::string key = *iter;
-       		std::string value = userProfiles[key].asString();
-            LOG(INFO) << key << "\t" << value;
-		}
-    };
     
-    std::vector<std::shared_ptr<small_http_client::Async>> cs;
-    for (int i = 0;i < 1;i++) {
+    
+    for (int i = 0;i < 100;i++) {
         std::shared_ptr<small_http_client::Async> c = std::make_shared<small_http_client::Async>("POST",
             "api.orion.meizu.com", 
             "80", 
             "/dmp/api/tag/getTagsByUserId",
             reqStr);
+        auto onDone = [](const std::string &respStr, const std::string &errMsg) {
+            if (errMsg != "") {
+                LOG(ERROR) << errMsg;
+                return;
+            }
+            Json::Value resp;
+		    Json::CharReaderBuilder builder;
+            builder["collectComments"] = false;
+            auto reader = builder.newCharReader();
+            std::string errMsg1;
+            auto b = (char*)respStr.c_str();
+            if (!reader->parse(b, b + respStr.size(), &resp, &errMsg1)) {
+                LOG(ERROR) << errMsg1;
+                return;
+            }
+            LOG(INFO) << resp["code"];
+		    auto userProfiles = resp["tags"];
+    	    auto mem = userProfiles.getMemberNames();
+    	    for (auto iter = mem.begin(); iter != mem.end(); iter++) {
+       		    std::string key = *iter;
+       		    std::string value = userProfiles[key].asString();
+                LOG(INFO) << key << "\t" << value;
+		    }
+            delete(reader);
+        };
         c->setQueryStrings(queryStrings);
         c->setHeaders(headers);
         c->doReq(onDone);
-        cs.push_back(std::move(c));
     }
     
     std::this_thread::sleep_for(std::chrono::seconds(1));

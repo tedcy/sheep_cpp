@@ -58,7 +58,7 @@ void Etcd::createEphemeral(const std::string &path, const std::string &value, co
     auto headers = std::shared_ptr<small_http_client::Headers>(new small_http_client::Headers({
                             {"Content-Type","application/x-www-form-urlencoded"}
                         }));
-    auto onDone = [this, c, path, value](const std::string &respStr, 
+    auto onDone = [this, path, value](const std::string &respStr, 
         const std::string &errMsg){
         if (errMsg != "") {
             LOG(ERROR) << errMsg;
@@ -107,7 +107,7 @@ void Etcd::refresh(const std::string &path, const std::string &value,
     auto headers = std::shared_ptr<small_http_client::Headers>(new small_http_client::Headers({
                             {"Content-Type","application/x-www-form-urlencoded"}
                         }));
-    auto onDone = [this, c, path, value](const std::string &respStr, 
+    auto onDone = [this, path, value](const std::string &respStr, 
         const std::string &errMsg){
         if (errMsg != "") {
             LOG(ERROR) << errMsg;

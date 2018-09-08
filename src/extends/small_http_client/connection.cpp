@@ -8,14 +8,14 @@ Connection::Connection(boost::asio::io_service &ios,
         const std::string &host,const std::string &port):
     host_(host), port_(port), buffer_(),
     socket_(ios), resolver_(ios),
-    connectedCallback_(), rwCallback_() {
+    connectedCallback_(), rCallback_(), wCallback_() {
 }
 void Connection::init(const argErrMsgCallback &connectedCallback){
     connectedCallback_ = connectedCallback;
     resolver_.async_resolve(host_, port_, 
             std::bind(
                 &Connection::onResolve, 
-                this,
+                shared_from_this(),
                 std::placeholders::_1,
                 std::placeholders::_2));
 }
@@ -24,19 +24,19 @@ void Connection::GetLocalIp(std::string &ip) {
 }
 void Connection::asyncWrite(http::request<http::string_body> &req, 
         const argErrMsgCallback &callback) {
-    rwCallback_ = callback;
+    wCallback_ = callback;
     http::async_write(socket_, req, std::bind(
                     &Connection::onWrite,
-                    this,
+                    shared_from_this(),
                     std::placeholders::_1,
                     std::placeholders::_2));
 }
 void Connection::asyncRead(http::response<http::string_body> &resp, 
         const argErrMsgCallback &callback) {
-    rwCallback_ = callback;
+    rCallback_ = callback;
     http::async_read(socket_, buffer_, resp, std::bind(
                     &Connection::onRead,
-                    this,
+                    shared_from_this(),
                     std::placeholders::_1,
                     std::placeholders::_2));
 }
@@ -49,7 +49,8 @@ void Connection::onResolve(boost::system::error_code ec,
     boost::asio::async_connect(
             socket_, results.begin(), results.end(),
             std::bind(
-                &Connection::onConnect, this,
+                &Connection::onConnect,
+                shared_from_this(),
                 std::placeholders::_1));
 }
 void Connection::onConnect(boost::system::error_code ec) {
@@ -63,18 +64,22 @@ void Connection::onWrite(boost::system::error_code ec,
         std::size_t bytes_transferred) {
     boost::ignore_unused(bytes_transferred);
     if(ec) {
-        rwCallback_("write failed " + ec.message());
+        wCallback_("write failed " + ec.message());
+        wCallback_ = nullptr;
         return;
     }
-    rwCallback_("");
+    wCallback_("");
+    wCallback_ = nullptr;
 }
 void Connection::onRead(boost::system::error_code ec,
         std::size_t bytes_transferred){
     boost::ignore_unused(bytes_transferred);
     if(ec) {
-        rwCallback_("read failed " + ec.message());
+        rCallback_("read failed " + ec.message());
+        rCallback_ = nullptr;
         return;
     }
-    rwCallback_("");
+    rCallback_("");
+    rCallback_ = nullptr;
 }
 }//namespace small_http_client

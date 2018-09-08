@@ -6,6 +6,7 @@
 #include <string>
 #include <map>
 #include <functional>
+#include <memory>
 
 namespace small_http_client {
 typedef std::map<std::string,std::string> QueryStrings;
@@ -14,11 +15,11 @@ typedef std::map<std::string,std::string> Headers;
 class Connection;
 class ConnectionPool;
 
-class Async {
+class Async: public std::enable_shared_from_this<Async> {
 public:
     Async(const std::string &method,const std::string &host,const std::string &port, 
             const std::string &target,const std::string &req);
-    ~Async() = default;
+    ~Async();
     void SetOnDone(const std::function<void(const std::string&, const std::string&)> &onDone);
     void setQueryStrings(std::shared_ptr<QueryStrings> queryStrings);
     void setHeaders(std::shared_ptr<Headers> headers);
