@@ -15,6 +15,7 @@ typedef std::map<std::string,std::string> Headers;
 class Connection;
 class ConnectionPool;
 
+//todo 智能指针被释放立刻提示canceled
 class Async: public std::enable_shared_from_this<Async> {
 public:
     Async(const std::string &method,const std::string &host,const std::string &port, 
