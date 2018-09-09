@@ -13,8 +13,9 @@ public:
     ConnectionPool(boost::asio::io_service &ios, 
             const std::string &host,const std::string &port, int size);
     //TODO clean connections
-    ~ConnectionPool() = default;
-    void init();
+    ~ConnectionPool();
+    void Init();
+    void InitOne();
     std::shared_ptr<Connection> get();
     void put(std::shared_ptr<Connection> connection);
     void GetLocalIp(std::string &ip);

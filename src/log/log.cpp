@@ -6,4 +6,7 @@ void Init() {
     FLAGS_log_dir = "./build/log";
     FLAGS_max_log_size = 1.8 * 1024;
 }
+void EnableTrace() {
+    google::InstallFailureSignalHandler();
+}
 }

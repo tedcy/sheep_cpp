@@ -10,7 +10,7 @@ namespace http = boost::beast::http;
 namespace small_http_client{
 Async::Async(const std::string &method,const std::string &host,const std::string &port, 
             const std::string &target,const std::string &req):
-    host_(host), port_(port), target_(target), req_(), resp_(), onDone_() {
+    host_(host), port_(port), target_(target), req_(), onDone_() {
     setMethod(method);
     req_.set(http::field::host, host);
     setReq(req);
@@ -48,20 +48,22 @@ void Async::onWrite(const std::string &errMsg) {
         return;
     }
     auto self(shared_from_this());
-    connection_->asyncRead(resp_, 
-    [this, self](const std::string& errMsg) {
-        onRead(errMsg);
+    connection_->asyncRead( 
+    [this, self](boost::beast::http::response<boost::beast::http::string_body> &resp,
+        const std::string& errMsg) {
+        onRead(resp, errMsg);
     });
 }
 
-void Async::onRead(const std::string &errMsg) {
+void Async::onRead(boost::beast::http::response<boost::beast::http::string_body> &resp, 
+        const std::string &errMsg) {
     connectionPool_->put(connection_);
     if (errMsg != "") {
         onDone_("", errMsg);
         onDone_ = nullptr;
         return;
     }
-    onDone_(resp_.body(), "");
+    onDone_(resp.body(), "");
     onDone_ = nullptr;
 }
 

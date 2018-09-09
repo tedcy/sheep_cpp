@@ -4,4 +4,5 @@
 //TODO be interface
 namespace small_log {
 void Init();
+void EnableTrace();
 }

@@ -27,7 +27,8 @@ public:
     void doReq(const std::function<void(const std::string&, const std::string&)> &onDone);
 private:
     void onWrite(const std::string &errMsg);
-    void onRead(const std::string &errMsg);
+    void onRead(boost::beast::http::response<boost::beast::http::string_body> &resp, 
+        const std::string &errMsg);
     void setMethod(const std::string &method);
     void setReq(const std::string &req);
     std::shared_ptr<Connection> connection_ = nullptr;
@@ -36,7 +37,6 @@ private:
     const std::string port_;
     const std::string target_;
     boost::beast::http::request<boost::beast::http::string_body> req_;
-    boost::beast::http::response<boost::beast::http::string_body> resp_;
     std::function<void(const std::string&, const std::string&)> onDone_;
 };
 }//namespace small_http_client

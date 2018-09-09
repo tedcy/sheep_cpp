@@ -35,7 +35,7 @@ void ConnectionPoolManager::work() {
 }
 void ConnectionPoolManager::add(const std::string &host,const std::string &port, int size) {
     auto connectionPool = std::shared_ptr<ConnectionPool>(new ConnectionPool(ios_, host, port, size));
-    connectionPool->init();
+    connectionPool->Init();
     connectionPools.insert({host + port, connectionPool});
 }
 void ConnectionPoolManager::remove(const std::string &host, const std::string &port) {

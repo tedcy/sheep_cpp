@@ -10,6 +10,9 @@ Connection::Connection(boost::asio::io_service &ios,
     socket_(ios), resolver_(ios),
     connectedCallback_(), rCallback_(), wCallback_() {
 }
+Connection::~Connection() {
+    LOG(INFO) << "~Connection";
+}
 void Connection::init(const argErrMsgCallback &connectedCallback){
     connectedCallback_ = connectedCallback;
     resolver_.async_resolve(host_, port_, 
@@ -31,14 +34,15 @@ void Connection::asyncWrite(http::request<http::string_body> &req,
                     std::placeholders::_1,
                     std::placeholders::_2));
 }
-void Connection::asyncRead(http::response<http::string_body> &resp, 
-        const argErrMsgCallback &callback) {
-    rCallback_ = callback;
-    http::async_read(socket_, buffer_, resp, std::bind(
+void Connection::StartRead() {
+    http::async_read(socket_, buffer_, resp_, std::bind(
                     &Connection::onRead,
                     shared_from_this(),
                     std::placeholders::_1,
                     std::placeholders::_2));
+}
+void Connection::asyncRead(const argRespAndErrMsgCallback &callback) {
+    rCallback_ = callback;
 }
 void Connection::onResolve(boost::system::error_code ec,
         tcp::resolver::results_type results) {
@@ -74,12 +78,24 @@ void Connection::onWrite(boost::system::error_code ec,
 void Connection::onRead(boost::system::error_code ec,
         std::size_t bytes_transferred){
     boost::ignore_unused(bytes_transferred);
+    LOG(INFO) << "onRead";
     if(ec) {
-        rCallback_("read failed " + ec.message());
-        rCallback_ = nullptr;
+        boost::system::error_code ec1;
+        if(rCallback_ != nullptr) {
+            rCallback_(resp_, "read failed " + ec.message());
+            rCallback_ = nullptr;
+        }
+        closeCallback_(resp_, "read failed " + ec.message());
+        //rCallback_ = closeCallback_;
+        socket_.shutdown(tcp::socket::shutdown_both, ec1);
         return;
     }
-    rCallback_("");
+    rCallback_(resp_, "");
     rCallback_ = nullptr;
+    StartRead();
+}
+void Connection::SetClose(const argRespAndErrMsgCallback& callback) {
+    //rCallback_ = callback;
+    closeCallback_ = callback;
 }
 }//namespace small_http_client
