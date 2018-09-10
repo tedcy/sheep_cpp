@@ -20,7 +20,7 @@ Etcd::~Etcd() {
 }
 void Etcd::Init(std::string &errMsg) {
     for (auto &ip: ips_) {
-        small_http_client::ConnectionPoolManager::getInstance()->add(ip, std::to_string(port_), 5);
+        small_http_client::ConnectionPoolManager::getInstance()->add(ip, std::to_string(port_), 1);
     }
 	small_http_client::ConnectionPoolManager::getInstance()->work();
     std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -65,6 +65,7 @@ void Etcd::createEphemeral(const std::string &path, const std::string &value, co
             nextCreateEphemral(path, path);
             return;
         }
+        LOG(INFO) << respStr;
         rapidjson::Document jsonDoc;
         jsonDoc.Parse(respStr.c_str());
         if (jsonDoc.HasParseError()) {
@@ -114,6 +115,7 @@ void Etcd::refresh(const std::string &path, const std::string &value,
             nextCreateEphemral(path, path);
             return;
         }
+        LOG(INFO) << respStr;
         rapidjson::Document jsonDoc;
         jsonDoc.Parse(respStr.c_str());
         if (jsonDoc.HasParseError()) {

@@ -6,7 +6,8 @@ using tcp = boost::asio::ip::tcp;
 namespace http = boost::beast::http;
 Connection::Connection(boost::asio::io_service &ios, 
         const std::string &host,const std::string &port):
-    host_(host), port_(port), buffer_(),
+    host_(host), port_(port), buffer_(), resp_(boost::beast::http::response<
+            boost::beast::http::string_body>()),
     socket_(ios), resolver_(ios),
     connectedCallback_(), rCallback_(), wCallback_() {
 }
@@ -35,7 +36,7 @@ void Connection::asyncWrite(http::request<http::string_body> &req,
                     std::placeholders::_2));
 }
 void Connection::StartRead() {
-    http::async_read(socket_, buffer_, resp_, std::bind(
+    http::async_read(socket_, buffer_, resp_.get(), std::bind(
                     &Connection::onRead,
                     shared_from_this(),
                     std::placeholders::_1,
@@ -82,20 +83,25 @@ void Connection::onRead(boost::system::error_code ec,
     if(ec) {
         boost::system::error_code ec1;
         if(rCallback_ != nullptr) {
-            rCallback_(resp_, "read failed " + ec.message());
+            rCallback_(resp_.get(), "read failed " + ec.message());
             rCallback_ = nullptr;
         }
-        closeCallback_(resp_, "read failed " + ec.message());
+        closeCallback_(resp_.get(), "read failed " + ec.message());
         //rCallback_ = closeCallback_;
         socket_.shutdown(tcp::socket::shutdown_both, ec1);
         return;
     }
-    rCallback_(resp_, "");
+    rCallback_(resp_.get(), "");
     rCallback_ = nullptr;
+    Reset();
     StartRead();
 }
 void Connection::SetClose(const argRespAndErrMsgCallback& callback) {
     //rCallback_ = callback;
     closeCallback_ = callback;
+}
+void Connection::Reset() {
+    resp_.emplace(boost::beast::http::response<
+            boost::beast::http::string_body>());
 }
 }//namespace small_http_client

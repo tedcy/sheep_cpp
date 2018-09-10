@@ -6,6 +6,8 @@
 #include <boost/asio/connect.hpp>
 #include <boost/asio/ip/tcp.hpp>
 
+#include <boost/optional.hpp>
+
 #include <string>
 #include <functional>
 
@@ -31,6 +33,7 @@ private:
     void init(const argErrMsgCallback &connectedCallback);
     void StartRead();
     void SetClose(const argRespAndErrMsgCallback &callback);
+    void Reset();
 private:
     void onResolve(boost::system::error_code ec,
             boost::asio::ip::tcp::resolver::results_type results);
@@ -44,7 +47,11 @@ private:
     std::string host_;
     std::string port_;
     boost::beast::flat_buffer buffer_;
-    boost::beast::http::response<boost::beast::http::string_body> resp_;
+    //fix here in optiional
+    //see https://github.com/boostorg/beast/issues/971
+    boost::optional<
+        boost::beast::http::response<
+        boost::beast::http::string_body>> resp_;
     boost::asio::ip::tcp::socket socket_;
     boost::asio::ip::tcp::resolver resolver_;
     argErrMsgCallback connectedCallback_;
