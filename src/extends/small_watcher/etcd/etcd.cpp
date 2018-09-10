@@ -100,7 +100,6 @@ void Etcd::refresh(const std::string &path, const std::string &value,
         nextCreateEphemral(path, value);
         return;
     }
-    LOG(INFO) << path;
     //TODO rand ips
     auto c = std::make_shared<small_http_client::Async>("PUT", ips_[0], std::to_string(port_), 
         "/v2/keys" + path, "value=" + value + "&ttl=12&refresh=true");
