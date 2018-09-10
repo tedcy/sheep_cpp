@@ -65,7 +65,6 @@ void Etcd::createEphemeral(const std::string &path, const std::string &value, co
             nextCreateEphemral(path, path);
             return;
         }
-        LOG(INFO) << respStr;
         rapidjson::Document jsonDoc;
         jsonDoc.Parse(respStr.c_str());
         if (jsonDoc.HasParseError()) {
