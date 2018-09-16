@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.7)
-project(small_timer)
+project(main)
 
 set(TARGET ${CMAKE_PROJECT_NAME})
 
@@ -16,11 +16,11 @@ set(CMAKE_CXX_FLAGS_RELEASE "-g -O3 ${CMAKE_CXX_FLAGS}")
 set(CMAKE_MODULE_PATH ${SHEEP_PROJECT_SOURCE_DIR}/cmake)
 
 aux_source_directory(${PROJECT_SOURCE_DIR}/ LIST_SRC)
-aux_source_directory(${PROJECT_SOURCE_DIR}/asio_timer LIST_SRC)
-add_library(${TARGET} STATIC ${LIST_SRC})
+add_executable(${TARGET} ${LIST_SRC})
 
-include_directories(${PROJECT_SOURCE_DIR}/)
-include_directories(${PROJECT_SOURCE_DIR}/asio_timer)
+find_package(log REQUIRED)
+include_directories(${TARGET} ${log_INCLUDE_DIRS})
+target_link_libraries(${TARGET} ${log_LIBRARIES})
 
 find_package(Boost REQUIRED COMPONENTS system)
 if (Boost_FOUND)
@@ -33,8 +33,7 @@ find_package(jsoncpp CONFIG REQUIRED)
 include_directories(${TARGET} ${jsoncpp_INCLUDE_DIRS})
 target_link_libraries(${TARGET} jsoncpp_lib_static)
 
-find_package(log REQUIRED)
-include_directories(${TARGET} ${log_INCLUDE_DIRS})
-target_link_libraries(${TARGET} ${log_LIBRARIES})
+find_package(glog CONFIG REQUIRED)
+target_link_libraries(${TARGET} glog::glog)
 
 target_link_libraries(${TARGET} pthread)
