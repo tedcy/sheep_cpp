@@ -14,8 +14,8 @@
 int main() {
     //small_log::Init();
     small_log::EnableTrace();
-    //small_http_client::ConnectionPoolManager::getInstance()->add("api.orion.meizu.com", "80", 1);
-    small_http_client::ConnectionPoolManager::getInstance()->add("127.0.0.1", "8081", 1);
+    small_http_client::ConnectionPoolManager::getInstance()->add("api.orion.meizu.com", "80", 1);
+    //small_http_client::ConnectionPoolManager::getInstance()->add("127.0.0.1", "8081", 1);
 	small_http_client::ConnectionPoolManager::getInstance()->work();
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
@@ -41,10 +41,10 @@ int main() {
     
     for (int i = 0;i < 3;i++) {
         std::shared_ptr<small_http_client::Async> c = std::make_shared<small_http_client::Async>("POST",
-            //"api.orion.meizu.com", 
-            //"80", 
-            "127.0.0.1", 
-            "8081", 
+            "api.orion.meizu.com", 
+            "80", 
+            //"127.0.0.1", 
+            //"8081", 
             "/dmp/api/tag/getTagsByUserId",
             reqStr);
         auto onDone = [](const std::string &respStr, const std::string &errMsg) {

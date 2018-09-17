@@ -1,5 +1,5 @@
 clean=$1
-export envResult=($(find . -name env.sh -maxdepth 1))
+export envResult=($(find . -maxdepth 1 -name env.sh))
 if ((${#envResult[@]} == 0));then
     echo "can't found env.sh"
     exit -1
@@ -10,6 +10,7 @@ small_pkgs_arr=(${small_pkgs_arr[@]} "$sheep_pkg_path/src/log")
 small_pkgs_arr=(${small_pkgs_arr[@]} "$sheep_pkg_path/src/extends/small_timer")
 small_pkgs_arr=(${small_pkgs_arr[@]} "$sheep_pkg_path/src/extends/small_http_client")
 small_pkgs_arr=(${small_pkgs_arr[@]} "$sheep_pkg_path/src/extends/small_watcher")
+small_pkgs_arr=(${small_pkgs_arr[@]} "$sheep_pkg_path/src/extends/small_packages")
 
 if [[ $clean == "clean" ]]; then
     for v in ${small_pkgs_arr[@]};do

@@ -1,6 +1,6 @@
 if [[ $load_env == "" ]];then
     if [[ $envResult == "" ]];then
-        envResult=($(find . -name env.sh -maxdepth 1))
+        envResult=($(find . -maxdepth 1 -name env.sh))
         if ((${#envResult[@]} == 0));then
             echo "can't found env.sh"
             exit -1
