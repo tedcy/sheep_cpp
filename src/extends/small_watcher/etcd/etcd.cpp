@@ -147,7 +147,7 @@ void Etcd::nextCreateEphemral(const std::string &path, const std::string &value)
     //sleep short to create
     //LOG(INFO) << "short to create";
     auto t = small_timer::MakeTimer();
-    t->AsyncWait(1000, [this, path, value](const std::string &errMsg) {
+    t->AsyncWait(1000, [this, t, path, value](const std::string &errMsg) {
             createEphemeral(path, value, errMsg);
         });
 }
@@ -155,7 +155,7 @@ void Etcd::nextRefresh(const std::string &path, const std::string &value) {
     //sleep long to refresh
     //LOG(INFO) << "long to refresh";
     auto t = small_timer::MakeTimer();
-    t->AsyncWait(5000, [this, path, value](const std::string &errMsg) {
+    t->AsyncWait(5000, [this, t, path, value](const std::string &errMsg) {
             refresh(path, value, errMsg);
         });
 }

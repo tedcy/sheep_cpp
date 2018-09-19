@@ -9,8 +9,8 @@ AsioTimer::~AsioTimer() {
 }
 void AsioTimer::AsyncWait(uint64_t ms, 
             std::function<void(const std::string& errMsg)> onDone) {
-    auto t = AsioTimerManager::GetInstance()->CreateAsioTimer(ms);
-    t->async_wait([t, onDone](const boost::system::error_code &ec) {
+    timer_ = AsioTimerManager::GetInstance()->CreateAsioTimer(ms);
+    timer_->async_wait([onDone](const boost::system::error_code &ec) {
                 if (ec) {
                     std::string errMsg = ec.message();
                     onDone(errMsg);
@@ -18,5 +18,10 @@ void AsioTimer::AsyncWait(uint64_t ms,
                 }
                 onDone("");
             });
+}
+void AsioTimer::Cancel() {
+    if(timer_ != nullptr) {
+        timer_->cancel();
+    }
 }
 }//namespace small_timer
