@@ -24,6 +24,10 @@ find_package(small_timer REQUIRED)
 include_directories(${TARGET} ${small_timer_INCLUDE_DIRS})
 target_link_libraries(${TARGET} ${small_timer_LIBRARIES})
 
+find_package(small_net REQUIRED)
+include_directories(${TARGET} ${small_net_INCLUDE_DIRS})
+target_link_libraries(${TARGET} ${small_net_LIBRARIES})
+
 find_package(Boost REQUIRED COMPONENTS system)
 if (Boost_FOUND)
     include_directories(${Boost_INCLUDE_DIRS})

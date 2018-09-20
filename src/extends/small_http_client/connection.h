@@ -24,9 +24,10 @@ class Connection: public std::enable_shared_from_this<Connection> {
         const std::string& errMsg)>;
 public:
     ~Connection();
-    void asyncWrite(boost::beast::http::request<boost::beast::http::string_body> &req, 
+    void asyncWrite(uint32_t writeTimeout, 
+            boost::beast::http::request<boost::beast::http::string_body> &req, 
             const argErrMsgCallback &callback);
-    void asyncRead(const argRespAndErrMsgCallback &callback);
+    void asyncRead(uint32_t readTimeout, const argRespAndErrMsgCallback &callback);
     void GetLocalIp(std::string &ip);
 private:
     friend class ConnectionPool;

@@ -33,7 +33,7 @@ void Async::doReq(const std::function<void(const std::string&, const std::string
         return;
     }
     auto self(shared_from_this());
-    connection_->asyncWrite(req_,
+    connection_->asyncWrite(writeTimeout_, req_,
     [this, self](const std::string& errMsg) {
         onWrite(errMsg);
     });
@@ -48,7 +48,7 @@ void Async::onWrite(const std::string &errMsg) {
         return;
     }
     auto self(shared_from_this());
-    connection_->asyncRead( 
+    connection_->asyncRead(readTimeout_,
     [this, self](boost::beast::http::response<boost::beast::http::string_body> &resp,
         const std::string& errMsg) {
         onRead(resp, errMsg);
@@ -112,4 +112,10 @@ void Async::setReq(const string &req) {
     req_.body() = req;
     req_.set(http::field::content_length, req.size());
 }
+void Async::SetReadTimeout(uint32_t readTimeout) {
+    readTimeout_ = readTimeout;
 }
+void Async::SetWriteTimeout(uint32_t writeTimeout) {
+    writeTimeout_ = writeTimeout;
+}
+}//namespace small_http_client

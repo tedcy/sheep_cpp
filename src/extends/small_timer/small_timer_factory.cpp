@@ -2,14 +2,12 @@
 #include "asio_timer.h"
 #include "asio_timer_manager.h"
 #include <chrono>
+#include "log.h"
 
 namespace small_timer{
 std::shared_ptr<TimerI> MakeTimer() {
     std::shared_ptr<AsioTimer> t = std::make_shared<AsioTimer>();
     return t;
-}
-void Init() {
-    AsioTimerManager::GetInstance();
 }
 uint64_t UnixTimeSecond() {
     std::chrono::time_point<std::chrono::system_clock,std::chrono::seconds> tp = 

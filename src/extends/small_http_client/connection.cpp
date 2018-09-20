@@ -27,16 +27,24 @@ void Connection::init(const argErrMsgCallback &connectedCallback){
 void Connection::GetLocalIp(std::string &ip) {
     ip = socket_.local_endpoint().address().to_v4().to_string();
 }
-void Connection::asyncWrite(http::request<http::string_body> &req, 
+void Connection::asyncWrite(uint32_t writeTimeout,
+        http::request<http::string_body> &req, 
         const argErrMsgCallback &callback) {
-    timer_ = small_timer::MakeTimer();
-    auto self = shared_from_this();
-    timer_->AsyncWait(100, 
-        [this, self](const std::string &errMsg){
-            LOG(INFO) << "time out";
-            socket_.cancel();
-        }
-    );
+    if (writeTimeout != 0) {
+        timer_ = small_timer::MakeTimer();
+        auto self = shared_from_this();
+        timer_->AsyncWait(writeTimeout, 
+            [this, self](const std::string &errMsg){
+                if (errMsg == "") {
+                    LOG(INFO) << "time out";
+                    socket_.cancel();
+                }
+            }
+        );
+    }else {
+        timer_ = nullptr;
+    }
+    
     wCallback_ = callback;
     http::async_write(socket_, req, std::bind(
                     &Connection::onWrite,
@@ -51,15 +59,22 @@ void Connection::StartRead() {
                     std::placeholders::_1,
                     std::placeholders::_2));
 }
-void Connection::asyncRead(const argRespAndErrMsgCallback &callback) {
-    timer_ = small_timer::MakeTimer();
-    auto self = shared_from_this();
-    timer_->AsyncWait(100, 
-        [this, self](const std::string &errMsg){
-            LOG(INFO) << "time out";
-            socket_.cancel();
-        }
-    );
+void Connection::asyncRead(uint32_t readTimeout,
+        const argRespAndErrMsgCallback &callback) {
+    if (readTimeout != 0) {
+        timer_ = small_timer::MakeTimer();
+        auto self = shared_from_this();
+        timer_->AsyncWait(readTimeout, 
+            [this, self](const std::string &errMsg){
+                if (errMsg == "") {
+                    LOG(INFO) << "time out";
+                    socket_.cancel();
+                }
+            }
+        );
+    }else {
+        timer_ = nullptr;
+    }
     rCallback_ = callback;
 }
 void Connection::onResolve(boost::system::error_code ec,

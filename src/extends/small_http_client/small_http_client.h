@@ -22,6 +22,8 @@ public:
             const std::string &target,const std::string &req);
     ~Async();
     void SetOnDone(const std::function<void(const std::string&, const std::string&)> &onDone);
+    void SetReadTimeout(uint32_t readTimeout);
+    void SetWriteTimeout(uint32_t writeTimeout);
     void setQueryStrings(std::shared_ptr<QueryStrings> queryStrings);
     void setHeaders(std::shared_ptr<Headers> headers);
     void doReq(const std::function<void(const std::string&, const std::string&)> &onDone);
@@ -38,5 +40,7 @@ private:
     const std::string target_;
     boost::beast::http::request<boost::beast::http::string_body> req_;
     std::function<void(const std::string&, const std::string&)> onDone_;
+    uint32_t readTimeout_ = 0;
+    uint32_t writeTimeout_ = 0;
 };
 }//namespace small_http_client

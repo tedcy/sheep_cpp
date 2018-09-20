@@ -22,7 +22,6 @@ void Etcd::Init(std::string &errMsg) {
     for (auto &ip: ips_) {
         small_http_client::ConnectionPoolManager::getInstance()->add(ip, std::to_string(port_), 1);
     }
-	small_http_client::ConnectionPoolManager::getInstance()->work();
     std::this_thread::sleep_for(std::chrono::seconds(1));
     //todo errMsg test
     errMsg = "";

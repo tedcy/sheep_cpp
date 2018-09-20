@@ -10,13 +10,14 @@
 
 //#include <boost/asio/connect.hpp>
 //#include <boost/asio/ip/tcp.hpp>
+#include "small_net.h"
 
 int main() {
     //small_log::Init();
     small_log::EnableTrace();
+    small_net::AsioNet::GetInstance()->Init();
     small_http_client::ConnectionPoolManager::getInstance()->add("api.orion.meizu.com", "80", 1);
     //small_http_client::ConnectionPoolManager::getInstance()->add("127.0.0.1", "8081", 1);
-	small_http_client::ConnectionPoolManager::getInstance()->work();
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
 	Json::Value dmpReq;

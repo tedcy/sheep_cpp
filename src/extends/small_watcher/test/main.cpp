@@ -5,8 +5,11 @@
 #include <thread>
 #include <string>
 
+#include "small_net.h"
+
 int main() {
     //small_log::Init();
+    small_net::AsioNet::GetInstance()->Init();
     std::vector<std::string> ips{"172.16.187.149"};
     uint32_t port = 2379;
     auto w = small_watcher::MakeWatcher(ips, port);
