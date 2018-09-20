@@ -16,9 +16,15 @@ set(CMAKE_CXX_FLAGS_RELEASE "-g -O3 ${CMAKE_CXX_FLAGS}")
 set(CMAKE_MODULE_PATH ${SHEEP_PROJECT_SOURCE_DIR}/cmake)
 
 aux_source_directory(${PROJECT_SOURCE_DIR}/ LIST_SRC)
+aux_source_directory(${PROJECT_SOURCE_DIR}/small_lock LIST_SRC)
+aux_source_directory(${PROJECT_SOURCE_DIR}/small_lock/normal_lock LIST_SRC)
+aux_source_directory(${PROJECT_SOURCE_DIR}/small_strings LIST_SRC)
 add_library(${TARGET} STATIC ${LIST_SRC})
 
 include_directories(${PROJECT_SOURCE_DIR}/)
+include_directories(${PROJECT_SOURCE_DIR}/small_lock)
+include_directories(${PROJECT_SOURCE_DIR}/small_lock/normal_lock)
+include_directories(${PROJECT_SOURCE_DIR}/small_strings)
 
 find_package(Boost REQUIRED COMPONENTS system)
 if (Boost_FOUND)
