@@ -1,6 +1,7 @@
 #include "connection.h"
 #include "log.h"
 
+
 namespace small_http_client{
 using tcp = boost::asio::ip::tcp;
 namespace http = boost::beast::http;
@@ -28,6 +29,14 @@ void Connection::GetLocalIp(std::string &ip) {
 }
 void Connection::asyncWrite(http::request<http::string_body> &req, 
         const argErrMsgCallback &callback) {
+    timer_ = small_timer::MakeTimer();
+    auto self = shared_from_this();
+    timer_->AsyncWait(100, 
+        [this, self](const std::string &errMsg){
+            LOG(INFO) << "time out";
+            socket_.cancel();
+        }
+    );
     wCallback_ = callback;
     http::async_write(socket_, req, std::bind(
                     &Connection::onWrite,
@@ -43,6 +52,14 @@ void Connection::StartRead() {
                     std::placeholders::_2));
 }
 void Connection::asyncRead(const argRespAndErrMsgCallback &callback) {
+    timer_ = small_timer::MakeTimer();
+    auto self = shared_from_this();
+    timer_->AsyncWait(100, 
+        [this, self](const std::string &errMsg){
+            LOG(INFO) << "time out";
+            socket_.cancel();
+        }
+    );
     rCallback_ = callback;
 }
 void Connection::onResolve(boost::system::error_code ec,
@@ -68,6 +85,9 @@ void Connection::onConnect(boost::system::error_code ec) {
 void Connection::onWrite(boost::system::error_code ec,
         std::size_t bytes_transferred) {
     boost::ignore_unused(bytes_transferred);
+    if(timer_) {
+        timer_->Cancel();
+    }
     if(ec) {
         wCallback_("write failed " + ec.message());
         wCallback_ = nullptr;
@@ -80,6 +100,9 @@ void Connection::onRead(boost::system::error_code ec,
         std::size_t bytes_transferred){
     boost::ignore_unused(bytes_transferred);
     LOG(INFO) << "onRead";
+    if(timer_) {
+        timer_->Cancel();
+    }
     if(ec) {
         boost::system::error_code ec1;
         if(rCallback_ != nullptr) {

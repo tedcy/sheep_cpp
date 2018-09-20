@@ -11,6 +11,8 @@
 #include <string>
 #include <functional>
 
+#include "small_timer_factory.h"
+
 namespace small_http_client{
 //TODO timeout
 class Connection: public std::enable_shared_from_this<Connection> {
@@ -47,6 +49,7 @@ private:
     std::string host_;
     std::string port_;
     boost::beast::flat_buffer buffer_;
+    std::shared_ptr<small_timer::TimerI> timer_;
     //fix here in optiional
     //see https://github.com/boostorg/beast/issues/971
     boost::optional<

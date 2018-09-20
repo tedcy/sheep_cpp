@@ -41,7 +41,7 @@ void ConnectionPool::InitOne() {
             return;
         }
         if (errMsg != "") {
-            LOG(ERROR) << host_ << ":" << port_ << " " << errMsg;
+            //LOG(ERROR) << host_ << ":" << port_ << " " << errMsg;
             connections_.remove(connection);
             InitOne();
         }
@@ -62,6 +62,7 @@ std::shared_ptr<Connection> ConnectionPool::get() {
     if (connections_.empty()) {
         return nullptr;
     }
+    LOG(INFO) << "connection get";
     auto connection = connections_.front();
     connections_.pop_front();
     return connection;
@@ -71,6 +72,7 @@ void ConnectionPool::put(std::shared_ptr<Connection> connection) {
     if (connection == nullptr) {
         return;
     }
+    LOG(INFO) << "connection put";
     connections_.push_back(connection);
 }
 

@@ -20,7 +20,7 @@ void AsioTimer::AsyncWait(uint64_t ms,
             });
 }
 void AsioTimer::Cancel() {
-    if(timer_ != nullptr) {
+    if(timer_) {
         timer_->cancel();
     }
 }
