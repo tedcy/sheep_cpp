@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.7)
-project(small_packages)
+project(small_config)
 
 set(TARGET ${CMAKE_PROJECT_NAME})
 
@@ -16,17 +16,15 @@ set(CMAKE_CXX_FLAGS_RELEASE "-g -O3 ${CMAKE_CXX_FLAGS}")
 set(CMAKE_MODULE_PATH ${SHEEP_PROJECT_SOURCE_DIR}/cmake)
 
 aux_source_directory(${PROJECT_SOURCE_DIR}/ LIST_SRC)
-aux_source_directory(${PROJECT_SOURCE_DIR}/small_lock LIST_SRC)
-aux_source_directory(${PROJECT_SOURCE_DIR}/small_lock/normal_lock LIST_SRC)
-aux_source_directory(${PROJECT_SOURCE_DIR}/small_strings LIST_SRC)
-aux_source_directory(${PROJECT_SOURCE_DIR}/small_ioutils LIST_SRC)
+aux_source_directory(${PROJECT_SOURCE_DIR}/toml_config LIST_SRC)
 add_library(${TARGET} STATIC ${LIST_SRC})
 
 include_directories(${PROJECT_SOURCE_DIR}/)
-include_directories(${PROJECT_SOURCE_DIR}/small_lock)
-include_directories(${PROJECT_SOURCE_DIR}/small_lock/normal_lock)
-include_directories(${PROJECT_SOURCE_DIR}/small_strings)
-include_directories(${PROJECT_SOURCE_DIR}/small_ioutils)
+include_directories(${PROJECT_SOURCE_DIR}/toml_config)
+
+find_package(small_packages REQUIRED)
+include_directories(${TARGET} ${small_packages_INCLUDE_DIRS})
+target_link_libraries(${TARGET} ${small_packages_LIBRARIES})
 
 find_package(Boost REQUIRED COMPONENTS system)
 if (Boost_FOUND)
@@ -38,6 +36,9 @@ endif()
 find_package(jsoncpp CONFIG REQUIRED)
 include_directories(${TARGET} ${jsoncpp_INCLUDE_DIRS})
 target_link_libraries(${TARGET} jsoncpp_lib_static)
+
+#find_package(tinytoml CONFIG REQUIRED)
+#include_directories(${TARGET} ${tinytoml_INCLUDE_DIRS})
 
 find_package(log REQUIRED)
 include_directories(${TARGET} ${log_INCLUDE_DIRS})
