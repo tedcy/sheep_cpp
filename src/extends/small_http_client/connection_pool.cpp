@@ -5,7 +5,8 @@
 namespace small_http_client {
 ConnectionPool::ConnectionPool(boost::asio::io_service &ios, 
         const std::string &host,const std::string &port, int size) :
-    ios_(ios), host_(host), port_(port), size_(size), connections_() {
+    ios_(ios), host_(host), port_(port), size_(size), connections_(),
+    lock_(small_lock::MakeLock()) {
 }
 ConnectionPool::~ConnectionPool() {
     LOG(INFO) << "~ConnectionPool";
@@ -59,10 +60,11 @@ void ConnectionPool::GetLocalIp(std::string &ip) {
 }
 
 std::shared_ptr<Connection> ConnectionPool::get() {
+    small_lock::UniqueGuard uniqueLock(lock_);
     if (connections_.empty()) {
         return nullptr;
     }
-    LOG(INFO) << "connection get";
+    //LOG(INFO) << "connection get";
     auto connection = connections_.front();
     connections_.pop_front();
     return connection;
@@ -72,10 +74,8 @@ void ConnectionPool::put(std::shared_ptr<Connection> connection) {
     if (connection == nullptr) {
         return;
     }
-    LOG(INFO) << "connection put";
+    //LOG(INFO) << "connection put";
+    small_lock::UniqueGuard uniqueLock(lock_);
     connections_.push_back(connection);
 }
-
-//std::shared_ptr<Connection> Get() {
-//}
 }

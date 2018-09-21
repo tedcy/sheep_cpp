@@ -6,6 +6,7 @@ namespace small_timer{
 AsioTimer::AsioTimer() {
 }
 AsioTimer::~AsioTimer() {
+    LOG(INFO) << "~AsioTimer";
 }
 void AsioTimer::AsyncWait(uint64_t ms, 
             std::function<void(const std::string& errMsg)> onDone) {

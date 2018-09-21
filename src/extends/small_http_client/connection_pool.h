@@ -5,6 +5,8 @@
 #include <string>
 #include <list>
 
+#include "small_packages.h"
+
 namespace small_http_client {
 class Connection;
 //TODO ping test
@@ -25,5 +27,6 @@ private:
     std::string port_;
     int size_ = 0;
     std::list<std::shared_ptr<Connection>> connections_;
+    std::shared_ptr<small_lock::LockI> lock_;
 };
 }//namespace small_http_client

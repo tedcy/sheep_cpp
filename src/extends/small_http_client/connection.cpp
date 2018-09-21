@@ -13,7 +13,7 @@ Connection::Connection(boost::asio::io_service &ios,
     connectedCallback_(), rCallback_(), wCallback_() {
 }
 Connection::~Connection() {
-    LOG(INFO) << "~Connection";
+    //LOG(INFO) << "~Connection";
 }
 void Connection::init(const argErrMsgCallback &connectedCallback){
     connectedCallback_ = connectedCallback;
