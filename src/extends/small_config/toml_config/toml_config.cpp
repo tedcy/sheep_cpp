@@ -33,7 +33,7 @@ void TomlConfig::load(toml::Value& data, const std::string &key){
         }else {
             if (v->is<int>()) {
                 value.status_ = TomlConfigValue::Status::SETINT;
-                value.valueStr_ = v->as<int>();
+                value.valueInt_ = v->as<int>();
             }
         }
     }
