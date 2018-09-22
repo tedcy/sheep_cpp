@@ -9,6 +9,7 @@ void Init(const std::string &path, const std::string &name) {
         FLAGS_log_dir = path;
     }
     FLAGS_max_log_size = 1.8 * 1024;
+    FLAGS_stderrthreshold = google::FATAL;
     gName = name;
     //fix glog use c str point
     //when name is convert from c str, it's temporary
