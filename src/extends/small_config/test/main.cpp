@@ -3,8 +3,6 @@
 
 int main() {
     auto config = small_config::MakeConfig();
-    config->AddKey("Addr");
-    config->AddKey("Port");
     std::string errMsg;
     config->Load("test.toml", errMsg);
     if(errMsg != "") {
