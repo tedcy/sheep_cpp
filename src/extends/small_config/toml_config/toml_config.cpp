@@ -7,7 +7,7 @@ void TomlConfig::Load(const std::string &name,
         std::string &errMsg) {
     std::ifstream file(name);
     if (!file) {
-        errMsg = "open file " + name + "failed";
+        errMsg = "open file " + name + " failed";
         return;
     }
     auto pr = toml::parse(file);
