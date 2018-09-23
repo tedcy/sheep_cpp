@@ -7,6 +7,7 @@ fi
 source "env.sh"
 
 small_pkgs_arr=(${small_pkgs_arr[@]} "$sheep_pkg_path/src/log")
+small_pkgs_arr=(${small_pkgs_arr[@]} "$sheep_pkg_path/src/extends/small_pprof")
 small_pkgs_arr=(${small_pkgs_arr[@]} "$sheep_pkg_path/src/extends/small_packages")
 small_pkgs_arr=(${small_pkgs_arr[@]} "$sheep_pkg_path/src/extends/small_config")
 small_pkgs_arr=(${small_pkgs_arr[@]} "$sheep_pkg_path/src/extends/small_net")

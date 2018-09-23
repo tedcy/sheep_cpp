@@ -33,3 +33,5 @@
 CMakeFiles
 build
 env.sh
+
+gperftools-httpd*
