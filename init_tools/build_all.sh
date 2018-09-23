@@ -1,3 +1,4 @@
+set -e
 clean=$1
 export envResult=($(find . -maxdepth 1 -name env.sh))
 if ((${#envResult[@]} == 0));then

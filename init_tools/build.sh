@@ -1,3 +1,4 @@
+set -e
 if [[ $load_env == "" ]];then
     if [[ $envResult == "" ]];then
         envResult=($(find . -maxdepth 1 -name env.sh))

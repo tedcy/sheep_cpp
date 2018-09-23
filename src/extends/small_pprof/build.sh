@@ -1,5 +1,9 @@
 set -e
 
+#this file combine .a file into libsmall_pprof.a
+#but when var needLibs is head of var installLibs will failed
+#the best way is to find .a libs and linked by cmake find_packages
+
 #build perftools
 path=`find . -name gperftools-httpd`
 if [[ $path == "" ]];then
@@ -25,28 +29,27 @@ fi
 mkdir -pv build
 cp gperftools-httpd/libstacktrace.a build
 cp gperftools-httpd/build/libgperftools-httpd.a build
-path=`find /usr/ -name libtcmalloc.a|head -n 1`
-if [[ $path == "" ]];then
-    echo "can't find libtcmalloc.a"
-    exit -1
-fi
-cp $path build
-path=`find /usr/ -name libprofiler.a|head -n 1`
-if [[ $path == "" ]];then
-    echo "can't find libprofiler.a"
-    exit -1
-fi
-cp $path build
+needLibs=("libtcmalloc.a" "libunwind.a" "libprofiler.a" "liblzma.a")
+for v in ${needLibs[@]};do
+    path=`find /usr/ -name $v|head -n 1`
+    if [[ $path == "" ]];then
+        echo "can't find $v"
+        exit -1
+    fi
+    cp $path build
+done
 
 #combine .a libs into libsmall_pprof.a
 rm -rf /tmp/small_pprof
 mkdir -pv /tmp/small_pprof
-cp ./build/libstacktrace.a ./build/libgperftools-httpd.a ./build/libtcmalloc.a ./build/libprofiler.a /tmp/small_pprof
+installLibs=("libstacktrace.a" "libgperftools-httpd.a" ${needLibs[@]}) 
+for v in ${installLibs[@]};do
+    cp ./build/$v /tmp/small_pprof
+done
 cd /tmp/small_pprof
-ar x libstacktrace.a
-ar x libgperftools-httpd.a
-ar x libtcmalloc.a
-ar x libprofiler.a
+for v in ${installLibs[@]};do
+    ar x $v
+done
 ar cru libsmall_pprof.a *.o
 ranlib libsmall_pprof.a
 cd -
