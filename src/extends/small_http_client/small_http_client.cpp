@@ -18,6 +18,9 @@ Async::Async(const std::string &method,const std::string &host,const std::string
 }
 Async::~Async() {
     //LOG(INFO) << "~ASYNC";
+    if(connection_ != nullptr) {
+        connectionPool_->put(connection_);
+    }
 }
 
 void Async::doReq(const std::function<void(const std::string&, const std::string&)> &onDone) {
@@ -44,7 +47,6 @@ void Async::onWrite(const std::string &errMsg) {
     if (errMsg != "") {
         onDone_("", errMsg);
         onDone_ = nullptr;
-        connectionPool_->put(connection_);
         return;
     }
     auto self(shared_from_this());
@@ -64,7 +66,6 @@ void Async::onRead(boost::beast::http::response<boost::beast::http::string_body>
     }
     onDone_(resp.body(), "");
     onDone_ = nullptr;
-    connectionPool_->put(connection_);
 }
 
 //default as get

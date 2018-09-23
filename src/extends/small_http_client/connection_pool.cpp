@@ -9,7 +9,7 @@ ConnectionPool::ConnectionPool(boost::asio::io_service &ios,
     lock_(small_lock::MakeLock()) {
 }
 ConnectionPool::~ConnectionPool() {
-    LOG(INFO) << "~ConnectionPool";
+    //LOG(INFO) << "~ConnectionPool";
 }
 
 void ConnectionPool::Init() {
@@ -31,7 +31,7 @@ void ConnectionPool::InitOne() {
             return;
         }
         connection->StartRead();
-        LOG(INFO) << host_ << ":" << port_ << " connected";
+        //LOG(INFO) << host_ << ":" << port_ << " connected";
         put(connection);
     };
     auto onClose = [this, c = std::weak_ptr<Connection>(connection)]

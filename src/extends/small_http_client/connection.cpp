@@ -36,7 +36,7 @@ void Connection::asyncWrite(uint32_t writeTimeout,
         timer_->AsyncWait(writeTimeout, 
             [this, self](const std::string &errMsg){
                 if (errMsg == "") {
-                    LOG(INFO) << "time out";
+                    //LOG(INFO) << "time out";
                     socket_.cancel();
                 }
             }
@@ -67,7 +67,7 @@ void Connection::asyncRead(uint32_t readTimeout,
         timer_->AsyncWait(readTimeout, 
             [this, self](const std::string &errMsg){
                 if (errMsg == "") {
-                    LOG(INFO) << "time out";
+                    //LOG(INFO) << "time out";
                     socket_.cancel();
                 }
             }
@@ -114,7 +114,6 @@ void Connection::onWrite(boost::system::error_code ec,
 void Connection::onRead(boost::system::error_code ec,
         std::size_t bytes_transferred){
     boost::ignore_unused(bytes_transferred);
-    LOG(INFO) << "onRead";
     if(timer_) {
         timer_->Cancel();
     }
@@ -129,10 +128,13 @@ void Connection::onRead(boost::system::error_code ec,
         socket_.shutdown(tcp::socket::shutdown_both, ec1);
         return;
     }
+    if (rCallback_ == nullptr) {
+        LOG(FATAL) << "wtf";
+    }
     rCallback_(resp_.get(), "");
-    rCallback_ = nullptr;
     Reset();
     StartRead();
+    rCallback_ = nullptr;
 }
 void Connection::SetClose(const argRespAndErrMsgCallback& callback) {
     //rCallback_ = callback;
