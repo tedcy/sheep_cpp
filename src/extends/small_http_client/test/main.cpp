@@ -13,11 +13,14 @@
 #include "small_net.h"
 
 int main() {
+    //TODO
+    //当不进行最后的sleep时，会存在core
+    //估计是部分内容析构时继续运行了被析构的对象内容导致的
     //small_log::Init();
     small_log::EnableTrace();
     small_net::AsioNet::GetInstance()->Init();
-    small_http_client::ConnectionPoolManager::getInstance()->add("api.orion.meizu.com", "80", 1);
-    //small_http_client::ConnectionPoolManager::getInstance()->add("127.0.0.1", "8081", 1);
+    //small_http_client::ConnectionPoolManager::getInstance()->add("api.orion.meizu.com", "80", 1);
+    small_http_client::ConnectionPoolManager::getInstance()->add("127.0.0.1", "8081", 1);
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
 	Json::Value dmpReq;
@@ -42,13 +45,14 @@ int main() {
     
     for (int i = 0;i < 3;i++) {
         std::shared_ptr<small_http_client::Async> c = std::make_shared<small_http_client::Async>("POST",
-            "api.orion.meizu.com", 
-            "80", 
-            //"127.0.0.1", 
-            //"8081", 
+            //"api.orion.meizu.com", 
+            //"80", 
+            "127.0.0.1", 
+            "8081", 
             "/dmp/api/tag/getTagsByUserId",
             reqStr);
         auto onDone = [](const std::string &respStr, const std::string &errMsg) {
+            LOG(INFO) << respStr;
             if (errMsg != "") {
                 LOG(ERROR) << errMsg;
                 return;
@@ -62,6 +66,7 @@ int main() {
             auto b = (char*)respStr.c_str();
             if (!reader->parse(b, b + respStr.size(), &resp, &errMsg1)) {
                 LOG(ERROR) << errMsg1;
+                delete(reader);
                 return;
             }
             LOG(INFO) << resp["code"];
@@ -73,12 +78,15 @@ int main() {
                 LOG(INFO) << key << "\t" << value;
 		    }
             delete(reader);
+            return;
         };
         c->setQueryStrings(queryStrings);
+        c->SetReadTimeout(200);
+        c->SetWriteTimeout(200);
         c->setHeaders(headers);
         c->doReq(onDone);
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
     
-    std::this_thread::sleep_for(std::chrono::seconds(100));
+    //std::this_thread::sleep_for(std::chrono::seconds(100));
 }

@@ -35,7 +35,7 @@ void ConnectionPool::InitOne() {
         put(connection);
     };
     auto onClose = [this, c = std::weak_ptr<Connection>(connection)]
-    (boost::beast::http::response<boost::beast::http::string_body> &resp,
+    (const std::string &resp,
     const std::string &errMsg){
         auto connection = c.lock();
         if (!connection) {
@@ -43,12 +43,18 @@ void ConnectionPool::InitOne() {
         }
         if (errMsg != "") {
             //LOG(ERROR) << host_ << ":" << port_ << " " << errMsg;
-            connections_.remove(connection);
+            {
+                small_lock::UniqueGuard uniqueLock(lock_);
+                connections_.remove(connection);
+            }
             InitOne();
         }
     };
-    connection->init(onConnect);
+    //fix: init one is other thread, so set close first before init
+    //otherwise when on close first then set
+    //lead to core
     connection->SetClose(onClose);
+    connection->init(onConnect);
 }
 
 void ConnectionPool::GetLocalIp(std::string &ip) {
@@ -64,13 +70,16 @@ std::shared_ptr<Connection> ConnectionPool::get() {
     if (connections_.empty()) {
         return nullptr;
     }
-    //LOG(INFO) << "connection get";
+    LOG(INFO) << connections_.size();
     auto connection = connections_.front();
     connections_.pop_front();
     return connection;
 }
 
 void ConnectionPool::put(std::shared_ptr<Connection> connection) {
+    if (!connection->Available()) {
+        return;
+    }
     if (connection == nullptr) {
         return;
     }

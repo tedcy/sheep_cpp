@@ -19,15 +19,14 @@ class Connection: public std::enable_shared_from_this<Connection> {
     using argErrMsgCallback = 
         std::function<void(const std::string& errMsg)>;
     using argRespAndErrMsgCallback = 
-        std::function<void(boost::beast::http::response<
-                boost::beast::http::string_body> &resp,
+        std::function<void(const std::string &resp,
         const std::string& errMsg)>;
 public:
     ~Connection();
-    void asyncWrite(uint32_t writeTimeout, 
+    void AsyncDo(uint32_t writeTimeout, uint32_t readTimeout,
             boost::beast::http::request<boost::beast::http::string_body> &req, 
-            const argErrMsgCallback &callback);
-    void asyncRead(uint32_t readTimeout, const argRespAndErrMsgCallback &callback);
+            const argErrMsgCallback &writeCallback,
+            const argRespAndErrMsgCallback &readCallback);
     void GetLocalIp(std::string &ip);
 private:
     friend class ConnectionPool;
@@ -37,6 +36,8 @@ private:
     void StartRead();
     void SetClose(const argRespAndErrMsgCallback &callback);
     void Reset();
+    bool Available();
+    bool available_ = true;
 private:
     void onResolve(boost::system::error_code ec,
             boost::asio::ip::tcp::resolver::results_type results);
@@ -50,7 +51,8 @@ private:
     std::string host_;
     std::string port_;
     boost::beast::flat_buffer buffer_;
-    std::shared_ptr<small_timer::TimerI> timer_;
+    std::shared_ptr<small_timer::TimerI> readTimer_ = nullptr;
+    std::shared_ptr<small_timer::TimerI> writeTimer_ = nullptr;
     //fix here in optiional
     //see https://github.com/boostorg/beast/issues/971
     boost::optional<

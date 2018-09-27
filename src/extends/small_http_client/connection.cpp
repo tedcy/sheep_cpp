@@ -1,7 +1,6 @@
 #include "connection.h"
 #include "log.h"
 
-
 namespace small_http_client{
 using tcp = boost::asio::ip::tcp;
 namespace http = boost::beast::http;
@@ -13,7 +12,6 @@ Connection::Connection(boost::asio::io_service &ios,
     connectedCallback_(), rCallback_(), wCallback_() {
 }
 Connection::~Connection() {
-    //LOG(INFO) << "~Connection";
 }
 void Connection::init(const argErrMsgCallback &connectedCallback){
     connectedCallback_ = connectedCallback;
@@ -27,31 +25,6 @@ void Connection::init(const argErrMsgCallback &connectedCallback){
 void Connection::GetLocalIp(std::string &ip) {
     ip = socket_.local_endpoint().address().to_v4().to_string();
 }
-void Connection::asyncWrite(uint32_t writeTimeout,
-        http::request<http::string_body> &req, 
-        const argErrMsgCallback &callback) {
-    if (writeTimeout != 0) {
-        timer_ = small_timer::MakeTimer();
-        auto self = shared_from_this();
-        timer_->AsyncWait(writeTimeout, 
-            [this, self](const std::string &errMsg){
-                if (errMsg == "") {
-                    //LOG(INFO) << "time out";
-                    socket_.cancel();
-                }
-            }
-        );
-    }else {
-        timer_ = nullptr;
-    }
-    
-    wCallback_ = callback;
-    http::async_write(socket_, req, std::bind(
-                    &Connection::onWrite,
-                    shared_from_this(),
-                    std::placeholders::_1,
-                    std::placeholders::_2));
-}
 void Connection::StartRead() {
     http::async_read(socket_, buffer_, resp_.get(), std::bind(
                     &Connection::onRead,
@@ -59,24 +32,7 @@ void Connection::StartRead() {
                     std::placeholders::_1,
                     std::placeholders::_2));
 }
-void Connection::asyncRead(uint32_t readTimeout,
-        const argRespAndErrMsgCallback &callback) {
-    if (readTimeout != 0) {
-        timer_ = small_timer::MakeTimer();
-        auto self = shared_from_this();
-        timer_->AsyncWait(readTimeout, 
-            [this, self](const std::string &errMsg){
-                if (errMsg == "") {
-                    //LOG(INFO) << "time out";
-                    socket_.cancel();
-                }
-            }
-        );
-    }else {
-        timer_ = nullptr;
-    }
-    rCallback_ = callback;
-}
+
 void Connection::onResolve(boost::system::error_code ec,
         tcp::resolver::results_type results) {
     if (ec) {
@@ -90,6 +46,7 @@ void Connection::onResolve(boost::system::error_code ec,
                 shared_from_this(),
                 std::placeholders::_1));
 }
+
 void Connection::onConnect(boost::system::error_code ec) {
     if (ec) {
         connectedCallback_("connect failed " + ec.message());
@@ -97,11 +54,53 @@ void Connection::onConnect(boost::system::error_code ec) {
     }
     connectedCallback_("");
 }
+
+void Connection::AsyncDo(uint32_t writeTimeout, uint32_t readTimeout,
+            boost::beast::http::request<boost::beast::http::string_body> &req, 
+            const argErrMsgCallback &writeCallback,
+            const argRespAndErrMsgCallback &readCallback) {
+    if (writeTimeout != 0) {
+        writeTimer_ = small_timer::MakeTimer();
+        auto self = shared_from_this();
+        writeTimer_->AsyncWait(writeTimeout, 
+            [this, self](const std::string &errMsg){
+                if (errMsg == "") {
+                    //LOG(INFO) << "time out";
+                    socket_.cancel();
+                }
+            }
+        );
+    }else {
+        writeTimer_ = nullptr;
+    }
+    if (readTimeout != 0) {
+        readTimer_ = small_timer::MakeTimer();
+        auto self = shared_from_this();
+        readTimer_->AsyncWait(readTimeout, 
+            [this, self](const std::string &errMsg){
+                if (errMsg == "") {
+                    //LOG(INFO) << "time out";
+                    socket_.cancel();
+                }
+            }
+        );
+    }else {
+        readTimer_ = nullptr;
+    }
+    wCallback_ = writeCallback;
+    rCallback_ = readCallback;
+    http::async_write(socket_, req, std::bind(
+                    &Connection::onWrite,
+                    shared_from_this(),
+                    std::placeholders::_1,
+                    std::placeholders::_2));
+}
+
 void Connection::onWrite(boost::system::error_code ec,
         std::size_t bytes_transferred) {
     boost::ignore_unused(bytes_transferred);
-    if(timer_) {
-        timer_->Cancel();
+    if(writeTimer_) {
+        writeTimer_->Cancel();
     }
     if(ec) {
         wCallback_("write failed " + ec.message());
@@ -114,34 +113,33 @@ void Connection::onWrite(boost::system::error_code ec,
 void Connection::onRead(boost::system::error_code ec,
         std::size_t bytes_transferred){
     boost::ignore_unused(bytes_transferred);
-    if(timer_) {
-        timer_->Cancel();
+    if(readTimer_) {
+        readTimer_->Cancel();
     }
     if(ec) {
+        available_ = false;
         boost::system::error_code ec1;
         if(rCallback_ != nullptr) {
-            rCallback_(resp_.get(), "read failed " + ec.message());
+            rCallback_("", "read failed " + ec.message());
             rCallback_ = nullptr;
         }
-        closeCallback_(resp_.get(), "read failed " + ec.message());
-        //rCallback_ = closeCallback_;
+        closeCallback_("", "read failed " + ec.message());
         socket_.shutdown(tcp::socket::shutdown_both, ec1);
         return;
     }
-    if (rCallback_ == nullptr) {
-        LOG(FATAL) << "wtf";
-    }
-    rCallback_(resp_.get(), "");
+    rCallback_(resp_.get().body(), "");
+    rCallback_ = nullptr;
     Reset();
     StartRead();
-    rCallback_ = nullptr;
 }
 void Connection::SetClose(const argRespAndErrMsgCallback& callback) {
-    //rCallback_ = callback;
     closeCallback_ = callback;
 }
 void Connection::Reset() {
     resp_.emplace(boost::beast::http::response<
             boost::beast::http::string_body>());
+}
+bool Connection::Available() {
+    return available_;
 }
 }//namespace small_http_client

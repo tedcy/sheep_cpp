@@ -28,8 +28,7 @@ public:
     void setHeaders(std::shared_ptr<Headers> headers);
     void doReq(const std::function<void(const std::string&, const std::string&)> &onDone);
 private:
-    void onWrite(const std::string &errMsg);
-    void onRead(boost::beast::http::response<boost::beast::http::string_body> &resp, 
+    void onRead(const std::string &resp, 
         const std::string &errMsg);
     void setMethod(const std::string &method);
     void setReq(const std::string &req);
