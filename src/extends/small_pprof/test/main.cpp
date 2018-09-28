@@ -1,4 +1,4 @@
-#include "gperftools-httpd.h"
+#include "small_pprof.h"
 
 int main(int argc,char** argv)
 {

@@ -1,9 +1,5 @@
 set -e
 
-#this file combine .a file into libsmall_pprof.a
-#but when var needLibs is head of var installLibs will failed
-#the best way is to find .a libs and linked by cmake find_packages
-
 #build perftools
 path=`find . -name gperftools-httpd`
 if [[ $path == "" ]];then
@@ -26,12 +22,13 @@ if [[ $path != "" ]];then
 fi
 
 #find .a libs
+rm -rf build
 mkdir -pv build
-cp gperftools-httpd/libstacktrace.a build
+#cp gperftools-httpd/libstacktrace.a build
 cp gperftools-httpd/build/libgperftools-httpd.a build
-needLibs=("libtcmalloc.a" "libunwind.a" "libprofiler.a" "liblzma.a")
+needLibs=("libtcmalloc.a" "libprofiler.a")
 for v in ${needLibs[@]};do
-    path=`find /usr/ -name $v|head -n 1`
+    path=`find /usr/local -name $v|head -n 1`
     if [[ $path == "" ]];then
         echo "can't find $v"
         exit -1
@@ -39,21 +36,24 @@ for v in ${needLibs[@]};do
     cp $path build
 done
 
-#combine .a libs into libsmall_pprof.a
-rm -rf /tmp/small_pprof
-mkdir -pv /tmp/small_pprof
-installLibs=("libstacktrace.a" "libgperftools-httpd.a" ${needLibs[@]}) 
-for v in ${installLibs[@]};do
-    cp ./build/$v /tmp/small_pprof
-done
-cd /tmp/small_pprof
-for v in ${installLibs[@]};do
-    ar x $v
-done
-ar cru libsmall_pprof.a *.o
-ranlib libsmall_pprof.a
-cd -
-cp /tmp/small_pprof/libsmall_pprof.a ./build
+#nouse, combine is not a good idea for mac plaform
+#insteaded of linking more libs with cmake
+
+##combine .a libs into libsmall_pprof.a
+##rm -rf /tmp/small_pprof
+##mkdir -pv /tmp/small_pprof
+##installLibs=("libstacktrace.a" "libgperftools-httpd.a" ${needLibs[@]}) 
+##for v in ${installLibs[@]};do
+##    cp ./build/$v /tmp/small_pprof
+##done
+##cd /tmp/small_pprof
+##for v in ${installLibs[@]};do
+##    ar x $v
+##done
+##ar cru libsmall_pprof.a *.o
+##ranlib libsmall_pprof.a
+##cd -
+##cp /tmp/small_pprof/libsmall_pprof.a ./build
 
 #cp headers
 cp gperftools-httpd/gperftools-httpd.h .
