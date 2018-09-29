@@ -1,5 +1,6 @@
 set -e
 
+ifMac=`uname -a|grep -o Mac|head -n 1`
 #build perftools
 path=`find . -name gperftools-httpd`
 if [[ $path == "" ]];then
@@ -16,7 +17,7 @@ fi
 cd -
 
 #test if ./build.sh runed
-path=`find build -name libsmall_pprof.a|head -n 1`
+path=`find build -name libtcmalloc.a|head -n 1`
 if [[ $path != "" ]];then
     exit 0
 fi
@@ -27,8 +28,11 @@ mkdir -pv build
 #cp gperftools-httpd/libstacktrace.a build
 cp gperftools-httpd/build/libgperftools-httpd.a build
 needLibs=("libtcmalloc.a" "libprofiler.a")
+if [[ $ifMac == "" ]];then
+    needLibs=(${needLibs[@]} "liblzma.a" "libunwind.a")
+fi
 for v in ${needLibs[@]};do
-    path=`find /usr/local -name $v|head -n 1`
+    path=`find /usr -name $v|head -n 1`
     if [[ $path == "" ]];then
         echo "can't find $v"
         exit -1
