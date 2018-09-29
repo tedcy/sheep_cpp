@@ -1,15 +1,10 @@
 #pragma once
+#include <string>
 
 namespace small_log{
 class LogI {
 public:
-    enum Level {
-        DEBUG,
-        WARNING,
-        INFO,
-        ERROR,
-        FATAL,
-    };
-    virtual void Log(Level l) = 0;
+    virtual LogI& operator<<(int64_t value) = 0;
+    virtual LogI& operator<<(const std::string &value) = 0;
 };
 }

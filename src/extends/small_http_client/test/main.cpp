@@ -8,6 +8,8 @@
 #include <thread>
 #include <iostream>
 
+using namespace small_log;
+
 //#include <boost/asio/connect.hpp>
 //#include <boost/asio/ip/tcp.hpp>
 #include "small_net.h"
@@ -69,7 +71,7 @@ int main() {
                 delete(reader);
                 return;
             }
-            LOG(INFO) << resp["code"];
+            LOG(INFO) << resp["code"].asString();
 		    auto userProfiles = resp["tags"];
     	    auto mem = userProfiles.getMemberNames();
     	    for (auto iter = mem.begin(); iter != mem.end(); iter++) {

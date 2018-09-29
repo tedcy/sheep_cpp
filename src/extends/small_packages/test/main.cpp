@@ -3,6 +3,8 @@
 
 #include <thread>
 
+using namespace small_log;
+
 void test_lock() {
     auto lock = small_lock::MakeLock();
     int i = 0;

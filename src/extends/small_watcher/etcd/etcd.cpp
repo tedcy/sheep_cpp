@@ -12,6 +12,8 @@
 
 #include "small_timer_factory.h"
 
+using namespace small_log;
+
 namespace small_watcher{
 Etcd::Etcd(const std::vector<std::string> &ips, uint32_t port):
     ips_(ips), port_(port) {

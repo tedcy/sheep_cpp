@@ -1,6 +1,8 @@
 #include "connection.h"
 #include "log.h"
 
+using namespace small_log;
+
 namespace small_http_client{
 using tcp = boost::asio::ip::tcp;
 namespace http = boost::beast::http;
