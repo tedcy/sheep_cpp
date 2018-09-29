@@ -12,6 +12,7 @@ std::shared_ptr<AsioNet> AsioNet::GetInstance() {
 
 AsioNet::~AsioNet(){
     work_ = nullptr;
+    ios_.stop();
     thread_->join();
 }
 

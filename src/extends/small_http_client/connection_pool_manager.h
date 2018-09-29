@@ -13,7 +13,7 @@ public:
     void work();
     void add(const std::string &host,const std::string &port, int size);
     void remove(const std::string &host,const std::string &port);
-    ~ConnectionPoolManager() = default;
+    ~ConnectionPoolManager();
 private:
     ConnectionPoolManager();
     ConnectionPoolManager(const ConnectionPoolManager&) = delete;

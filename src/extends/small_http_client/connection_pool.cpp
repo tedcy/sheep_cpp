@@ -9,7 +9,7 @@ ConnectionPool::ConnectionPool(boost::asio::io_service &ios,
     lock_(small_lock::MakeLock()) {
 }
 ConnectionPool::~ConnectionPool() {
-    //LOG(INFO) << "~ConnectionPool";
+    LOG(INFO) << "~ConnectionPool";
 }
 
 void ConnectionPool::Init() {
