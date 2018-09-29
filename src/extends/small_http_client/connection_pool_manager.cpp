@@ -19,7 +19,7 @@ std::shared_ptr<ConnectionPoolManager> ConnectionPoolManager::getInstance() {
 ConnectionPoolManager::ConnectionPoolManager():connectionPools() {
 }
 ConnectionPoolManager::~ConnectionPoolManager() {
-    LOG(INFO) << "~ConnectionPoolManager";
+    //LOG(INFO) << "~ConnectionPoolManager";
 }
 std::shared_ptr<ConnectionPool> ConnectionPoolManager::get(const std::string &host, const std::string &port) {
     auto poolPtr = connectionPools.find(host + port);
