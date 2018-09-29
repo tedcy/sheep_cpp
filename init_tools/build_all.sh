@@ -26,10 +26,19 @@ if [[ $clean == "clean" ]]; then
     done
     else
     for v in ${small_pkgs_arr[@]};do
+        echo "----------$v building start----------------"
         cd $v
         $sheep_pkg_path/init_tools/build.sh
+        echo "----------$v building end------------------"
+        echo "-------------------------------------------"
+        echo "-------------------------------------------"
+        cd $v
+        echo "----------$v/test building start-----------"
         cd $v/test
         $sheep_pkg_path/init_tools/build.sh
         cd -
+        echo "----------$v/test building end-------------"
+        echo "-------------------------------------------"
+        echo "-------------------------------------------"
     done
 fi

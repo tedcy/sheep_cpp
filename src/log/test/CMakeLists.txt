@@ -22,18 +22,4 @@ find_package(log REQUIRED)
 include_directories(${TARGET} ${log_INCLUDE_DIRS})
 target_link_libraries(${TARGET} ${log_LIBRARIES})
 
-find_package(Boost REQUIRED COMPONENTS system)
-if (Boost_FOUND)
-    include_directories(${Boost_INCLUDE_DIRS})
-    link_directories(${Boost_LIBRARY_DIRS})
-    target_link_libraries(${TARGET} ${Boost_LIBRARIES})
-endif()
-
-find_package(jsoncpp CONFIG REQUIRED)
-include_directories(${TARGET} ${jsoncpp_INCLUDE_DIRS})
-target_link_libraries(${TARGET} jsoncpp_lib_static)
-
-find_package(glog CONFIG REQUIRED)
-target_link_libraries(${TARGET} glog::glog)
-
 target_link_libraries(${TARGET} pthread)
