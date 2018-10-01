@@ -1,26 +1,18 @@
 #include "glog_manager.h"
 #include <glog/logging.h>
+#include <iostream>
 
 namespace small_log{
-GLogManager& GLogManager::GetInstance() {
-    static GLogManager manager_;
+bool gDestoryed = false;
+GLogFactory& GLogFactory::GetInstance() {
+    static GLogFactory manager_;
     return manager_;
 }
-LogI& GLogManager::Log(Level l) {
-    switch (l) {
-        case DEBUG:
-            return GLogDebug::GetInstance();
-        case WARNING:
-            return GLogWarning::GetInstance();
-        case INFO:
-            return GLogInfo::GetInstance();
-        case ERROR:
-            return GLogError::GetInstance();
-        case FATAL:
-            return GLogFatal::GetInstance();
-    }
+GLogFactory::~GLogFactory() {
+    gDestoryed = true;
+    std::cout << "~GLogFactory" << std::endl;
 }
-void GLogManager::Init(const std::string &path, const std::string &name) {
+void GLogFactory::Init(const std::string &path, const std::string &name) {
     if (path == "") {
         FLAGS_log_dir = "./build/log";
     }else {
@@ -34,7 +26,10 @@ void GLogManager::Init(const std::string &path, const std::string &name) {
     //so store it in gName
     google::InitGoogleLogging(gName_.c_str());
 }
-void GLogManager::EnableTrace() {
+void GLogFactory::EnableTrace() {
     google::InstallFailureSignalHandler();
+}
+LogI&& GLogFactory::Make(Level l, const char *file, uint32_t line) {
+    return GLog(l, file, line, gDestoryed);
 }
 }

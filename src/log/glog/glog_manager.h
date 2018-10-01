@@ -1,18 +1,19 @@
 #pragma once
-#include "glog.h"
+#include "glog/glog.h"
+#include "log_interface.h"
 
 namespace small_log{
-class GLogManager {
+class GLogFactory : public LogFactoryI{
 public:
-    ~GLogManager() = default;
-    static GLogManager& GetInstance();
-    LogI& Log(Level l);
-    void Init(const std::string &path, const std::string &name);
-    void EnableTrace();
+    ~GLogFactory();
+    static GLogFactory& GetInstance();
+    void Init(const std::string &path, const std::string &name) override;
+    void EnableTrace() override;
+    LogI&& Make(Level l, const char *file, uint32_t line) override;
 private:
-    GLogManager() = default;
-    GLogManager(const GLogManager&) = default;
-    GLogManager& operator=(const GLogManager&) = default;
+    GLogFactory() = default;
+    GLogFactory(const GLogFactory&) = default;
+    GLogFactory& operator=(const GLogFactory&) = default;
     std::string gName_;
 };
 }

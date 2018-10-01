@@ -1,5 +1,4 @@
 #include "glog.h"
-#include <glog/logging.h>
 #include <iostream>
 
 namespace small_log{
@@ -7,89 +6,41 @@ namespace small_log{
 //call LOG cause panic
 //class static value destoryed before glog's global values
 //it's ok to test if glog destoryed
-bool gLogDestoryed = false;
-GLogInfo::~GLogInfo() {
-    gLogDestoryed = true;
-}
-LogI& GLogDebug::operator<<(int64_t value) {
-    if (gLogDestoryed) {
-        std::cout << value << std::endl;
-        return *this;
-    }
-    LOG(INFO) << value;
-    return *this;
-}
-LogI& GLogInfo::operator<<(int64_t value) {
-    if (gLogDestoryed) {
-        std::cout << value << std::endl;
-        return *this;
-    }
-    LOG(INFO) << value;
-    return *this;
-}
-LogI& GLogWarning::operator<<(int64_t value) {
-    if (gLogDestoryed) {
-        std::cout << value << std::endl;
-        return *this;
-    }
-    LOG(WARNING) << value;
-    return *this;
-}
-LogI& GLogError::operator<<(int64_t value) {
-    if (gLogDestoryed) {
-        std::cout << value << std::endl;
-        return *this;
-    }
-    LOG(ERROR) << value;
-    return *this;
-}
-LogI& GLogFatal::operator<<(int64_t value) {
-    if (gLogDestoryed) {
-        std::cout << value << std::endl;
-        return *this;
-    }
-    LOG(FATAL) << value;
-    return *this;
-}
 
-LogI& GLogDebug::operator<<(const std::string &value) {
-    if (gLogDestoryed) {
-        std::cout << value << std::endl;
-        return *this;
+GLog::GLog(Level l, const char* file, uint32_t line, bool destoryed) {
+    if (destoryed) {
+        stream_ = std::unique_ptr<std::ostream>
+            (new std::ostream(std::cout.rdbuf()));
+        return;
     }
-    LOG(INFO) << value;
-    return *this;
+    switch (l) {
+    case DEBUG:
+        message_ = std::unique_ptr<google::LogMessage>(
+                new google::LogMessage(file, line, google::GLOG_INFO));
+        return;
+    case WARNING:
+        message_ = std::unique_ptr<google::LogMessage>(
+                new google::LogMessage(file, line, google::GLOG_WARNING));
+        return;
+    case ERROR:
+        message_ = std::unique_ptr<google::LogMessage>(
+                new google::LogMessage(file, line, google::GLOG_ERROR));
+        return;
+    case FATAL:
+        message_ = std::unique_ptr<google::LogMessage>(
+                new google::LogMessage(file, line, google::GLOG_FATAL));
+        return;
+    case INFO:
+    default:
+        message_ = std::unique_ptr<google::LogMessage>(
+                new google::LogMessage(file, line, google::GLOG_INFO));
+        return;
+    }
 }
-LogI& GLogInfo::operator<<(const std::string &value) {
-    if (gLogDestoryed) {
-        std::cout << value << std::endl;
-        return *this;
+std::ostream& GLog::stream() {
+    if (stream_ != nullptr) {
+        return *stream_.get();
     }
-    LOG(INFO) << value;
-    return *this;
-}
-LogI& GLogWarning::operator<<(const std::string &value) {
-    if (gLogDestoryed) {
-        std::cout << value << std::endl;
-        return *this;
-    }
-    LOG(WARNING) << value;
-    return *this;
-}
-LogI& GLogError::operator<<(const std::string &value) {
-    if (gLogDestoryed) {
-        std::cout << value << std::endl;
-        return *this;
-    }
-    LOG(ERROR) << value;
-    return *this;
-}
-LogI& GLogFatal::operator<<(const std::string &value) {
-    if (gLogDestoryed) {
-        std::cout << value << std::endl;
-        return *this;
-    }
-    LOG(FATAL) << value;
-    return *this;
+    return message_->stream();
 }
 }

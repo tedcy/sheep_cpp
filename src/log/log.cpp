@@ -3,13 +3,12 @@
 
 namespace small_log {
 void Init(const std::string &path, const std::string &name) {
-    GLogManager::GetInstance().Init(path, name);
+    GetLogFactory().Init(path, name);
 }
 void EnableTrace() {
-    GLogManager::GetInstance().EnableTrace();
+    GetLogFactory().EnableTrace();
 }
-
-LogI& LOG(Level l) {
-    return GLogManager::GetInstance().Log(l);
+LogFactoryI& GetLogFactory() {
+    return GLogFactory::GetInstance();
 }
 }
