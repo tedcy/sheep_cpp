@@ -24,7 +24,7 @@ Async::~Async() {
 
 void Async::doReq(const std::function<void(const std::string&, const std::string&)> &onDone) {
     onDone_ = onDone;
-    connectionPool_ = ConnectionPoolManager::getInstance()->get(host_, port_);
+    connectionPool_ = ConnectionPoolManager::GetInstance().get(host_, port_);
     if (connectionPool_ == nullptr) {
         onDone_("", "find connectionPool failed: " + host_ + ":" + port_);
         return;

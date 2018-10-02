@@ -1,19 +1,21 @@
 #include "asio_net.h"
 
 namespace small_net {
-std::shared_ptr<AsioNet> AsioNet::instance_ = nullptr;
-
-std::shared_ptr<AsioNet> AsioNet::GetInstance() {
-    if (instance_ == nullptr) {
-        instance_ = std::shared_ptr<AsioNet>(new AsioNet());
-    }
+AsioNet& AsioNet::GetInstance() {
+    static AsioNet instance_;
     return instance_;
 }
 
 AsioNet::~AsioNet(){
-    work_ = nullptr;
-    ios_.stop();
-    thread_->join();
+    Shutdown();
+}
+
+void AsioNet::Shutdown() {
+    if (work_ != nullptr) {
+        work_ = nullptr;
+        ios_.stop();
+        thread_->join();
+    }
 }
 
 void AsioNet::Init() {

@@ -8,12 +8,8 @@ using namespace small_log;
 
 namespace small_http_client{
 
-std::shared_ptr<ConnectionPoolManager> ConnectionPoolManager::instance_ = nullptr;
-
-std::shared_ptr<ConnectionPoolManager> ConnectionPoolManager::getInstance() {
-    if (instance_ == nullptr) {
-        instance_ = std::shared_ptr<ConnectionPoolManager>(new ConnectionPoolManager);
-    }
+ConnectionPoolManager& ConnectionPoolManager::GetInstance() {
+    static ConnectionPoolManager instance_;
     return instance_;
 }
 ConnectionPoolManager::ConnectionPoolManager():connectionPools() {
@@ -30,7 +26,7 @@ std::shared_ptr<ConnectionPool> ConnectionPoolManager::get(const std::string &ho
 }
 void ConnectionPoolManager::add(const std::string &host,const std::string &port, int size) {
     auto connectionPool = std::shared_ptr<ConnectionPool>(
-            new ConnectionPool(small_net::AsioNet::GetInstance()->GetIos(), host, port, size));
+            new ConnectionPool(small_net::AsioNet::GetInstance().GetIos(), host, port, size));
     connectionPool->Init();
     connectionPools.insert({host + port, connectionPool});
 }

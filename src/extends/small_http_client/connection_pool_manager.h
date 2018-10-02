@@ -8,7 +8,7 @@
 namespace small_http_client {
 class ConnectionPoolManager {
 public:
-    static std::shared_ptr<ConnectionPoolManager> getInstance();
+    static ConnectionPoolManager& GetInstance();
     std::shared_ptr<ConnectionPool> get(const std::string &host, const std::string &port);
     void work();
     void add(const std::string &host,const std::string &port, int size);
@@ -20,6 +20,5 @@ private:
     ConnectionPoolManager& operator = (const ConnectionPoolManager&) = delete;
     std::map<std::string, std::shared_ptr<ConnectionPool>> connectionPools;
 private:
-    static std::shared_ptr<ConnectionPoolManager> instance_;
 };
 }//namespace small_http_client

@@ -11,7 +11,7 @@ using namespace small_log;
 
 int main() {
     //small_log::Init();
-    small_net::AsioNet::GetInstance()->Init();
+    small_net::AsioNet::GetInstance().Init();
     std::vector<std::string> ips{"172.16.187.149"};
     uint32_t port = 2379;
     auto w = small_watcher::MakeWatcher(ips, port);
@@ -22,4 +22,5 @@ int main() {
     }
     w->CreateEphemeral("/test_watcher", "");
     std::this_thread::sleep_for(std::chrono::seconds(100));
+    small_net::AsioNet::GetInstance().Shutdown();
 }

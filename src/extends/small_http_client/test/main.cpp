@@ -20,9 +20,9 @@ int main() {
     //估计是部分内容析构时继续运行了被析构的对象内容导致的
     //small_log::Init();
     small_log::EnableTrace();
-    small_net::AsioNet::GetInstance()->Init();
+    small_net::AsioNet::GetInstance().Init();
     //small_http_client::ConnectionPoolManager::getInstance()->add("api.orion.meizu.com", "80", 1);
-    small_http_client::ConnectionPoolManager::getInstance()->add("127.0.0.1", "8081", 1);
+    small_http_client::ConnectionPoolManager::GetInstance().add("127.0.0.1", "8081", 1);
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
 	Json::Value dmpReq;
@@ -91,4 +91,5 @@ int main() {
     }
     
     std::this_thread::sleep_for(std::chrono::seconds(20));
+    small_net::AsioNet::GetInstance().Shutdown();
 }

@@ -10,7 +10,7 @@ AsioTimer::~AsioTimer() {
 }
 void AsioTimer::AsyncWait(uint64_t ms, 
             std::function<void(const std::string& errMsg)> onDone) {
-    timer_ = AsioTimerManager::GetInstance()->CreateAsioTimer(ms);
+    timer_ = AsioTimerManager::GetInstance().CreateAsioTimer(ms);
     timer_->async_wait([onDone](const boost::system::error_code &ec) {
                 if (ec) {
                     std::string errMsg = ec.message();

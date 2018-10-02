@@ -22,15 +22,15 @@ Etcd::~Etcd() {
 }
 void Etcd::Init(std::string &errMsg) {
     for (auto &ip: ips_) {
-        small_http_client::ConnectionPoolManager::getInstance()->add(ip, std::to_string(port_), 1);
+        small_http_client::ConnectionPoolManager::GetInstance().add(ip, std::to_string(port_), 1);
     }
     std::this_thread::sleep_for(std::chrono::seconds(1));
     //todo errMsg test
     errMsg = "";
 }
 void Etcd::GetLocalIp(std::string &ip) {
-    auto connectionPoolManager = small_http_client::ConnectionPoolManager::getInstance();
-    auto connectionPool = connectionPoolManager->get(ips_[0], std::to_string(port_));
+    auto &connectionPoolManager = small_http_client::ConnectionPoolManager::GetInstance();
+    auto connectionPool = connectionPoolManager.get(ips_[0], std::to_string(port_));
     connectionPool->GetLocalIp(ip);
 }
 /*createEphemeral

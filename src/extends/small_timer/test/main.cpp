@@ -12,7 +12,7 @@ using namespace small_log;
 
 int main() {
     //small_log::Init();
-    small_net::AsioNet::GetInstance()->Init();
+    small_net::AsioNet::GetInstance().Init();
     std::this_thread::sleep_for(std::chrono::seconds(1));
     LOG(INFO) << "start";
     
@@ -30,4 +30,5 @@ int main() {
         ts.emplace_back(t);
     }
     std::this_thread::sleep_for(std::chrono::seconds(1000));
+    small_net::AsioNet::GetInstance().Shutdown();
 }
