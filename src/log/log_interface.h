@@ -9,11 +9,11 @@ public:
     virtual std::ostream& stream() = 0;
     virtual ~LogI() = default;
 };
-class LogFactoryI {
+class LogManagerI {
 public:
     virtual void Init(const std::string &path, const std::string &name) = 0;
     virtual void EnableTrace() = 0;
     //virtual std::unique_ptr<LogI> Make(Level l, const char *file, uint32_t line) = 0;
-    virtual ~LogFactoryI() = default;
+    virtual ~LogManagerI() = default;
 };
 }

@@ -7,7 +7,6 @@
 namespace small_log {
 void Init(const std::string &path, const std::string &name);
 void EnableTrace();
-LogFactoryI& GetLogFactory();
 std::unique_ptr<LogI> Make(Level l, const char* file, uint32_t line);
 #define MakeLoggerDEBUG Make(DEBUG, __FILE__, __LINE__)
 #define MakeLoggerWARNING Make(WARNING, __FILE__, __LINE__)

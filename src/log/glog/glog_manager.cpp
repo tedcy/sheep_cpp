@@ -4,16 +4,18 @@
 
 namespace small_log{
 bool gDestoryed = false;
-GLogFactory& GLogFactory::GetInstance() {
-    static GLogFactory manager_;
+GLogManager& GLogManager::GetInstance() {
+    static GLogManager manager_;
     return manager_;
 }
-GLogFactory::~GLogFactory() {
-    google::ShutdownGoogleLogging();
+GLogManager::~GLogManager() {
+    if (inited_) {
+        google::ShutdownGoogleLogging();
+    }
     gDestoryed = true;
-    std::cout << "~GLogFactory" << std::endl;
+    std::cout << "~GLogManager" << std::endl;
 }
-void GLogFactory::Init(const std::string &path, const std::string &name) {
+void GLogManager::Init(const std::string &path, const std::string &name) {
     if (path == "") {
         FLAGS_log_dir = "./build/log";
     }else {
@@ -26,8 +28,9 @@ void GLogFactory::Init(const std::string &path, const std::string &name) {
     //when name is convert from c str, it's temporary
     //so store it in gName
     google::InitGoogleLogging(gName_.c_str());
+    inited_ = true;
 }
-void GLogFactory::EnableTrace() {
+void GLogManager::EnableTrace() {
     google::InstallFailureSignalHandler();
 }
 }

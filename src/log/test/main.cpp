@@ -13,7 +13,7 @@ struct A{
 A a;
 
 int main() {
-    small_log::Init("log", "main");
+    //small_log::Init("log", "main");
     small_log::EnableTrace();
     LOG(INFO) << "info";
 }
