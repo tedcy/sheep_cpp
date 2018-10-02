@@ -9,7 +9,6 @@ public:
     static GLogFactory& GetInstance();
     void Init(const std::string &path, const std::string &name) override;
     void EnableTrace() override;
-    LogI&& Make(Level l, const char *file, uint32_t line) override;
 private:
     GLogFactory() = default;
     GLogFactory(const GLogFactory&) = default;

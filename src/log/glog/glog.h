@@ -8,10 +8,11 @@
 namespace small_log{
 class GLog: public LogI{
 public:
-    GLog(Level l, const char *file, uint32_t line, bool destoryed);
+    GLog(Level l, const char *file, uint32_t line);
+    ~GLog();
     std::ostream& stream() override;
 private:
-    std::unique_ptr<google::LogMessage> message_;
-    std::unique_ptr<std::ostream> stream_;
+    std::unique_ptr<google::LogMessage> message_ = nullptr;
+    std::unique_ptr<std::ostream> stream_ = nullptr;
 };
 }

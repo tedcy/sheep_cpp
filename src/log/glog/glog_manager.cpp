@@ -9,6 +9,7 @@ GLogFactory& GLogFactory::GetInstance() {
     return manager_;
 }
 GLogFactory::~GLogFactory() {
+    google::ShutdownGoogleLogging();
     gDestoryed = true;
     std::cout << "~GLogFactory" << std::endl;
 }
@@ -28,8 +29,5 @@ void GLogFactory::Init(const std::string &path, const std::string &name) {
 }
 void GLogFactory::EnableTrace() {
     google::InstallFailureSignalHandler();
-}
-LogI&& GLogFactory::Make(Level l, const char *file, uint32_t line) {
-    return GLog(l, file, line, gDestoryed);
 }
 }
