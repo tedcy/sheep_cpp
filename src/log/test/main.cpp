@@ -2,8 +2,6 @@
 
 #include <iostream>
 
-using namespace small_log;
-
 struct A{
     ~A() {
         std::cout << "~A" << std::endl;

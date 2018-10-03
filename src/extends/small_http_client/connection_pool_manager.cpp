@@ -4,8 +4,6 @@
 #include "small_net.h"
 #include "log.h"
 
-using namespace small_log;
-
 namespace small_http_client{
 
 ConnectionPoolManager& ConnectionPoolManager::GetInstance() {

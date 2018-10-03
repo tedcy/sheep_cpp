@@ -8,8 +8,6 @@
 
 #include "small_net.h"
 
-using namespace small_log;
-
 int main() {
     //small_log::Init();
     small_net::AsioNet::GetInstance().Init();

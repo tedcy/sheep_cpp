@@ -2,8 +2,6 @@
 #include "connection.h"
 #include "log.h"
 
-using namespace small_log;
-
 namespace small_http_client {
 ConnectionPool::ConnectionPool(boost::asio::io_service &ios, 
         const std::string &host,const std::string &port, int size) :

@@ -8,8 +8,6 @@
 #include <thread>
 #include <iostream>
 
-using namespace small_log;
-
 //#include <boost/asio/connect.hpp>
 //#include <boost/asio/ip/tcp.hpp>
 #include "small_net.h"
