@@ -27,6 +27,7 @@ public:
     void setQueryStrings(std::shared_ptr<QueryStrings> queryStrings);
     void setHeaders(std::shared_ptr<Headers> headers);
     void doReq(const std::function<void(const std::string&, const std::string&)> &onDone);
+    void SetTraceId(const std::string &traceId);
 private:
     void onRead(const std::string &resp, 
         const std::string &errMsg);
@@ -41,5 +42,6 @@ private:
     std::function<void(const std::string&, const std::string&)> onDone_;
     uint32_t readTimeout_ = 0;
     uint32_t writeTimeout_ = 0;
+    std::string traceId_;
 };
 }//namespace small_http_client

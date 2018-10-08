@@ -106,6 +106,10 @@ void Connection::onWrite(boost::system::error_code ec,
     if(ec) {
         wCallback_("write failed " + ec.message());
         wCallback_ = nullptr;
+        closeCallback_("", "read failed " + ec.message());
+        
+        boost::system::error_code ec1;
+        socket_.shutdown(tcp::socket::shutdown_both, ec1);
         return;
     }
     wCallback_("");

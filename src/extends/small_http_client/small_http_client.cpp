@@ -19,6 +19,9 @@ Async::Async(const std::string &method,const std::string &host,const std::string
 Async::~Async() {
     if(connection_ != nullptr) {
         connectionPool_->put(connection_);
+        if(!traceId_.empty()) {
+            LOG(DEBUG) << "HttpId: " << traceId_ << " ~Async";
+        }
     }
 }
 
@@ -37,9 +40,21 @@ void Async::doReq(const std::function<void(const std::string&, const std::string
     auto self(shared_from_this());
     connection_->AsyncDo(writeTimeout_, readTimeout_, req_,
     [this, self](const std::string& errMsg) {
+        if(!traceId_.empty()) {
+            LOG(DEBUG) << "HttpId: " << traceId_ << " WriteEvent" 
+            << "errMsg: " << errMsg;
+        }
+        if (errMsg != "") {
+            onDone_("", errMsg);
+            onDone_ = nullptr;
+        }
     },
     [this, self](const std::string &resp,
         const std::string& errMsg) {
+        if(!traceId_.empty()) {
+            LOG(DEBUG) << "HttpId: " << traceId_ << " ReadEvent"
+            << "errMsg: " << errMsg;
+        }
         onRead(resp, errMsg);
     });
     return;
@@ -106,5 +121,8 @@ void Async::SetReadTimeout(uint32_t readTimeout) {
 }
 void Async::SetWriteTimeout(uint32_t writeTimeout) {
     writeTimeout_ = writeTimeout;
+}
+void Async::SetTraceId(const std::string &traceId) {
+    traceId_ = traceId;
 }
 }//namespace small_http_client
