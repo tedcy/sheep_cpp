@@ -19,4 +19,10 @@ void NormalLock::WLock() {
 void NormalLock::WUnLock() {
     lock_.unlock();
 }
+void NormalRecursiveLock::Lock() {
+    lock_.lock();
+}
+void NormalRecursiveLock::UnLock() {
+    lock_.unlock();
+}
 }//namespace small_lock

@@ -9,4 +9,7 @@ std::shared_ptr<LockI> MakeLock() {
 std::shared_ptr<RWLockI> MakeRWLock() {
     return std::make_shared<NormalLock>();
 }
+std::shared_ptr<LockI> MakeRecursiveLock() {
+    return std::make_shared<NormalRecursiveLock>();
+}
 }//namespace small_lock

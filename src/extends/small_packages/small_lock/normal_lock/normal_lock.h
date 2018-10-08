@@ -14,4 +14,11 @@ public:
 private:
     std::mutex lock_;
 };
+class NormalRecursiveLock: public LockI{
+public:
+    void Lock() override;
+    void UnLock() override;
+private:
+    std::recursive_mutex lock_;
+};
 }//small_lock

@@ -6,6 +6,7 @@
 namespace small_lock{
 std::shared_ptr<LockI> MakeLock();
 std::shared_ptr<RWLockI> MakeRWLock();
+std::shared_ptr<LockI> MakeRecursiveLock();
 class UniqueGuard {
 public:
     explicit UniqueGuard(std::shared_ptr<LockI> lock): t_(lock) {
