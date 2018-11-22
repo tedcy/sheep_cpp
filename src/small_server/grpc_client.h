@@ -7,23 +7,6 @@
 
 namespace small_server{
 template <typename ReqT, typename RespT, typename Stub>
-class GrpcClient;
-
-template <typename ReqT, typename RespT, typename Stub>
-struct CallBack{
-    virtual void OnDone(GrpcClient<ReqT, RespT, Stub> &c, const std::string &errMsg) = 0;
-    virtual ~CallBack() = default;
-};
-template <typename ReqT, typename RespT, typename Stub, typename T>
-struct CallBackT: public CallBack<ReqT, RespT, Stub>{
-    void OnDone(GrpcClient<ReqT, RespT, Stub> &c, const std::string &errMsg) override {
-        T &t = dynamic_cast<T&>(c);
-        callback_(t, errMsg);
-    }
-    std::function<void(T&, const std::string &errMsg)> callback_;
-};
-
-template <typename ReqT, typename RespT, typename Stub>
 class GrpcClient: public GrpcCoreCtxI, 
     public std::enable_shared_from_this<GrpcClient<ReqT, RespT, Stub>>{
 public:
@@ -43,7 +26,7 @@ public:
         if (!ok || !status_.ok()) {
             errMsg = "Grpc Client failed";
         }
-        onDone_->OnDone(*this, errMsg);
+        onDone_(*this, errMsg);
         ctx_->Clean();
     }
     ReqT req_;
@@ -56,9 +39,10 @@ protected:
     template <typename T>
     void doReq(const std::string &addr,
             std::function<void(T&, const std::string&)> &onDone) {
-        auto callback = std::make_shared<CallBackT<ReqT, RespT, Stub, T>>();
-        callback->callback_ = onDone;
-        onDone_ = callback;
+        onDone_ = [onDone](GrpcClient &c, const std::string &errMsg) {
+            T &t = dynamic_cast<T&>(c);
+            onDone(t, errMsg);
+        };
 
         auto cq = GrpcCore::GetInstance()->GetCompletionQueue().get();
         //todo stub manager
@@ -72,8 +56,8 @@ protected:
 private:
     grpc::Status status_;
     GrpcCoreCtx *ctx_ = nullptr;
+    std::function<void(GrpcClient&, const std::string &errMsg)> onDone_;
     //composition
-    std::shared_ptr<CallBack<ReqT, RespT, Stub>> onDone_;
     std::unique_ptr<grpc::ClientAsyncResponseReader<RespT>>
         responseReader_;
     grpc::ClientContext grpcContext_;
