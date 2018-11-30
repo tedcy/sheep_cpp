@@ -13,7 +13,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-g -O3 ${CMAKE_CXX_FLAGS}")
 
 set(CMAKE_MODULE_PATH ${SHEEP_PROJECT_SOURCE_DIR}/cmake)
 
-foreach (TARGET event_loop_test)
+foreach (TARGET event_loop_timer_test event_loop_stdin_test)
     aux_source_directory(${PROJECT_SOURCE_DIR}/../ ${TARGET}LIST_SRC)
     set(${TARGET}LIST_SRC ${${TARGET}LIST_SRC} ${TARGET}.cpp)
     add_executable(${TARGET} ${${TARGET}LIST_SRC})

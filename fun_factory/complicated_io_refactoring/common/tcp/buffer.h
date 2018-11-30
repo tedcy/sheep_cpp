@@ -3,8 +3,10 @@
 #include <vector>
 #include <cstdint>
 
+#include "small_packages.h"
+
 //Push and PopHead as queue
-class Buffer{
+class Buffer: public small_packages::noncopyable{
 public:
     Buffer();
 //for user
@@ -15,6 +17,8 @@ private:
 friend class TcpConnection;
     void Write(char *buf, uint64_t len);
     uint64_t Read(char *buf, uint64_t len);
+    uint64_t UpdateReadIndex(uint64_t len);
+
     void checkWriteSize(uint64_t len);
 
     uint64_t readIndex_ = 0;

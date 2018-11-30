@@ -9,16 +9,16 @@
 class Event;
 class Socket;
 
-class Acceptor: public small_packages::noncopyable {
+class Connector: public small_packages::noncopyable {
+using newConnectionHandlerT = std::function<
+    void(std::unique_ptr<Socket> &,std::shared_ptr<Event>)>;
 public:
-    Acceptor(EventLoop &loop,
+    Connector(EventLoop &loop,
             const std::string &addr, int port);
-    ~Acceptor();
-    void Listen(std::string &errMsg);
-    void SetNewConnectionHandler(
-            std::function<void(int fd)>);
+    void Connect(std::string &errMsg);
+    void SetNewConnectionHandler(newConnectionHandlerT);
 private:
-    void readHandler();
+    void writeHandler();
 
     //associated
     EventLoop &loop_;
@@ -28,5 +28,5 @@ private:
     int port_;
     std::shared_ptr<Event> event_;
     std::unique_ptr<Socket> socket_;
-    std::function<void(int fd)> newConnectionHandler_;
+    newConnectionHandlerT newConnectionHandler_;
 };

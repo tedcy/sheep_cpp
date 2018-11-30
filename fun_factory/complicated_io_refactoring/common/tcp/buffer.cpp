@@ -1,4 +1,5 @@
 #include "buffer.h"
+#include "log.h"
 
 Buffer::Buffer() :
     buffer_(InitSize_){
@@ -8,7 +9,9 @@ void Buffer::Push(char *buf, uint64_t len) {
     Write(buf, len);
 }
 uint64_t Buffer::PopHead(char *buf, uint64_t len) {
-    return Read(buf, len);
+    len = Read(buf, len);
+    len = UpdateReadIndex(len);
+    return len;
 }
 void Buffer::Write(char *buf, uint64_t len) {
     checkWriteSize(len);
@@ -17,6 +20,7 @@ void Buffer::Write(char *buf, uint64_t len) {
     writeIndex_ += len;
 }
 uint64_t Buffer::Read(char *buf, uint64_t len) {
+    //LOG(DEBUG) << readIndex_<< " " << writeIndex_;
     //readIndex can be <= writeIndex
     if (readIndex_ == writeIndex_) {
         return 0;
@@ -27,6 +31,9 @@ uint64_t Buffer::Read(char *buf, uint64_t len) {
     }
     std::copy(buffer_.begin() + readIndex_,
             buffer_.begin() + readIndex_ + len, buf);
+    return len;
+}
+uint64_t Buffer::UpdateReadIndex(uint64_t len) {
     readIndex_ += len;
     //read finish, reset indexs
     if (readIndex_ == writeIndex_) {

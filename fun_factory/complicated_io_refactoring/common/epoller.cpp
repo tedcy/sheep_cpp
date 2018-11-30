@@ -26,7 +26,24 @@ std::vector<std::shared_ptr<Event>> Epoller::Poll(
             break;
         }
         auto fd = pollEvent.data.fd;
-        auto event = events_[fd];
+        auto weakEvent = events_[fd];
+        auto event = weakEvent.lock();
+        if (!event) {
+            LOG(WARNING) << "event has been destoryed";
+            continue;
+        }
+        if (pollEvent.events & EPOLLIN) {
+            event->SetReadAble();
+        }else {
+            if (pollEvent.events & EPOLLOUT || 
+                pollEvent.events & EPOLLERR ||
+                pollEvent.events & EPOLLHUP) {
+                //TODO add event errable
+                event->SetWriteAble();
+            }else {
+                LOG(FATAL) << "can't access here " << pollEvent.events;
+            }
+        }
         events.push_back(event);
         i++;
     }
@@ -34,30 +51,28 @@ std::vector<std::shared_ptr<Event>> Epoller::Poll(
 }
 
 void Epoller::UpdateEvent(std::shared_ptr<Event> event) {
-    struct epoll_event epollEvent;
-    if (event->GetReadAble()) {
+    struct epoll_event epollEvent = {0};
+    if (event->GetReadNotify()) {
         epollEvent.events |= EPOLLIN;
     }
-    if (event->GetWriteAble()) {
+    if (event->GetWriteNotify()) {
         epollEvent.events |= EPOLLOUT;
     }
     int fd = event->GetFd();
     epollEvent.data.fd = fd;
-    //no flag, should remove
-    if (epollEvent.events == 0) {
-        if (events_[fd] == nullptr) {
-            LOG(FATAL) << "wtf bug";
-        }
-        events_[fd] = nullptr;
-        ::epoll_ctl(epollfd_, EPOLL_CTL_DEL, fd, &epollEvent);
-        return;
-    }
     //no exists but has flag, should add
-    if (events_[fd] == nullptr) {
+    if (events_[fd].lock() == nullptr) {
         events_[fd] = event;
         ::epoll_ctl(epollfd_, EPOLL_CTL_ADD, fd, &epollEvent);
         return;
     }
     //exists and has flag, modify
     ::epoll_ctl(epollfd_, EPOLL_CTL_MOD, fd, &epollEvent);
+}
+
+void Epoller::RemoveEvent(int fd) {
+    struct epoll_event epollEvent = {0};
+    epollEvent.data.fd = fd;
+    ::epoll_ctl(epollfd_, EPOLL_CTL_DEL, fd, &epollEvent);
+    return;
 }

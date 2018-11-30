@@ -11,6 +11,7 @@ public:
     virtual ~Poller() = default;
     virtual std::vector<std::shared_ptr<Event>> Poll(std::string&) = 0;
     virtual void UpdateEvent(std::shared_ptr<Event> event) = 0;
+    virtual void RemoveEvent(int fd) = 0;
 };
 
 class PollerFactory: public small_packages::noncopyable {

@@ -1,29 +1,18 @@
-#include "acceptor.h"
+#include "connector.h"
 #include "event.h"
 #include "socket.h"
 #include "log.h"
 
-Acceptor::Acceptor(EventLoop &loop,
+Connector::Connector(EventLoop &loop,
         const std::string &addr, int port) :
     loop_(loop),
-    addr_(addr), port_(port), 
+    addr_(addr), port_(port),
     socket_(new Socket){
 }
 
-Acceptor::~Acceptor() {
-}
-
-void Acceptor::Listen(std::string &errMsg) {
+void Connector::Connect(std::string &errMsg) {
     if (newConnectionHandler_ == nullptr) {
         errMsg = "invalid new connection handler";
-        return;
-    }
-    socket_->Bind(errMsg, addr_, port_);
-    if (!errMsg.empty()) {
-        return;
-    }
-    socket_->SetReuseAddr(errMsg);
-    if (!errMsg.empty()) {
         return;
     }
     socket_->SetNoblock(errMsg);
@@ -34,31 +23,37 @@ void Acceptor::Listen(std::string &errMsg) {
     if (!errMsg.empty()) {
         return;
     }
+    socket_->Connect(errMsg, addr_, port_);
+    if (!errMsg.empty()) {
+        return;
+    }
     event_ = std::make_shared<Event>(loop_, socket_->GetFd());
     std::weak_ptr<Event> weakEvent = event_;
-    event_->SetReadEvent([weakEvent, this](){
+    event_->SetWriteEvent([weakEvent, this](){
         auto event = weakEvent.lock();
         if (!event) {
             //when server destroyed but loop running
             LOG(WARNING) << "Acceptor has been destoryed";
             return;
         }
-        readHandler();
+        writeHandler();
     });
-    event_->EnableReadNotify();
-    socket_->Listen(errMsg);
+    event_->EnableWriteNotify();
 }
 
-void Acceptor::SetNewConnectionHandler(std::function<void(int fd)> handler) {
+void Connector::SetNewConnectionHandler(newConnectionHandlerT handler) {
     newConnectionHandler_ = handler;
 }
 
-void Acceptor::readHandler() {
+void Connector::writeHandler() {
     std::string errMsg;
-    auto fd = socket_->Accept(errMsg);
+    auto fd = socket_->CheckConnect(errMsg);
     if (!errMsg.empty()) {
-        LOG(ERROR) << errMsg;
+        //LOG(ERROR) << errMsg;
         return;
     }
-    newConnectionHandler_(fd);
+    event_->DisableWriteNotify();
+    //move socket_ and event_ to new connection
+    newConnectionHandler_(socket_, event_);
+    event_ = nullptr;
 }

@@ -1,15 +1,27 @@
 #include "tcp_connection.h"
 #include "socket.h"
 #include "event.h"
+#include "log.h"
 
 TcpConnection::TcpConnection(EventLoop &loop, int fd) :
     socket_(new Socket(fd)),
     event_(std::make_shared<Event>(loop, fd)){
 }
 
-void TcpConnection::Init(std::string &errMsg) {
-    if (messageHandler_ == nullptr) {
-        errMsg = "invalid message handler";
+TcpConnection::TcpConnection(EventLoop &loop,
+        std::unique_ptr<Socket> &socket,
+        std::shared_ptr<Event> event) :
+    socket_(std::move(socket)), 
+    event_(event){
+}
+
+TcpConnection::~TcpConnection() {
+    //LOG(DEBUG) << "~TcpConnection";
+}
+
+void TcpConnection::InitAccepted(std::string &errMsg) {
+    if (finishHandler_ == nullptr) {
+        errMsg = "invalid finish handler";
         return;
     }
     socket_->SetNoblock(errMsg);
@@ -20,15 +32,54 @@ void TcpConnection::Init(std::string &errMsg) {
     if (!errMsg.empty()) {
         return;
     }
-    //FIXME: not safe
-    event_->SetReadEvent([this](){
-                readHandler();
-            });
+    std::weak_ptr<TcpConnection> weakThis = shared_from_this();
+    event_->SetReadEvent([weakThis, this](){
+        auto realThis = weakThis.lock();
+        if (!realThis) {
+            LOG(WARNING) << "TcpConnection has been destoryed";
+            return;
+        }
+        readHandler();
+    });
     event_->EnableReadNotify();
 }
 
-void TcpConnection::SetMessageHandler(messageHandlerT handler) {
-    messageHandler_ = handler;
+void TcpConnection::InitConnected(std::string &errMsg) {
+    if (finishHandler_ == nullptr) {
+        errMsg = "invalid finish handler";
+        return;
+    }
+    std::weak_ptr<TcpConnection> weakThis = shared_from_this();
+    event_->SetReadEvent([weakThis, this](){
+        auto realThis = weakThis.lock();
+        if (!realThis) {
+            LOG(WARNING) << "TcpConnection has been destoryed";
+            return;
+        }
+        readHandler();
+    });
+    event_->EnableReadNotify();
+}
+
+void TcpConnection::AsyncRead(uint64_t expectSize,
+        readHandlerT handler) {
+    readedSize_ = 0;
+    expectSize_ = expectSize;
+    userReadHandler_ = handler;
+}
+
+void TcpConnection::AsyncWrite(writeHandlerT handler) {
+    userWriteHandler_ = handler;
+    std::weak_ptr<TcpConnection> weakThis = shared_from_this();
+    event_->SetWriteEvent([weakThis, this](){
+                auto realThis = weakThis.lock();
+                if (!realThis) {
+                    LOG(WARNING) << "TcpConnection has been destoryed";
+                    return;
+                }
+                writeHandler();
+            });
+    event_->EnableWriteNotify();
 }
 
 void TcpConnection::readHandler() {
@@ -36,6 +87,50 @@ void TcpConnection::readHandler() {
     //TODO buffer can be optimized to zero copy
     char buf[1024];
     auto count = socket_->Read(errMsg, buf, 1024);
+    if (!errMsg.empty()) {
+        //FIXME should close
+        userReadHandler_(errMsg, *this);
+        Finish(errMsg);
+        return;
+    }
+    if (count < 0) {
+        return;
+    }
+    //FIXME be closed
+    if (count == 0) {
+        Finish(errMsg);
+        return;
+    }
     ReadBuffer_.Write(buf, count);
-    messageHandler_(errMsg, *this);
+    readedSize_ += count;
+    if (readedSize_ >= expectSize_) {
+        userReadHandler_(errMsg, *this);
+        return;
+    }
+}
+
+void TcpConnection::writeHandler() {
+    std::string errMsg;
+    char buf[1024];
+    int64_t count = WriteBuffer_.Read(buf, 1024);
+    if (count == 0) {
+        userWriteHandler_(errMsg, *this);
+        event_->DisableWriteNotify();
+        return;
+    }
+    count = socket_->Write(errMsg, buf, count);
+    WriteBuffer_.UpdateReadIndex(count);
+    if (!errMsg.empty()) {
+        userWriteHandler_(errMsg, *this);
+        Finish(errMsg);
+        return;
+    }
+    if (count < 0) {
+        return;
+    }
+    //can't accessed
+}
+
+void TcpConnection::Finish(std::string &errMsg) {
+    finishHandler_(errMsg, shared_from_this());
 }

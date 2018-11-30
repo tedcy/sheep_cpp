@@ -18,13 +18,20 @@ public:
     void EnableWriteNotify();
     void DisableReadNotify();
     void DisableWriteNotify();
-    bool GetReadAble();
-    bool GetWriteAble();
+    bool GetReadNotify();
+    bool GetWriteNotify();
+    void SetReadAble() {
+        readAble_ = true;
+    }
+    void SetWriteAble() {
+        writeAble_ = true;
+    }
     int GetFd();
     void Do();
 
 private:
     void update();
+    void remove(int fd);
     //associated
     std::weak_ptr<Poller> poller_;
 
@@ -32,6 +39,8 @@ private:
     int fd_ = 0;
     bool readAble_ = false;
     bool writeAble_ = false;
+    bool readNotify_ = false;
+    bool writeNotify_ = false;
     std::function<void()> readCb_;
     std::function<void()> writeCb_;
 };

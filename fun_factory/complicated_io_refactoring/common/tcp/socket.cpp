@@ -76,7 +76,28 @@ void Socket::Connect(std::string &errMsg,
     initSaddr(&saddr, addr, port);
     auto result = ::connect(fd_, (struct sockaddr *)&saddr,
             sizeof(saddr));
+    if (result < 0) {
+        if(errno == EINPROGRESS) {
+            return;
+        }
+        formatErrMsg(errMsg, "connect", result);
+        return;
+    }
+    return;
 }
+
+int Socket::CheckConnect(std::string &errMsg) {
+    int error = 0;
+    socklen_t len = sizeof(error);
+    auto result = getsockopt(fd_, SOL_SOCKET, SO_ERROR,
+            &error, &len);
+    if (result < 0 || error) {
+        formatErrMsg(errMsg, "setsockopt SO_ERROR", result);
+        return result;
+    }
+    return fd_;
+}
+
 int Socket::Read(std::string &errMsg, char *buf, int len) {
     auto result = ::read(fd_, buf, len);
     if (result < 0) {

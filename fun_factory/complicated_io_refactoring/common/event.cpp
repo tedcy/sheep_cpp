@@ -9,9 +9,7 @@ Event::Event(EventLoop &loop, int fd):
 }
 
 Event::~Event() {
-    DisableReadNotify();
-    DisableWriteNotify();
-    update();
+    remove(fd_);
 }
 
 void Event::SetReadEvent(std::function<void()> cb) {
@@ -23,22 +21,22 @@ void Event::SetWriteEvent(std::function<void()> cb) {
 }
 
 void Event::EnableReadNotify() {
-    readAble_ = true;
+    readNotify_ = true;
     update();
 }
 
 void Event::EnableWriteNotify() {
-    writeAble_ = true;
+    writeNotify_ = true;
     update();
 }
 
 void Event::DisableReadNotify() {
-    readAble_ = false;
+    readNotify_ = false;
     update();
 }
 
 void Event::DisableWriteNotify() {
-    writeAble_ = false;
+    writeNotify_ = false;
     update();
 }
 
@@ -51,12 +49,21 @@ void Event::update() {
     poller->UpdateEvent(shared_from_this());
 }
 
-bool Event::GetReadAble() {
-    return readAble_;
+void Event::remove(int fd) {
+    auto poller = poller_.lock();
+    if (!poller) {
+        LOG(WARNING) << "poller destroyed";
+        return;
+    }
+    poller->RemoveEvent(fd);
 }
 
-bool Event::GetWriteAble() {
-    return writeAble_;
+bool Event::GetReadNotify() {
+    return readNotify_;
+}
+
+bool Event::GetWriteNotify() {
+    return writeNotify_;
 }
 
 int Event::GetFd() {
@@ -65,10 +72,12 @@ int Event::GetFd() {
 
 void Event::Do() {
     //TODO stale event
-    if (readAble_) {
+    if (readAble_ && readNotify_) {
         readCb_();
+        readAble_ = false;
     }
-    if (writeAble_) {
+    if (writeAble_ && writeNotify_) {
         writeCb_();
+        writeAble_ = false;
     }
 }
