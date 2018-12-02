@@ -1,14 +1,30 @@
 #include "timer_poller.h"
-#include "small_timer_factory.h"
 #include "event.h"
 #include "log.h"
+
+uint64_t UnixTimeSecond() {
+    std::chrono::time_point<std::chrono::system_clock,std::chrono::seconds> tp =
+        std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now());
+    auto tmp=std::chrono::duration_cast<std::chrono::seconds>(tp.time_since_epoch());
+    std::time_t timestamp = tmp.count();
+    //std::time_t timestamp = std::chrono::system_clock::to_time_t(tp);
+    return uint64_t(timestamp);
+}
+uint64_t UnixTimeMilliSecond() {
+    std::chrono::time_point<std::chrono::system_clock,std::chrono::milliseconds> tp =
+        std::chrono::time_point_cast<std::chrono::milliseconds>(std::chrono::system_clock::now());
+    auto tmp=std::chrono::duration_cast<std::chrono::milliseconds>(tp.time_since_epoch());
+    std::time_t timestamp = tmp.count();
+    //std::time_t timestamp = std::chrono::system_clock::to_time_t(tp);
+    return uint64_t(timestamp);
+}
 
 TimerPoller::TimerPoller() {
 }
 
 std::vector<std::shared_ptr<Event>> TimerPoller::Poll(std::string &errMsg) {
     std::vector<std::shared_ptr<Event>> events;
-    auto now = small_timer::UnixTimeMilliSecond();
+    auto now = UnixTimeMilliSecond();
     auto endIter = events_.upper_bound(now);
     for (auto iter = events_.begin();iter != endIter;iter++) {
         for (auto &weakEventPair : *iter->second) {

@@ -6,6 +6,9 @@
 #include <map>
 #include <set>
 
+uint64_t UnixTimeSecond();
+uint64_t UnixTimeMilliSecond();
+
 class TimerPoller: public Poller {
 public:
     TimerPoller(); 

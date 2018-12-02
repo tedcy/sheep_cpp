@@ -2,6 +2,7 @@
 #include "event.h"
 #include "socket.h"
 #include "log.h"
+#include "epoller.h"
 
 Acceptor::Acceptor(EventLoop &loop,
         const std::string &addr, int port) :
@@ -34,7 +35,7 @@ void Acceptor::Listen(std::string &errMsg) {
     if (!errMsg.empty()) {
         return;
     }
-    event_ = std::make_shared<Event>(loop_, socket_->GetFd());
+    event_ = std::make_shared<Event>(loop_, EpollerFactory::Get()->GetPollerType(), socket_->GetFd());
     std::weak_ptr<Event> weakEvent = event_;
     event_->SetReadEvent([weakEvent, this](){
         auto event = weakEvent.lock();

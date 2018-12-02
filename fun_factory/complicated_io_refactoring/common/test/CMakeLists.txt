@@ -30,10 +30,6 @@ foreach (TARGET event_loop_timer_test event_loop_timerfd_test event_loop_stdin_t
     include_directories(${TARGET} ${small_packages_INCLUDE_DIRS})
     target_link_libraries(${TARGET} ${small_packages_LIBRARIES})
     
-    find_package(small_timer REQUIRED)
-    include_directories(${TARGET} ${small_timer_INCLUDE_DIRS})
-    target_link_libraries(${TARGET} ${small_timer_LIBRARIES})
-
     find_package(log REQUIRED)
     include_directories(${TARGET} ${log_INCLUDE_DIRS})
     target_link_libraries(${TARGET} ${log_LIBRARIES})

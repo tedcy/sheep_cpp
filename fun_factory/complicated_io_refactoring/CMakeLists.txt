@@ -33,10 +33,6 @@ foreach (TARGET server client)
     include_directories(${TARGET} ${small_packages_INCLUDE_DIRS})
     target_link_libraries(${TARGET} ${small_packages_LIBRARIES})
     
-    find_package(small_timer REQUIRED)
-    include_directories(${TARGET} ${small_timer_INCLUDE_DIRS})
-    target_link_libraries(${TARGET} ${small_timer_LIBRARIES})
-    
     find_package(log REQUIRED)
     include_directories(${TARGET} ${log_INCLUDE_DIRS})
     target_link_libraries(${TARGET} ${log_LIBRARIES})
