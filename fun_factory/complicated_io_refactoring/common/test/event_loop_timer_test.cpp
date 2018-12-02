@@ -1,24 +1,18 @@
-#include <sys/timerfd.h>
-#include <unistd.h>
-#include "event_loop.h"
-#include "event.h"
+#include "timer.h"
 #include "log.h"
 
 int main() {
     EventLoop loop;
-    int timerfd = ::timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
-    auto event = std::make_shared<Event>(loop, timerfd);
-    event->SetReadEvent([&loop, event](){
-                LOG(INFO) << "hello world";
-                event->DisableReadNotify();
-                loop.Stop();
-            });
-    event->EnableReadNotify();
-
-    struct itimerspec howlong = {0};
-    howlong.it_value.tv_sec = 1;
-    ::timerfd_settime(timerfd, 0, &howlong, nullptr);
-
+    Timer timer(loop);
+    timer.AsyncWait(5000, [&loop](const std::string &errMsg) {
+        if(!errMsg.empty()) {
+            LOG(WARNING) << errMsg;
+            loop.Stop();
+            return;
+        }
+        LOG(INFO) << "hello world";
+        loop.Stop();
+    });
+    timer.Cancel();
     loop.Wait();
-    ::close(timerfd);
 }

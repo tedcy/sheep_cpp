@@ -2,14 +2,23 @@
 #include "poller.h"
 #include "event_loop.h"
 #include "log.h"
+#include "event_id.h"
 
-Event::Event(EventLoop &loop, int fd):
-    poller_(loop.GetPoller()), 
-    fd_(fd){
+Event::Event(EventLoop &loop, uint64_t type, int64_t fd):
+    poller_(loop.GetPoller(type)), 
+    fd_(fd), id_(EventIdCreator::Get()->Create()){
 }
 
 Event::~Event() {
-    remove(fd_);
+}
+
+void Event::Clean() {
+    auto poller = poller_.lock();
+    if (!poller) {
+        LOG(WARNING) << "poller destroyed";
+        return;
+    }
+    poller->RemoveEvent(shared_from_this());
 }
 
 void Event::SetReadEvent(std::function<void()> cb) {
@@ -49,15 +58,6 @@ void Event::update() {
     poller->UpdateEvent(shared_from_this());
 }
 
-void Event::remove(int fd) {
-    auto poller = poller_.lock();
-    if (!poller) {
-        LOG(WARNING) << "poller destroyed";
-        return;
-    }
-    poller->RemoveEvent(fd);
-}
-
 bool Event::GetReadNotify() {
     return readNotify_;
 }
@@ -66,7 +66,11 @@ bool Event::GetWriteNotify() {
     return writeNotify_;
 }
 
-int Event::GetFd() {
+int64_t Event::GetFd() {
+    return fd_;
+}
+
+int64_t Event::GetId() {
     return fd_;
 }
 

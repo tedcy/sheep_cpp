@@ -10,8 +10,9 @@ class EventLoop;
 class Event: public small_packages::noncopyable,
     public std::enable_shared_from_this<Event>{
 public:
-    Event(EventLoop &loop, int fd);
+    Event(EventLoop &loop, uint64_t type, int64_t fd);
     ~Event();
+    void Clean();
     void SetReadEvent(std::function<void()>);
     void SetWriteEvent(std::function<void()>);
     void EnableReadNotify();
@@ -26,17 +27,20 @@ public:
     void SetWriteAble() {
         writeAble_ = true;
     }
-    int GetFd();
+    int64_t GetFd();
+    int64_t GetId();
     void Do();
 
 private:
     void update();
-    void remove(int fd);
     //associated
     std::weak_ptr<Poller> poller_;
 
     //composition
-    int fd_ = 0;
+    //not only one
+    int64_t fd_ = 0;
+    //only one
+    int64_t id_ = 0;
     bool readAble_ = false;
     bool writeAble_ = false;
     bool readNotify_ = false;

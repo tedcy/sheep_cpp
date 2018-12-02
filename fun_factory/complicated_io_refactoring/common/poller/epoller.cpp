@@ -15,7 +15,7 @@ std::vector<std::shared_ptr<Event>> Epoller::Poll(
     std::vector<std::shared_ptr<Event>> events;
     int num;
     num = ::epoll_wait(epollfd_, &(*pollEvents_.begin()),
-            MaxSize_, -1);
+            MaxSize_, PollerMaxTime_);
     if (num < 0) {
         errMsg = "epoll_wait returns " + std::to_string(num);
         return events;
@@ -70,7 +70,8 @@ void Epoller::UpdateEvent(std::shared_ptr<Event> event) {
     ::epoll_ctl(epollfd_, EPOLL_CTL_MOD, fd, &epollEvent);
 }
 
-void Epoller::RemoveEvent(int fd) {
+void Epoller::RemoveEvent(std::shared_ptr<Event> event) {
+    auto fd = event->GetFd();
     struct epoll_event epollEvent = {0};
     epollEvent.data.fd = fd;
     ::epoll_ctl(epollfd_, EPOLL_CTL_DEL, fd, &epollEvent);

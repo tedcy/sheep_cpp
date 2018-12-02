@@ -2,10 +2,11 @@
 #include "socket.h"
 #include "event.h"
 #include "log.h"
+#include "epoller.h"
 
 TcpConnection::TcpConnection(EventLoop &loop, int fd) :
     socket_(new Socket(fd)),
-    event_(std::make_shared<Event>(loop, fd)){
+    event_(std::make_shared<Event>(loop, EpollerFactory::Get()->GetPollerType(), fd)){
 }
 
 TcpConnection::TcpConnection(EventLoop &loop,

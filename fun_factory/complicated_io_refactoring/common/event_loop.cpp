@@ -1,31 +1,39 @@
 #include "event_loop.h"
 #include "event.h"
 #include "epoller.h"
+#include "timer_poller.h"
 #include "log.h"
 
-EventLoop::EventLoop() :
-    poller_(EpollerFactory::Get()->Create()){
+EventLoop::EventLoop(){
+    AddPoller(EpollerFactory::Get());
+    AddPoller(TimerPollerFactory::Get());
 }
 
-EventLoop::EventLoop(PollerFactory *pollerFactory) :
-    poller_(pollerFactory->Create()){
+void EventLoop::AddPoller(PollerFactory *pollerFactory) {
+    pollers_.insert({pollerFactory->GetPollerType(), pollerFactory->Create()});
 }
 
-std::weak_ptr<Poller> EventLoop::GetPoller() {
-    return poller_;
+std::weak_ptr<Poller> EventLoop::GetPoller(uint64_t pollerType) {
+    return pollers_[pollerType];
 }
 
 void EventLoop::loop() {
     for (;!stop_;) {
-        std::string errMsg;
-        auto events = poller_->Poll(errMsg);
-        if (!errMsg.empty()) {
-            LOG(ERROR) << errMsg;
-            continue;
+        for (auto &pollerPair: pollers_) {
+            doPoller(pollerPair.second); 
         }
-        for (auto &event: events) {
-            event->Do();
-        }
+    }
+}
+
+void EventLoop::doPoller(std::shared_ptr<Poller> &poller) {
+    std::string errMsg;
+    auto events = poller->Poll(errMsg);
+    if (!errMsg.empty()) {
+        LOG(ERROR) << errMsg;
+        return;
+    }
+    for (auto &event: events) {
+        event->Do();
     }
 }
 

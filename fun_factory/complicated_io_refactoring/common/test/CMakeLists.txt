@@ -13,17 +13,27 @@ set(CMAKE_CXX_FLAGS_RELEASE "-g -O3 ${CMAKE_CXX_FLAGS}")
 
 set(CMAKE_MODULE_PATH ${SHEEP_PROJECT_SOURCE_DIR}/cmake)
 
-foreach (TARGET event_loop_timer_test event_loop_stdin_test)
+foreach (TARGET event_loop_timer_test event_loop_timerfd_test event_loop_stdin_test)
     aux_source_directory(${PROJECT_SOURCE_DIR}/../ ${TARGET}LIST_SRC)
+    aux_source_directory(${PROJECT_SOURCE_DIR}/../tcp ${TARGET}LIST_SRC)
+    aux_source_directory(${PROJECT_SOURCE_DIR}/../timer ${TARGET}LIST_SRC)
+    aux_source_directory(${PROJECT_SOURCE_DIR}/../poller ${TARGET}LIST_SRC)
     set(${TARGET}LIST_SRC ${${TARGET}LIST_SRC} ${TARGET}.cpp)
     add_executable(${TARGET} ${${TARGET}LIST_SRC})
 
     include_directories(${PROJECT_SOURCE_DIR}/../)
+    include_directories(${PROJECT_SOURCE_DIR}/../tcp)
+    include_directories(${PROJECT_SOURCE_DIR}/../timer)
+    include_directories(${PROJECT_SOURCE_DIR}/../poller)
 
     find_package(small_packages REQUIRED)
     include_directories(${TARGET} ${small_packages_INCLUDE_DIRS})
     target_link_libraries(${TARGET} ${small_packages_LIBRARIES})
     
+    find_package(small_timer REQUIRED)
+    include_directories(${TARGET} ${small_timer_INCLUDE_DIRS})
+    target_link_libraries(${TARGET} ${small_timer_LIBRARIES})
+
     find_package(log REQUIRED)
     include_directories(${TARGET} ${log_INCLUDE_DIRS})
     target_link_libraries(${TARGET} ${log_LIBRARIES})
