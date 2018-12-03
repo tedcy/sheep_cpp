@@ -3,6 +3,8 @@
 #include <string>
 #include "small_packages.h"
 
+namespace sheep{
+namespace net{
 class Socket: public small_packages::noncopyable{
 public:
     Socket();
@@ -45,3 +47,5 @@ private:
 
     int fd_;
 };
+}
+}

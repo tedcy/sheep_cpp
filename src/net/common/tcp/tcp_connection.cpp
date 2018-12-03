@@ -4,6 +4,8 @@
 #include "log.h"
 #include "epoller.h"
 
+namespace sheep{
+namespace net{
 TcpConnection::TcpConnection(EventLoop &loop, int fd) :
     socket_(new Socket(fd)),
     event_(std::make_shared<Event>(loop, EpollerFactory::Get()->GetPollerType(), fd)){
@@ -134,4 +136,6 @@ void TcpConnection::writeHandler() {
 
 void TcpConnection::Finish(std::string &errMsg) {
     finishHandler_(errMsg, shared_from_this());
+}
+}
 }

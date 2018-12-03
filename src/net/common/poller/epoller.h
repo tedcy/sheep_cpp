@@ -1,9 +1,12 @@
 #pragma once
 
 #include "poller.h"
+#include <sys/epoll.h>
 #include <memory>
 #include <vector>
 
+namespace sheep{
+namespace net{
 class Epoller: public Poller{
 public:
     Epoller(); 
@@ -33,3 +36,5 @@ public:
         return p;
     }
 };
+}
+}

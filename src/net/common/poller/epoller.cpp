@@ -2,8 +2,9 @@
 
 #include "event.h"
 #include "log.h"
-#include <sys/epoll.h>
 
+namespace sheep{
+namespace net{
 Epoller::Epoller() :
     pollEvents_(MaxSize_),
     events_(MaxSize_),
@@ -76,4 +77,6 @@ void Epoller::RemoveEvent(std::shared_ptr<Event> event) {
     epollEvent.data.fd = fd;
     ::epoll_ctl(epollfd_, EPOLL_CTL_DEL, fd, &epollEvent);
     return;
+}
+}
 }

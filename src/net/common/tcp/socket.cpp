@@ -23,6 +23,8 @@
 
 #include "log.h"
 
+namespace sheep{
+namespace net{
 Socket::Socket():
     fd_(::socket(AF_INET, SOCK_STREAM, 0)){
     if (fd_ < 0) {
@@ -202,4 +204,6 @@ int Socket::Accept(std::string &errMsg) {
 
 int Socket::GetFd() {
     return fd_;
+}
+}
 }

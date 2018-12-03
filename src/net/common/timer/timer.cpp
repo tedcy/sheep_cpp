@@ -3,6 +3,8 @@
 #include "log.h"
 #include "timer_poller.h"
 
+namespace sheep{
+namespace net{
 Timer::Timer(EventLoop &loop) :
     loop_(loop){
 }
@@ -30,4 +32,6 @@ void Timer::Cancel() {
     }
     event_->DisableReadNotify();
     handler_("Timer Canceled");
+}
+}
 }

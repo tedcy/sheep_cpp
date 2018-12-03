@@ -1,6 +1,8 @@
 #include "buffer.h"
 #include "log.h"
 
+namespace sheep{
+namespace net{
 Buffer::Buffer() :
     buffer_(InitSize_){
 }
@@ -44,4 +46,6 @@ uint64_t Buffer::UpdateReadIndex(uint64_t len) {
 }
 void Buffer::checkWriteSize(uint64_t len) {
     //TODO delete unuse readData if need reverse
+}
+}
 }

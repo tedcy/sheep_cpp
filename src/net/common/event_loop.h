@@ -5,6 +5,8 @@
 #include <memory>
 #include <map>
 
+namespace sheep{
+namespace net{
 class EventLoop: public small_packages::noncopyable {
 public:
     EventLoop();
@@ -21,3 +23,5 @@ friend class Event;
     std::map<uint64_t, std::shared_ptr<Poller>> pollers_;
     bool stop_ = false;
 };
+}
+}

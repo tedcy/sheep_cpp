@@ -5,6 +5,8 @@
 #include "small_packages.h"
 #include "buffer.h"
 
+namespace sheep{
+namespace net{
 class Event;
 class EventLoop;
 class Socket;
@@ -54,3 +56,5 @@ private:
     std::unique_ptr<Socket> socket_;
     std::shared_ptr<Event> event_;
 };
+}
+}

@@ -2,6 +2,8 @@
 #include "event.h"
 #include "log.h"
 
+namespace sheep{
+namespace net{
 uint64_t UnixTimeSecond() {
     std::chrono::time_point<std::chrono::system_clock,std::chrono::seconds> tp =
         std::chrono::time_point_cast<std::chrono::seconds>(std::chrono::system_clock::now());
@@ -70,4 +72,6 @@ void TimerPoller::RemoveEvent(std::shared_ptr<Event> event) {
     }
     //delete element in map
     map->erase(id);
+}
+}
 }

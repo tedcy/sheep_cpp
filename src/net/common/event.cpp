@@ -4,6 +4,8 @@
 #include "log.h"
 #include "event_id.h"
 
+namespace sheep{
+namespace net{
 Event::Event(EventLoop &loop, uint64_t type, int64_t fd):
     poller_(loop.GetPoller(type)), 
     fd_(fd), id_(EventIdCreator::Get()->Create()){
@@ -84,4 +86,6 @@ void Event::Do() {
         writeCb_();
         writeAble_ = false;
     }
+}
+}
 }

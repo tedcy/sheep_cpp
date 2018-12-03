@@ -6,6 +6,8 @@
 
 #include "small_packages.h"
 
+namespace sheep{
+namespace net{
 class Event;
 class Socket;
 
@@ -30,3 +32,5 @@ private:
     std::unique_ptr<Socket> socket_;
     newConnectionHandlerT newConnectionHandler_;
 };
+}
+}

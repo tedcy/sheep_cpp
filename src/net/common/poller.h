@@ -4,6 +4,8 @@
 #include <memory>
 #include "small_packages.h"
 
+namespace sheep{
+namespace net{
 class Event;
 
 class Poller: public small_packages::noncopyable {
@@ -20,3 +22,5 @@ public:
     virtual uint64_t GetPollerType() = 0;
     virtual std::unique_ptr<Poller> Create() = 0;
 };
+}
+}

@@ -4,6 +4,8 @@
 #include "log.h"
 #include "epoller.h"
 
+namespace sheep{
+namespace net{
 Acceptor::Acceptor(EventLoop &loop,
         const std::string &addr, int port) :
     loop_(loop),
@@ -62,4 +64,6 @@ void Acceptor::readHandler() {
         return;
     }
     newConnectionHandler_(fd);
+}
+}
 }

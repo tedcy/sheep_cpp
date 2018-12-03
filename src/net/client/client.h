@@ -6,6 +6,8 @@
 
 #include "small_packages.h"
 
+namespace sheep{
+namespace net{
 class Connector;
 
 class Client: public small_packages::noncopyable{
@@ -29,3 +31,5 @@ private:
 
     std::shared_ptr<TcpConnection> connection_;
 };
+}
+}

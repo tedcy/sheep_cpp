@@ -4,6 +4,8 @@
 #include "log.h"
 #include "epoller.h"
 
+namespace sheep{
+namespace net{
 Connector::Connector(EventLoop &loop,
         const std::string &addr, int port) :
     loop_(loop),
@@ -57,4 +59,6 @@ void Connector::writeHandler() {
     //move socket_ and event_ to new connection
     newConnectionHandler_(socket_, event_);
     event_ = nullptr;
+}
+}
 }

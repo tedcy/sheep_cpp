@@ -5,6 +5,8 @@
 #include <memory>
 #include "log.h"
 
+namespace sheep{
+namespace net{
 Client::Client(EventLoop &loop,
             const std::string &addr, int port) :
     loop_(loop), 
@@ -54,4 +56,6 @@ void Client::newConnectionHandler(std::unique_ptr<Socket> &socket,
         return;
     }
     connectedHandler_(errMsg, *connection_);
+}
+}
 }

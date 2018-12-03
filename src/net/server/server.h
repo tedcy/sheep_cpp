@@ -5,6 +5,8 @@
 #include "small_packages.h"
 #include <set>
 
+namespace sheep{
+namespace net{
 class Acceptor;
 
 class Server: public small_packages::noncopyable{
@@ -29,3 +31,5 @@ private:
     using TcpConnectionSet = std::set<std::shared_ptr<TcpConnection>>;
     std::shared_ptr<TcpConnectionSet> connections_;
 };
+}
+}

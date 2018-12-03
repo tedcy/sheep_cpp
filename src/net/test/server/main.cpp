@@ -1,25 +1,25 @@
-#include "server.h"
+#include "net.h"
 #include "log.h"
 
 int main(){
     std::string errMsg;
     
-    EventLoop loop;
+    sheep::net::EventLoop loop;
 
-    Server server(loop, "127.0.0.1", 8888);
-    server.SetConnectedHandler([](std::string &errMsg, TcpConnection &connection) {
+    sheep::net::Server server(loop, "127.0.0.1", 8888);
+    server.SetConnectedHandler([](std::string &errMsg, sheep::net::TcpConnection &connection) {
         if(!errMsg.empty()) {
             LOG(FATAL) << errMsg;
         }
         LOG(INFO) << "connected";
         connection.AsyncRead(100, [](std::string &errMsg,
-        TcpConnection &connection){
+        sheep::net::TcpConnection &connection){
             LOG(INFO) << "readed";
             char buf[100];
             connection.ReadBuffer_.PopHead(buf, 100);
             connection.WriteBuffer_.Push(buf, 100);
             connection.AsyncWrite([](std::string &errMsg,
-            TcpConnection &connection) {
+            sheep::net::TcpConnection &connection) {
                 LOG(INFO) << "wrote";
                 //connection.Finish(errMsg);
             });

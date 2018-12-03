@@ -4,6 +4,8 @@
 #include "timer_poller.h"
 #include "log.h"
 
+namespace sheep{
+namespace net{
 EventLoop::EventLoop(){
     AddPoller(EpollerFactory::Get());
     AddPoller(TimerPollerFactory::Get());
@@ -43,4 +45,6 @@ void EventLoop::Wait() {
 
 void EventLoop::Stop() {
     stop_ = true;
+}
+}
 }

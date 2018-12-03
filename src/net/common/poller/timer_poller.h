@@ -6,6 +6,8 @@
 #include <map>
 #include <set>
 
+namespace sheep{
+namespace net{
 uint64_t UnixTimeSecond();
 uint64_t UnixTimeMilliSecond();
 
@@ -39,3 +41,5 @@ public:
         return p;
     }
 };
+}
+}

@@ -5,6 +5,8 @@
 
 #include "small_packages.h"
 
+namespace sheep{
+namespace net{
 //Push and PopHead as queue
 class Buffer: public small_packages::noncopyable{
 public:
@@ -26,3 +28,5 @@ friend class TcpConnection;
     static const int InitSize_ = 1024;
     std::vector<char> buffer_;
 };
+}
+}

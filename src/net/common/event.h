@@ -4,6 +4,8 @@
 #include "small_packages.h"
 #include <memory>
 
+namespace sheep{
+namespace net{
 class Poller;
 class EventLoop;
 
@@ -48,3 +50,5 @@ private:
     std::function<void()> readCb_;
     std::function<void()> writeCb_;
 };
+}
+}

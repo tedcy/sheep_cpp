@@ -5,6 +5,8 @@
 #include <memory>
 #include "event_loop.h"
 
+namespace sheep{
+namespace net{
 class Event;
 
 class Timer{
@@ -19,3 +21,5 @@ private:
     timerHandlerT handler_;
     std::shared_ptr<Event> event_;
 };
+}
+}

@@ -5,6 +5,8 @@
 #include <memory>
 #include "log.h"
 
+namespace sheep{
+namespace net{
 Server::Server(EventLoop &loop,
        const std::string &addr, int fd) :
     loop_(loop),
@@ -57,4 +59,6 @@ void Server::newConnectionHandler(int fd) {
     }
     connectedHandler_(errMsg, *connection);
     connections_->insert(connection);
+}
+}
 }
