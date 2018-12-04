@@ -2,6 +2,7 @@
 #include "event.h"
 #include "epoller.h"
 #include "timer_poller.h"
+#include "asyncer_poller.h"
 #include "log.h"
 
 namespace sheep{
@@ -9,6 +10,7 @@ namespace net{
 EventLoop::EventLoop(){
     AddPoller(EpollerFactory::Get());
     AddPoller(TimerPollerFactory::Get());
+    AddPoller(AsyncerPollerFactory::Get());
 }
 
 void EventLoop::AddPoller(PollerFactory *pollerFactory) {

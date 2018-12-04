@@ -32,7 +32,7 @@ int main(){
         }
         LOG(INFO) << "disconnected";
     });
-    server.Init(errMsg);
+    server.Serve(errMsg);
     if (!errMsg.empty()) {
         LOG(FATAL) << errMsg;
     }

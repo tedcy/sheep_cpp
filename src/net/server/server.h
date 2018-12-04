@@ -16,7 +16,7 @@ using disconnectedHandlerT = std::function<void(std::string &errMsg)>;
 public:
     Server(EventLoop &loop, 
             const std::string &addr, int fd);
-    void Init(std::string &errMsg);
+    void Serve(std::string &errMsg);
     void SetConnectedHandler(connectedHandlerT);
     void SetDisconnectedHandler(disconnectedHandlerT);
 private:

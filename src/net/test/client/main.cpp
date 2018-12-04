@@ -34,7 +34,7 @@ int main(){
         LOG(INFO) << "disconnected";
         loop.Stop();
     });
-    client.Init(errMsg);
+    client.AsyncConnect(errMsg);
     if (!errMsg.empty()) {
         LOG(FATAL) << errMsg;
     }

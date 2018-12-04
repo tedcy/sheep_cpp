@@ -13,10 +13,11 @@ set(CMAKE_CXX_FLAGS_RELEASE "-g -O3 ${CMAKE_CXX_FLAGS}")
 
 set(CMAKE_MODULE_PATH ${SHEEP_PROJECT_SOURCE_DIR}/cmake)
 
-foreach (TARGET event_loop_timer_test event_loop_timerfd_test event_loop_stdin_test)
+foreach (TARGET event_loop_timer_test event_loop_timerfd_test event_loop_stdin_test event_loop_asyncer_test)
     aux_source_directory(${PROJECT_SOURCE_DIR}/../ ${TARGET}LIST_SRC)
     aux_source_directory(${PROJECT_SOURCE_DIR}/../tcp ${TARGET}LIST_SRC)
     aux_source_directory(${PROJECT_SOURCE_DIR}/../timer ${TARGET}LIST_SRC)
+    aux_source_directory(${PROJECT_SOURCE_DIR}/../asyncer ${TARGET}LIST_SRC)
     aux_source_directory(${PROJECT_SOURCE_DIR}/../poller ${TARGET}LIST_SRC)
     set(${TARGET}LIST_SRC ${${TARGET}LIST_SRC} ${TARGET}.cpp)
     add_executable(${TARGET} ${${TARGET}LIST_SRC})
@@ -24,6 +25,7 @@ foreach (TARGET event_loop_timer_test event_loop_timerfd_test event_loop_stdin_t
     include_directories(${PROJECT_SOURCE_DIR}/../)
     include_directories(${PROJECT_SOURCE_DIR}/../tcp)
     include_directories(${PROJECT_SOURCE_DIR}/../timer)
+    include_directories(${PROJECT_SOURCE_DIR}/../asyncer)
     include_directories(${PROJECT_SOURCE_DIR}/../poller)
 
     find_package(small_packages REQUIRED)

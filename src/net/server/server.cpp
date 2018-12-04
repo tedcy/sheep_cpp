@@ -14,7 +14,7 @@ Server::Server(EventLoop &loop,
     connections_(std::make_shared<TcpConnectionSet>()){
 }
 
-void Server::Init(std::string &errMsg) {
+void Server::Serve(std::string &errMsg) {
     if (connectedHandler_ == nullptr) {
         errMsg = "invliad connectedHandler";
         return;

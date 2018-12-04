@@ -36,7 +36,7 @@ void Connector::Connect(std::string &errMsg) {
         auto event = weakEvent.lock();
         if (!event) {
             //when server destroyed but loop running
-            LOG(WARNING) << "Acceptor has been destoryed";
+            LOG(WARNING) << "Connector has been destoryed";
             return;
         }
         writeHandler();

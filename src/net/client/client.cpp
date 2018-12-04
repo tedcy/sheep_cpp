@@ -12,12 +12,12 @@ Client::Client(EventLoop &loop,
     loop_(loop), 
     connector_(std::make_shared<Connector>(loop, addr, port)){
 }
-void Client::Init(std::string &errMsg) {
+void Client::AsyncConnect(std::string &errMsg) {
     if (connectedHandler_ == nullptr) {
         errMsg = "invliad connectedHandler";
         return;
     }
-    //safe, connector is composition by server
+    //safe, connector is composition by client
     connector_->SetNewConnectionHandler(
     [this](std::unique_ptr<Socket> &socket, std::shared_ptr<Event> event){
         newConnectionHandler(socket, event);

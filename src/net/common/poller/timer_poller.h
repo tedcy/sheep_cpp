@@ -24,6 +24,7 @@ private:
             std::map<int64_t, std::weak_ptr<Event>>
             >
             > events_;
+    //check if exists
     std::set<int64_t> eventSet_;
 };
 

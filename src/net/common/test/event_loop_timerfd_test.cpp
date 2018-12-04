@@ -6,9 +6,10 @@
 #include "epoller.h"
 
 int main() {
-    EventLoop loop;
+    sheep::net::EventLoop loop;
     int timerfd = ::timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
-    auto event = std::make_shared<Event>(loop, EpollerFactory::Get()->GetPollerType(), timerfd);
+    auto event = std::make_shared<sheep::net::Event>(loop, 
+            sheep::net::EpollerFactory::Get()->GetPollerType(), timerfd);
     event->SetReadEvent([&loop, event](){
                 LOG(INFO) << "hello world";
                 event->DisableReadNotify();

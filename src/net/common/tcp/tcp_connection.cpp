@@ -91,15 +91,15 @@ void TcpConnection::readHandler() {
     char buf[1024];
     auto count = socket_->Read(errMsg, buf, 1024);
     if (!errMsg.empty()) {
-        //FIXME should close
-        userReadHandler_(errMsg, *this);
+        if (userReadHandler_ != nullptr) {
+            userReadHandler_(errMsg, *this);
+        }
         Finish(errMsg);
         return;
     }
     if (count < 0) {
         return;
     }
-    //FIXME be closed
     if (count == 0) {
         Finish(errMsg);
         return;
@@ -107,7 +107,9 @@ void TcpConnection::readHandler() {
     ReadBuffer_.Write(buf, count);
     readedSize_ += count;
     if (readedSize_ >= expectSize_) {
-        userReadHandler_(errMsg, *this);
+        if (userReadHandler_ != nullptr) {
+            userReadHandler_(errMsg, *this);
+        }
         return;
     }
 }

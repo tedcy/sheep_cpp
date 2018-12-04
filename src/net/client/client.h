@@ -17,7 +17,7 @@ using disconnectedHandlerT = std::function<void(std::string &errMsg)>;
 public:
     Client(EventLoop &loop,
             const std::string &addr, int port);
-    void Init(std::string &errMsg);
+    void AsyncConnect(std::string &errMsg);
     void SetConnectedHandler(connectedHandlerT);
     void SetDisconnectedHandler(disconnectedHandlerT);
 private:
