@@ -8,11 +8,12 @@
 namespace sheep{
 namespace net{
 class Acceptor;
+class Asyncer;
 
 class Server: public small_packages::noncopyable{
-using connectedHandlerT = std::function<void(std::string &errMsg,
+using connectedHandlerT = std::function<void(const std::string &errMsg,
         TcpConnection&)>;
-using disconnectedHandlerT = std::function<void(std::string &errMsg)>;
+using disconnectedHandlerT = std::function<void(const std::string &errMsg)>;
 public:
     Server(EventLoop &loop, 
             const std::string &addr, int fd);
@@ -20,11 +21,16 @@ public:
     void SetConnectedHandler(connectedHandlerT);
     void SetDisconnectedHandler(disconnectedHandlerT);
 private:
+    void connectedHandler(const std::string &errMsg, TcpConnection &connection);
+    void disconnectedHandler(const std::string &errMsg);
     void newConnectionHandler(int fd);
     EventLoop &loop_;
 
     //composition
+    std::shared_ptr<small_lock::LockI> lock_;
+    bool serveCalled_ = false;
     std::shared_ptr<Acceptor> acceptor_;
+    std::shared_ptr<Asyncer> asyncer_;
     connectedHandlerT connectedHandler_;
     disconnectedHandlerT disconnectedHandler_;
 

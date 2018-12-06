@@ -4,58 +4,96 @@
 #include "socket.h"
 #include <memory>
 #include "log.h"
+#include "asyncer.h"
 
 namespace sheep{
 namespace net{
 Client::Client(EventLoop &loop,
             const std::string &addr, int port) :
     loop_(loop), 
+    lock_(small_lock::MakeLock()),
     connector_(std::make_shared<Connector>(loop, addr, port)){
 }
+
+//any thread
+//connectCalled_,connectAsyncer_ add lock, conflict with SetDisconnectedHandler
 void Client::AsyncConnect(std::string &errMsg) {
-    if (connectedHandler_ == nullptr) {
-        errMsg = "invliad connectedHandler";
+    small_lock::UniqueGuard guard(lock_);
+    connectCalled_ = true;
+    if (!disconnectedHandler_) {
+        errMsg = "invalid disconnected handler";
         return;
     }
-    //safe, connector is composition by client
-    connector_->SetNewConnectionHandler(
-    [this](std::unique_ptr<Socket> &socket, std::shared_ptr<Event> event){
-        newConnectionHandler(socket, event);
+    connectAsyncer_ = std::make_shared<Asyncer>(loop_);
+    connectAsyncer_->AsyncDo([this](const std::string &argErrMsg){
+        //loop thread
+        small_lock::UniqueGuard guard(lock_);
+        if(!argErrMsg.empty()) {
+            disconnectedHandler_(argErrMsg);
+            connectAsyncer_ = nullptr;
+            return;
+        }
+        std::string errMsg;
+        //safe, connector is composition by client
+        connector_->SetNewConnectionHandler(
+        [this](std::unique_ptr<Socket> &socket, std::shared_ptr<Event> event){
+            //loop thread
+            newConnectionHandler(socket, event);
+        });
+        connector_->Connect(errMsg);
+        if (!errMsg.empty()) {
+            disconnectedHandler_(errMsg);
+            connectAsyncer_ = nullptr;
+            return;
+        }
+        connectAsyncer_ = nullptr;
     });
-    connector_->Connect(errMsg);
 }
+
+//any thread
 void Client::SetConnectedHandler(connectedHandlerT handler) {
-    connectedHandler_ = handler;
+    connectedHandlerAsyncer_ = std::make_shared<Asyncer>(loop_);
+    connectedHandlerAsyncer_->AsyncDo([this, handler](const std::string &argErrMsg) {
+        //loop thread
+        connectedHandler_ = handler;
+        if (connected_) {
+            connectedHandler_(argErrMsg, *connection_);
+        }
+        connectedHandlerAsyncer_ = nullptr;
+    });
 }
+
+//any thread
 void Client::SetDisconnectedHandler(disconnectedHandlerT handler) {
+    small_lock::UniqueGuard guard(lock_);
+    if (connectCalled_) {
+        LOG(FATAL) << "AsyncConnected has been Called";
+    }
     disconnectedHandler_ = handler;
 }
+
 void Client::newConnectionHandler(std::unique_ptr<Socket> &socket, 
         std::shared_ptr<Event> event) {
     connection_ = std::make_shared<TcpConnection>(
             loop_, socket, event);
     std::string errMsg;
-    std::weak_ptr<TcpConnection> weakConnection
-        = connection_;
-    connection_->SetFinishHandler([weakConnection, this](
+    //safe
+    connection_->SetFinishHandler([this](
     std::string &errMsg, std::shared_ptr<TcpConnection> connection){
-        auto realConnection = weakConnection.lock();
-        if (!realConnection) {
-            //LOG(WARNING) << "server has been destoryed";
-            return;
-        }
         connection_ = nullptr;
-        if (disconnectedHandler_ != nullptr) {
-            disconnectedHandler_(errMsg);
-        }
+        disconnectedHandler_(errMsg);
     });
     connection_->InitConnected(errMsg);
     //avoid handler change errMsg
     if (errMsg != "") {
-        connectedHandler_(errMsg, *connection_);
+        disconnectedHandler_(errMsg);
         return;
     }
-    connectedHandler_(errMsg, *connection_);
+    if (connectedHandler_) {
+        connectedHandler_(errMsg, *connection_);
+    }else {
+        connected_ = true;
+    }
 }
 }
 }

@@ -4,34 +4,79 @@
 #include "socket.h"
 #include <memory>
 #include "log.h"
+#include "asyncer.h"
 
 namespace sheep{
 namespace net{
 Server::Server(EventLoop &loop,
        const std::string &addr, int fd) :
     loop_(loop),
+    lock_(small_lock::MakeLock()),
     acceptor_(std::make_shared<Acceptor>(loop_, addr, fd)),
     connections_(std::make_shared<TcpConnectionSet>()){
 }
 
+//any thread
+//connectedHandler_,disconnectedHandler_,serveCalled_,asyncer_ add lock
 void Server::Serve(std::string &errMsg) {
-    if (connectedHandler_ == nullptr) {
-        errMsg = "invliad connectedHandler";
+    small_lock::UniqueGuard guard(lock_);
+    if (serveCalled_) {
+        errMsg = "Serve can't called twice";
         return;
     }
-    //safe, acceptor is composition by server
-    acceptor_->SetNewConnectionHandler([this](int fd){
-                newConnectionHandler(fd);
-            });
-    acceptor_->Listen(errMsg);
+    if (!connectedHandler_ || !disconnectedHandler_) {
+        errMsg = "invalid connected or disconnected handler";
+        return;
+    }
+    serveCalled_ = true;
+    asyncer_ = std::make_shared<Asyncer>(loop_);
+    //safe, asyncer is composition by server
+    asyncer_->AsyncDo([this](const std::string &argErrMsg){
+        small_lock::UniqueGuard guard(lock_);
+        if (!argErrMsg.empty()) {
+            disconnectedHandler(argErrMsg);
+            asyncer_ = nullptr;
+            return;
+        }
+        std::string errMsg;
+        //safe, acceptor is composition by server
+        acceptor_->SetNewConnectionHandler([this](int fd){
+            newConnectionHandler(fd);
+        });
+        acceptor_->Listen(errMsg);
+        if (!errMsg.empty()) {
+            disconnectedHandler(errMsg);
+            asyncer_ = nullptr;
+            return;
+        }
+        asyncer_ = nullptr;
+    });
 }
 
+//any thread
 void Server::SetConnectedHandler(connectedHandlerT handler) {
+    small_lock::UniqueGuard guard(lock_);
+    if (serveCalled_) {
+        LOG(FATAL) << "Serve has been Called";
+    }
     connectedHandler_ = handler;
 }
 
+//any thread
 void Server::SetDisconnectedHandler(disconnectedHandlerT handler) {
+    small_lock::UniqueGuard guard(lock_);
+    if (serveCalled_) {
+        LOG(FATAL) << "Serve has been Called";
+    }
     disconnectedHandler_ = handler;
+}
+    
+void Server::connectedHandler(const std::string &errMsg, TcpConnection &connection) {
+    connectedHandler_(errMsg, connection);
+}
+
+void Server::disconnectedHandler(const std::string &errMsg) {
+    disconnectedHandler_(errMsg);
 }
 
 void Server::newConnectionHandler(int fd) {
@@ -47,9 +92,7 @@ void Server::newConnectionHandler(int fd) {
             return;
         }
         connections_->erase(connection);
-        if (disconnectedHandler_ != nullptr) {
-            disconnectedHandler_(errMsg);
-        }
+        disconnectedHandler(errMsg);
     });
     connection->InitAccepted(errMsg);
     //avoid handler change errMsg
@@ -57,7 +100,7 @@ void Server::newConnectionHandler(int fd) {
         connectedHandler_(errMsg, *connection);
         return;
     }
-    connectedHandler_(errMsg, *connection);
+    connectedHandler(errMsg, *connection);
     connections_->insert(connection);
 }
 }

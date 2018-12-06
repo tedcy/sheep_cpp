@@ -30,7 +30,7 @@ std::vector<std::shared_ptr<Event>> Epoller::Poll(
         auto weakEvent = events_[fd];
         auto event = weakEvent.lock();
         if (!event) {
-            LOG(WARNING) << "event has been destoryed";
+            LOG(WARNING) << "epoll event has been destoryed";
             continue;
         }
         if (pollEvent.events & EPOLLIN) {

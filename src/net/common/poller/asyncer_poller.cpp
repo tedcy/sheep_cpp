@@ -13,7 +13,8 @@ std::vector<std::shared_ptr<Event>> AsyncerPoller::Poll(std::string &) {
     for(auto &weakEvent: events_) {
         auto event = weakEvent.lock();
         if (!event) {
-            LOG(WARNING) << "event has been destoryed";
+            LOG(WARNING) << "async event has been destoryed";
+            continue;
         }
         event->SetReadAble();
         events.push_back(event);

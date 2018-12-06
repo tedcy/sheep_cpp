@@ -7,7 +7,7 @@ int main(){
     sheep::net::EventLoop loop;
 
     sheep::net::Server server(loop, "127.0.0.1", 8888);
-    server.SetConnectedHandler([](std::string &errMsg, sheep::net::TcpConnection &connection) {
+    server.SetConnectedHandler([](const std::string &errMsg, sheep::net::TcpConnection &connection) {
         if(!errMsg.empty()) {
             LOG(FATAL) << errMsg;
         }
@@ -25,7 +25,7 @@ int main(){
             });
         });
     });
-    server.SetDisconnectedHandler([](std::string &errMsg) {
+    server.SetDisconnectedHandler([](const std::string &errMsg) {
         if(!errMsg.empty()) {
             LOG(ERROR) << errMsg;
             return;

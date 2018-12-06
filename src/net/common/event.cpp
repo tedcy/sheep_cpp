@@ -73,7 +73,7 @@ int64_t Event::GetFd() {
 }
 
 int64_t Event::GetId() {
-    return fd_;
+    return id_;
 }
 
 void Event::Do() {

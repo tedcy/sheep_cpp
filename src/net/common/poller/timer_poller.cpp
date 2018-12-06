@@ -32,7 +32,7 @@ std::vector<std::shared_ptr<Event>> TimerPoller::Poll(std::string &errMsg) {
         for (auto &weakEventPair : *iter->second) {
             auto event = weakEventPair.second.lock();
             if(!event) {
-                LOG(WARNING) << "event has been destoryed";
+                LOG(WARNING) << "timer event has been destoryed";
                 continue;
             }
             event->SetReadAble();
