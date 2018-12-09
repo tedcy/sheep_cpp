@@ -13,9 +13,13 @@ Connector::Connector(EventLoop &loop,
     socket_(new Socket){
 }
 
+Connector::~Connector() {
+    event_->Clean();
+}
+
 void Connector::Connect(std::string &errMsg) {
-    if (newConnectionHandler_ == nullptr) {
-        errMsg = "invalid new connection handler";
+    if (!newConnectionHandler_ || !connectFailedHandler_) {
+        errMsg = "invalid new connection or connect failed handler";
         return;
     }
     socket_->SetNoblock(errMsg);
@@ -39,6 +43,7 @@ void Connector::Connect(std::string &errMsg) {
             LOG(WARNING) << "Connector has been destoryed";
             return;
         }
+        event_->DisableWriteNotify();
         writeHandler();
     });
     event_->EnableWriteNotify();
@@ -47,21 +52,21 @@ void Connector::Connect(std::string &errMsg) {
 void Connector::SetNewConnectionHandler(newConnectionHandlerT handler) {
     newConnectionHandler_ = handler;
 }
+    
+void Connector::SetConnectFailedHandler(connectFailedHandlerT handler) {
+    connectFailedHandler_ = handler;
+}
 
 void Connector::writeHandler() {
     std::string errMsg;
     socket_->CheckConnect(errMsg);
     if (!errMsg.empty()) {
         //LOG(ERROR) << errMsg;
-        event_->DisableWriteNotify();
-        newConnectionHandler_(socket_, event_);
-        event_ = nullptr;
+        connectFailedHandler_(errMsg);
         return;
     }
-    event_->DisableWriteNotify();
     //move socket_ and event_ to new connection
     newConnectionHandler_(socket_, event_);
-    event_ = nullptr;
 }
 }
 }

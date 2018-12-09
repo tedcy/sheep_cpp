@@ -26,6 +26,7 @@ void Asyncer::AsyncDo(asyncerHandlerT handler) {
             LOG(WARNING) << "Asyncer has been destoryed";
             return;
         }
+        event_->DisableReadNotify();
         handler_("");
     });
     event_->EnableReadNotify();
@@ -35,7 +36,7 @@ void Asyncer::cancel() {
     if (event_ == nullptr) {
         return;
     }
-    event_ = nullptr;
+    event_->DisableReadNotify();
     handler_("Asyncer Canceled");
 }
 }

@@ -14,6 +14,7 @@ Acceptor::Acceptor(EventLoop &loop,
 }
 
 Acceptor::~Acceptor() {
+    event_->Clean();
 }
 
 void Acceptor::Listen(std::string &errMsg) {
@@ -46,6 +47,7 @@ void Acceptor::Listen(std::string &errMsg) {
             LOG(WARNING) << "Acceptor has been destoryed";
             return;
         }
+        event_->DisableReadNotify();
         readHandler();
     });
     event_->EnableReadNotify();

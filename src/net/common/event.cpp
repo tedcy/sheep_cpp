@@ -20,7 +20,11 @@ void Event::Clean() {
         LOG(WARNING) << "poller destroyed";
         return;
     }
-    poller->RemoveEvent(shared_from_this());
+    if (readNotify_ || writeNotify_) {
+        readNotify_ = false;
+        writeNotify_ = false;
+        poller->RemoveEvent(shared_from_this());
+    }
 }
 
 void Event::SetReadEvent(std::function<void()> cb) {
@@ -55,6 +59,10 @@ void Event::update() {
     auto poller = poller_.lock();
     if (!poller) {
         LOG(WARNING) << "poller destroyed";
+        return;
+    }
+    if (!readNotify_ && !writeNotify_) {
+        poller->RemoveEvent(shared_from_this());
         return;
     }
     poller->UpdateEvent(shared_from_this());

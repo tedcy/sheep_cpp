@@ -83,6 +83,6 @@ AsyncWrite是调用以后才设置的epoll，因此不可能出现先发生的�
 6 F Buffer split into read write buffer
 7 F GetTcpConnection if need lock
 8 F client pool thread unsafe
-9 F 即使server不开,client也能connect success
+9 OK F 即使server不开,client也能connect success
 10 F client无法复用，断开连接后connect直接core
 11 F timer迅速调用两次，并且是相同时间，会导致调用失败

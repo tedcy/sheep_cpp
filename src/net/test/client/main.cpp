@@ -28,16 +28,15 @@ int main(){
         });
     });
     client.SetDisconnectedHandler([&loop, &client](const std::string &argErrMsg) {
+        LOG(INFO) << "disconnected";
         if(!argErrMsg.empty()) {
             LOG(ERROR) << argErrMsg;
-            return;
         }
-        LOG(INFO) << "disconnected";
         std::string errMsg;
-        //client.AsyncConnect(errMsg);
-        //if (!errMsg.empty()) {
-        //    LOG(FATAL) << errMsg;
-        //}
+        client.AsyncConnect(errMsg);
+        if (!errMsg.empty()) {
+            LOG(FATAL) << errMsg;
+        }
         //loop.Stop();
     });
     client.AsyncConnect(errMsg);

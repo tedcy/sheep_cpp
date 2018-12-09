@@ -16,6 +16,7 @@ using timerHandlerT =
     std::function<void(const std::string &errMsg)>;
 public:
     Timer(EventLoop &loop);
+    ~Timer();
     void AsyncWait(uint64_t ms, timerHandlerT handler);
     void Cancel();
 private:

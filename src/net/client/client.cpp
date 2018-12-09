@@ -29,7 +29,6 @@ void Client::AsyncConnect(std::string &errMsg) {
         small_lock::UniqueGuard guard(lock_);
         if(!argErrMsg.empty()) {
             disconnectedHandler_(argErrMsg);
-            asyncer_ = nullptr;
             return;
         }
         std::string errMsg;
@@ -39,13 +38,16 @@ void Client::AsyncConnect(std::string &errMsg) {
             //loop thread
             newConnectionHandler(socket, event);
         });
+        connector_->SetConnectFailedHandler(
+        [this](const std::string &errMsg) {
+            //loop thread
+            disconnectedHandler_(errMsg);
+        });
         connector_->Connect(errMsg);
         if (!errMsg.empty()) {
             disconnectedHandler_(errMsg);
-            asyncer_ = nullptr;
             return;
         }
-        asyncer_ = nullptr;
     });
 }
 
@@ -82,6 +84,7 @@ void Client::newConnectionHandler(std::unique_ptr<Socket> &socket,
     //safe
     connection_->SetFinishHandler([this](
     std::string &errMsg, std::shared_ptr<TcpConnection> connection){
+        //FIXME: why I need do this
         connection_ = nullptr;
         disconnectedHandler_(errMsg);
     });

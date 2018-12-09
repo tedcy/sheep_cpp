@@ -34,7 +34,6 @@ void Server::Serve(std::string &errMsg) {
         small_lock::UniqueGuard guard(lock_);
         if (!argErrMsg.empty()) {
             disconnectedHandler(argErrMsg);
-            asyncer_ = nullptr;
             return;
         }
         std::string errMsg;
@@ -45,10 +44,8 @@ void Server::Serve(std::string &errMsg) {
         acceptor_->Listen(errMsg);
         if (!errMsg.empty()) {
             disconnectedHandler(errMsg);
-            asyncer_ = nullptr;
             return;
         }
-        asyncer_ = nullptr;
     });
 }
 

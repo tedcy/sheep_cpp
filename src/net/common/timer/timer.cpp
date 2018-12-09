@@ -11,6 +11,10 @@ Timer::Timer(EventLoop &loop) :
     lock_(small_lock::MakeLock()){
 }
 
+Timer::~Timer() {
+    event_->Clean();
+}
+
 //any thread
 //asyncer_,event_,handler_ add lock
 void Timer::AsyncWait(uint64_t ms, timerHandlerT handler) {
@@ -32,11 +36,10 @@ void Timer::AsyncWait(uint64_t ms, timerHandlerT handler) {
                 return;
             }
             small_lock::UniqueGuard guard(lock_);
-            handler_("");
             event_->DisableReadNotify();
+            handler_("");
         });
         event_->EnableReadNotify();
-        asyncer_ = nullptr;
     });
 }
 
@@ -50,8 +53,7 @@ void Timer::cancel() {
     if (event_ == nullptr) {
         return;
     }
-    asyncer_ = nullptr;
-    event_ = nullptr;
+    event_ ->DisableReadNotify();
     handler_("Timer Canceled");
 }
 }

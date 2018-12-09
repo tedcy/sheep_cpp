@@ -93,8 +93,10 @@ void Socket::CheckConnect(std::string &errMsg) {
     socklen_t len = sizeof(error);
     auto result = getsockopt(fd_, SOL_SOCKET, SO_ERROR,
             &error, &len);
-    LOG(DEBUG) << error << "\t" << result;
     if (result < 0 || error) {
+        if (result == 0) {
+            result = error;
+        }
         formatErrMsg(errMsg, "setsockopt SO_ERROR", result);
         return;
     }

@@ -20,6 +20,7 @@ TcpConnection::TcpConnection(EventLoop &loop,
 
 TcpConnection::~TcpConnection() {
     //LOG(DEBUG) << "~TcpConnection";
+    event_->Clean();
 }
 
 void TcpConnection::InitAccepted(std::string &errMsg) {
@@ -42,6 +43,7 @@ void TcpConnection::InitAccepted(std::string &errMsg) {
             LOG(WARNING) << "TcpConnection has been destoryed";
             return;
         }
+        event_->DisableReadNotify();
         readHandler();
     });
     event_->EnableReadNotify();
@@ -59,6 +61,7 @@ void TcpConnection::InitConnected(std::string &errMsg) {
             LOG(WARNING) << "TcpConnection has been destoryed";
             return;
         }
+        event_->DisableReadNotify();
         readHandler();
     });
     event_->EnableReadNotify();
@@ -80,6 +83,7 @@ void TcpConnection::AsyncWrite(writeHandlerT handler) {
                     LOG(WARNING) << "TcpConnection has been destoryed";
                     return;
                 }
+                event_->DisableWriteNotify();
                 writeHandler();
             });
     event_->EnableWriteNotify();
