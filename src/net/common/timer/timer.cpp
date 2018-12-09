@@ -7,7 +7,8 @@
 namespace sheep{
 namespace net{
 Timer::Timer(EventLoop &loop) :
-    loop_(loop) {
+    loop_(loop) ,
+    lock_(small_lock::MakeLock()){
 }
 
 //any thread

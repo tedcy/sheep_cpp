@@ -50,9 +50,12 @@ void Connector::SetNewConnectionHandler(newConnectionHandlerT handler) {
 
 void Connector::writeHandler() {
     std::string errMsg;
-    auto fd = socket_->CheckConnect(errMsg);
+    socket_->CheckConnect(errMsg);
     if (!errMsg.empty()) {
         //LOG(ERROR) << errMsg;
+        event_->DisableWriteNotify();
+        newConnectionHandler_(socket_, event_);
+        event_ = nullptr;
         return;
     }
     event_->DisableWriteNotify();

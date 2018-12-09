@@ -13,10 +13,8 @@ class Socket;
 
 class TcpConnection: public small_packages::noncopyable,
     public std::enable_shared_from_this<TcpConnection>{
-using readHandlerT = std::function<void(std::string &errMsg,
-        TcpConnection&)>;
-using writeHandlerT = std::function<void(std::string &errMsg,
-        TcpConnection&)>;
+using readHandlerT = std::function<void(std::string &errMsg)>;
+using writeHandlerT = std::function<void(std::string &errMsg)>;
 using finishHandlerT = std::function<void(std::string &errMsg,
         std::shared_ptr<TcpConnection>)>;
 public:

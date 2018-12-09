@@ -59,7 +59,6 @@ void TimerPoller::UpdateEvent(std::shared_ptr<Event> event) {
     UpdateEvent(event);
 }
 
-//TODO now to test
 void TimerPoller::RemoveEvent(std::shared_ptr<Event> event) {
     auto timeFd = event->GetFd();
     auto id = event->GetId();

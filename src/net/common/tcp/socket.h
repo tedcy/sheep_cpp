@@ -19,7 +19,7 @@ public:
     //for connector
     void Connect(std::string &errMsg,
             const std::string &addr, int port);
-    int CheckConnect(std::string &errMsg);
+    void CheckConnect(std::string &errMsg);
 
     //for tcp_connection
     int Read(std::string &errMsg, char* buf, int len);

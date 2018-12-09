@@ -27,6 +27,7 @@ private:
     EventLoop &loop_;
 
     //composition
+    //connectedHandler_,disconnectedHandler_,serveCalled_,asyncer_ add lock
     std::shared_ptr<small_lock::LockI> lock_;
     bool serveCalled_ = false;
     std::shared_ptr<Acceptor> acceptor_;

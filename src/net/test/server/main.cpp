@@ -12,14 +12,12 @@ int main(){
             LOG(FATAL) << errMsg;
         }
         LOG(INFO) << "connected";
-        connection.AsyncRead(100, [](std::string &errMsg,
-        sheep::net::TcpConnection &connection){
+        connection.AsyncRead(100, [&connection](std::string &errMsg){
             LOG(INFO) << "readed";
             char buf[100];
             connection.ReadBuffer_.PopHead(buf, 100);
             connection.WriteBuffer_.Push(buf, 100);
-            connection.AsyncWrite([](std::string &errMsg,
-            sheep::net::TcpConnection &connection) {
+            connection.AsyncWrite([](std::string &errMsg) {
                 LOG(INFO) << "wrote";
                 //connection.Finish(errMsg);
             });

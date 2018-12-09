@@ -77,7 +77,7 @@ int64_t Event::GetId() {
 }
 
 void Event::Do() {
-    //TODO stale event
+    //FIXME stale event
     if (readAble_ && readNotify_) {
         readCb_();
         readAble_ = false;

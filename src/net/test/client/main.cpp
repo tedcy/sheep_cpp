@@ -7,32 +7,38 @@ int main(){
     sheep::net::EventLoop loop;
 
     sheep::net::Client client(loop, "127.0.0.1", 8888);
-    client.SetConnectedHandler([](const std::string &errMsg, sheep::net::TcpConnection &connection) {
+    client.SetConnectedHandler([&client](const std::string &errMsg) {
         if(!errMsg.empty()) {
             LOG(FATAL) << errMsg;
         }
         LOG(INFO) << "connected";
+        auto &connection = client.GetTcpConnection();
         char buf[100];
         connection.WriteBuffer_.Push(buf, 100);
-        connection.AsyncWrite([](std::string &errMsg,
-        sheep::net::TcpConnection &connection) {
+        connection.AsyncWrite([&client](std::string &errMsg) {
             LOG(INFO) << "wrote";
-            connection.AsyncRead(100, [](std::string &errMsg,
-            sheep::net::TcpConnection &connection){
+            auto &connection = client.GetTcpConnection();
+            connection.AsyncRead(100, [&client](std::string &errMsg){
                 LOG(INFO) << "read";
                 char buf[100];
+                auto &connection = client.GetTcpConnection();
                 connection.ReadBuffer_.PopHead(buf, 100);
                 connection.Finish(errMsg);
             });
         });
     });
-    client.SetDisconnectedHandler([&loop](const std::string &errMsg) {
-        if(!errMsg.empty()) {
-            LOG(ERROR) << errMsg;
+    client.SetDisconnectedHandler([&loop, &client](const std::string &argErrMsg) {
+        if(!argErrMsg.empty()) {
+            LOG(ERROR) << argErrMsg;
             return;
         }
         LOG(INFO) << "disconnected";
-        loop.Stop();
+        std::string errMsg;
+        //client.AsyncConnect(errMsg);
+        //if (!errMsg.empty()) {
+        //    LOG(FATAL) << errMsg;
+        //}
+        //loop.Stop();
     });
     client.AsyncConnect(errMsg);
     if (!errMsg.empty()) {

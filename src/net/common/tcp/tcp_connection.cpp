@@ -92,7 +92,7 @@ void TcpConnection::readHandler() {
     auto count = socket_->Read(errMsg, buf, 1024);
     if (!errMsg.empty()) {
         if (userReadHandler_ != nullptr) {
-            userReadHandler_(errMsg, *this);
+            userReadHandler_(errMsg);
         }
         Finish(errMsg);
         return;
@@ -108,7 +108,7 @@ void TcpConnection::readHandler() {
     readedSize_ += count;
     if (readedSize_ >= expectSize_) {
         if (userReadHandler_ != nullptr) {
-            userReadHandler_(errMsg, *this);
+            userReadHandler_(errMsg);
         }
         return;
     }
@@ -119,14 +119,14 @@ void TcpConnection::writeHandler() {
     char buf[1024];
     int64_t count = WriteBuffer_.Read(buf, 1024);
     if (count == 0) {
-        userWriteHandler_(errMsg, *this);
+        userWriteHandler_(errMsg);
         event_->DisableWriteNotify();
         return;
     }
     count = socket_->Write(errMsg, buf, count);
     WriteBuffer_.UpdateReadIndex(count);
     if (!errMsg.empty()) {
-        userWriteHandler_(errMsg, *this);
+        userWriteHandler_(errMsg);
         Finish(errMsg);
         return;
     }

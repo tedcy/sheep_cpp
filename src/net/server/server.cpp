@@ -17,7 +17,6 @@ Server::Server(EventLoop &loop,
 }
 
 //any thread
-//connectedHandler_,disconnectedHandler_,serveCalled_,asyncer_ add lock
 void Server::Serve(std::string &errMsg) {
     small_lock::UniqueGuard guard(lock_);
     if (serveCalled_) {
@@ -88,7 +87,7 @@ void Server::newConnectionHandler(int fd) {
     std::string &errMsg, std::shared_ptr<TcpConnection> connection){
         auto realConnectionSet = weakConnectionSet.lock();
         if (!realConnectionSet) {
-            //LOG(WARNING) << "server has been destoryed";
+            LOG(WARNING) << "server has been destoryed";
             return;
         }
         connections_->erase(connection);

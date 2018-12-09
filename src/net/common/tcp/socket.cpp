@@ -88,16 +88,17 @@ void Socket::Connect(std::string &errMsg,
     return;
 }
 
-int Socket::CheckConnect(std::string &errMsg) {
+void Socket::CheckConnect(std::string &errMsg) {
     int error = 0;
     socklen_t len = sizeof(error);
     auto result = getsockopt(fd_, SOL_SOCKET, SO_ERROR,
             &error, &len);
+    LOG(DEBUG) << error << "\t" << result;
     if (result < 0 || error) {
         formatErrMsg(errMsg, "setsockopt SO_ERROR", result);
-        return result;
+        return;
     }
-    return fd_;
+    return;
 }
 
 int Socket::Read(std::string &errMsg, char *buf, int len) {

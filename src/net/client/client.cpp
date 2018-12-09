@@ -16,21 +16,20 @@ Client::Client(EventLoop &loop,
 }
 
 //any thread
-//connectCalled_,connectAsyncer_ add lock, conflict with SetDisconnectedHandler
 void Client::AsyncConnect(std::string &errMsg) {
     small_lock::UniqueGuard guard(lock_);
     connectCalled_ = true;
-    if (!disconnectedHandler_) {
-        errMsg = "invalid disconnected handler";
+    if (!disconnectedHandler_ || !connectedHandler_) {
+        errMsg = "invalid connected or disconnected handler";
         return;
     }
-    connectAsyncer_ = std::make_shared<Asyncer>(loop_);
-    connectAsyncer_->AsyncDo([this](const std::string &argErrMsg){
+    asyncer_ = std::make_shared<Asyncer>(loop_);
+    asyncer_->AsyncDo([this](const std::string &argErrMsg){
         //loop thread
         small_lock::UniqueGuard guard(lock_);
         if(!argErrMsg.empty()) {
             disconnectedHandler_(argErrMsg);
-            connectAsyncer_ = nullptr;
+            asyncer_ = nullptr;
             return;
         }
         std::string errMsg;
@@ -43,24 +42,20 @@ void Client::AsyncConnect(std::string &errMsg) {
         connector_->Connect(errMsg);
         if (!errMsg.empty()) {
             disconnectedHandler_(errMsg);
-            connectAsyncer_ = nullptr;
+            asyncer_ = nullptr;
             return;
         }
-        connectAsyncer_ = nullptr;
+        asyncer_ = nullptr;
     });
 }
 
 //any thread
 void Client::SetConnectedHandler(connectedHandlerT handler) {
-    connectedHandlerAsyncer_ = std::make_shared<Asyncer>(loop_);
-    connectedHandlerAsyncer_->AsyncDo([this, handler](const std::string &argErrMsg) {
-        //loop thread
-        connectedHandler_ = handler;
-        if (connected_) {
-            connectedHandler_(argErrMsg, *connection_);
-        }
-        connectedHandlerAsyncer_ = nullptr;
-    });
+    small_lock::UniqueGuard guard(lock_);
+    if (connectCalled_) {
+        LOG(FATAL) << "AsyncConnected has been Called";
+    }
+    connectedHandler_ = handler;
 }
 
 //any thread
@@ -70,6 +65,13 @@ void Client::SetDisconnectedHandler(disconnectedHandlerT handler) {
         LOG(FATAL) << "AsyncConnected has been Called";
     }
     disconnectedHandler_ = handler;
+}
+
+//any thread
+//FIXME: i'm not true if need lock
+//because when called, connection_ must be set
+TcpConnection& Client::GetTcpConnection() {
+    return *connection_;
 }
 
 void Client::newConnectionHandler(std::unique_ptr<Socket> &socket, 
@@ -85,15 +87,11 @@ void Client::newConnectionHandler(std::unique_ptr<Socket> &socket,
     });
     connection_->InitConnected(errMsg);
     //avoid handler change errMsg
-    if (errMsg != "") {
+    if (!errMsg.empty()) {
         disconnectedHandler_(errMsg);
         return;
     }
-    if (connectedHandler_) {
-        connectedHandler_(errMsg, *connection_);
-    }else {
-        connected_ = true;
-    }
+    connectedHandler_(errMsg);
 }
 }
 }
