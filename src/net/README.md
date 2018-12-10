@@ -28,7 +28,16 @@ TimerEvent1[TimerEvent]-->Timer
 AsyncerEvent1[AsyncerEvent]-->Asyncer
 ```
 
-2 用户可调用的类和函数
+2 内部类和函数
+```
+* Connector
+Connect
+无法重复使用，因为一旦连接上了，内部成员会转移给TcpConenction
+SetNewConnectionHandler
+SetConnectFailedHandler
+```
+
+3 用户可调用的类和函数
 
 ```
 * EventLoop
@@ -74,7 +83,7 @@ AsyncWait没有任何特殊操作，本身时间的有序性就能保证执行�
 AsyncRead是判断Buffer的未读长度是否满足expectSize  
 AsyncWrite是调用以后才设置的epoll，因此不可能出现先发生的情况  
 
-3 TODO|FIXME
+4 TODO|FIXME
 1 T EPOLLERR, EPOLLHUP
 2 F epoll stale event
 3 T asyncer with RAII
@@ -84,5 +93,6 @@ AsyncWrite是调用以后才设置的epoll，因此不可能出现先发生的�
 7 F GetTcpConnection if need lock
 8 F client pool thread unsafe
 9 OK F 即使server不开,client也能connect success
-10 F client无法复用，断开连接后connect直接core
+10 OK F client无法复用，断开连接后connect直接core
 11 F timer迅速调用两次，并且是相同时间，会导致调用失败
+

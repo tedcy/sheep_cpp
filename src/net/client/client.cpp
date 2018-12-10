@@ -11,18 +11,19 @@ namespace net{
 Client::Client(EventLoop &loop,
             const std::string &addr, int port) :
     loop_(loop), 
-    lock_(small_lock::MakeLock()),
-    connector_(std::make_shared<Connector>(loop, addr, port)){
+    addr_(addr), port_(port),
+    lock_(small_lock::MakeLock()){
 }
 
 //any thread
 void Client::AsyncConnect(std::string &errMsg) {
     small_lock::UniqueGuard guard(lock_);
-    connectCalled_ = true;
     if (!disconnectedHandler_ || !connectedHandler_) {
         errMsg = "invalid connected or disconnected handler";
         return;
     }
+    connectCalled_ = true;
+    connector_ = std::make_shared<Connector>(loop_, addr_, port_);
     asyncer_ = std::make_shared<Asyncer>(loop_);
     asyncer_->AsyncDo([this](const std::string &argErrMsg){
         //loop thread

@@ -11,6 +11,7 @@ namespace net{
 class Connector;
 class Asyncer;
 
+//can be reuse to reconnect
 class Client: public small_packages::noncopyable{
 using connectedHandlerT = std::function<void(const std::string &errMsg)>;
 using disconnectedHandlerT = std::function<void(const std::string &errMsg)>;
@@ -24,6 +25,8 @@ public:
 private:
     void newConnectionHandler(std::unique_ptr<Socket> &, std::shared_ptr<Event>);
     EventLoop &loop_;
+    const std::string addr_;
+    const int port_ = 0;
 
     //composition
     //connectedHandler_,disconnectedHandler_,connectCalled_,connectAsyncer_ add lock
