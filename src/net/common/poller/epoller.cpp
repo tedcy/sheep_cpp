@@ -64,9 +64,13 @@ void Epoller::UpdateEvent(std::shared_ptr<Event> event) {
     //no exists but has flag, should add
     if (events_[fd].lock() == nullptr) {
         events_[fd] = event;
+        //LOG(DEBUG) << "add " << fd << event->GetReadNotify()
+        //   << event->GetWriteNotify(); 
         ::epoll_ctl(epollfd_, EPOLL_CTL_ADD, fd, &epollEvent);
         return;
     }
+    //LOG(DEBUG) << "modify " << fd << event->GetReadNotify()
+    //       << event->GetWriteNotify(); 
     //exists and has flag, modify
     ::epoll_ctl(epollfd_, EPOLL_CTL_MOD, fd, &epollEvent);
 }
@@ -75,6 +79,10 @@ void Epoller::RemoveEvent(Event *event) {
     auto fd = event->GetFd();
     struct epoll_event epollEvent = {0};
     epollEvent.data.fd = fd;
+    //LOG(DEBUG) << "remove " << fd;
+    //when called, event can be not destoryed
+    //but need to clean read and write flag
+    events_[fd] = std::weak_ptr<Event>();
     ::epoll_ctl(epollfd_, EPOLL_CTL_DEL, fd, &epollEvent);
     return;
 }
