@@ -55,11 +55,11 @@ void TimerPoller::UpdateEvent(std::shared_ptr<Event> event) {
         return;
     }
     //exists and has flag, modify(remove and add)
-    RemoveEvent(event);
+    RemoveEvent(event.get());
     UpdateEvent(event);
 }
 
-void TimerPoller::RemoveEvent(std::shared_ptr<Event> event) {
+void TimerPoller::RemoveEvent(Event *event) {
     auto timeFd = event->GetFd();
     auto id = event->GetId();
     auto map = events_[timeFd];

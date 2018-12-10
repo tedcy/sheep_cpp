@@ -71,7 +71,7 @@ void Epoller::UpdateEvent(std::shared_ptr<Event> event) {
     ::epoll_ctl(epollfd_, EPOLL_CTL_MOD, fd, &epollEvent);
 }
 
-void Epoller::RemoveEvent(std::shared_ptr<Event> event) {
+void Epoller::RemoveEvent(Event *event) {
     auto fd = event->GetFd();
     struct epoll_event epollEvent = {0};
     epollEvent.data.fd = fd;

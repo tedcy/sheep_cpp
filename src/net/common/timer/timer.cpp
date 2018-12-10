@@ -12,7 +12,6 @@ Timer::Timer(EventLoop &loop) :
 }
 
 Timer::~Timer() {
-    event_->Clean();
 }
 
 //any thread

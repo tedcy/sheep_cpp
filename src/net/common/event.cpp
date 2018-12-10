@@ -12,9 +12,6 @@ Event::Event(EventLoop &loop, uint64_t type, int64_t fd):
 }
 
 Event::~Event() {
-}
-
-void Event::Clean() {
     auto poller = poller_.lock();
     if (!poller) {
         LOG(WARNING) << "poller destroyed";
@@ -23,7 +20,7 @@ void Event::Clean() {
     if (readNotify_ || writeNotify_) {
         readNotify_ = false;
         writeNotify_ = false;
-        poller->RemoveEvent(shared_from_this());
+        poller->RemoveEvent(this);
     }
 }
 
@@ -62,7 +59,7 @@ void Event::update() {
         return;
     }
     if (!readNotify_ && !writeNotify_) {
-        poller->RemoveEvent(shared_from_this());
+        poller->RemoveEvent(this);
         return;
     }
     poller->UpdateEvent(shared_from_this());

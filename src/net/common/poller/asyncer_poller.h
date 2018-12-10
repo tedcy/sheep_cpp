@@ -13,10 +13,10 @@ public:
     AsyncerPoller();
     std::vector<std::shared_ptr<Event>> Poll(std::string &) override;
     void UpdateEvent(std::shared_ptr<Event> event) override;
-    void RemoveEvent(std::shared_ptr<Event> event) override;
+    void RemoveEvent(Event* event) override;
 private:
     void updateEvent(std::shared_ptr<Event> &event);
-    void removeEvent(std::shared_ptr<Event> &event);
+    void removeEvent(Event *event);
 
     using weakEventsT = std::list<std::weak_ptr<Event>>;
     weakEventsT events_;

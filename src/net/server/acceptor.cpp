@@ -14,7 +14,6 @@ Acceptor::Acceptor(EventLoop &loop,
 }
 
 Acceptor::~Acceptor() {
-    event_->Clean();
 }
 
 void Acceptor::Listen(std::string &errMsg) {

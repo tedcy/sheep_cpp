@@ -20,7 +20,6 @@ TcpConnection::TcpConnection(EventLoop &loop,
 
 TcpConnection::~TcpConnection() {
     //LOG(DEBUG) << "~TcpConnection";
-    event_->Clean();
 }
 
 void TcpConnection::InitAccepted(std::string &errMsg) {

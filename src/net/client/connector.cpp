@@ -14,7 +14,6 @@ Connector::Connector(EventLoop &loop,
 }
 
 Connector::~Connector() {
-    event_->Clean();
 }
 
 void Connector::Connect(std::string &errMsg) {

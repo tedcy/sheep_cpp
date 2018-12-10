@@ -14,7 +14,6 @@ class Event: public small_packages::noncopyable,
 public:
     Event(EventLoop &loop, uint64_t type, int64_t fd);
     ~Event();
-    void Clean();
     void SetReadEvent(std::function<void()>);
     void SetWriteEvent(std::function<void()>);
     void EnableReadNotify();

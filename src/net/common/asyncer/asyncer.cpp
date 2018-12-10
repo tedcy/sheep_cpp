@@ -10,7 +10,6 @@ Asyncer::Asyncer(EventLoop &loop) :
 }
 
 Asyncer::~Asyncer() {
-    event_->Clean();
 }
 
 //any thread

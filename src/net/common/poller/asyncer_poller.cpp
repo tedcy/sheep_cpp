@@ -25,7 +25,7 @@ void AsyncerPoller::UpdateEvent(std::shared_ptr<Event> event) {
     small_lock::UniqueGuard guard(lock_);
     updateEvent(event);
 }
-void AsyncerPoller::RemoveEvent(std::shared_ptr<Event> event) {
+void AsyncerPoller::RemoveEvent(Event *event) {
     small_lock::UniqueGuard guard(lock_);
     removeEvent(event);
 }
@@ -44,11 +44,11 @@ void AsyncerPoller::updateEvent(std::shared_ptr<Event> &event) {
         return;
     }
     //exist. earse and insert
-    removeEvent(event);
+    removeEvent(event.get());
     updateEvent(event);
 }
 //O(1)
-void AsyncerPoller::removeEvent(std::shared_ptr<Event> &event) {
+void AsyncerPoller::removeEvent(Event *event) {
     auto id = event->GetId();
     auto iter = eventMap_[id];
     //iter must exist

@@ -12,7 +12,7 @@ public:
     Epoller(); 
     std::vector<std::shared_ptr<Event>> Poll(std::string &) override;
     void UpdateEvent(std::shared_ptr<Event> event) override;
-    void RemoveEvent(std::shared_ptr<Event> event) override;
+    void RemoveEvent(Event *event) override;
 private:
     static const uint64_t MaxSize_ = 100000;
     static const uint64_t PollerMaxTime_ = 100;
