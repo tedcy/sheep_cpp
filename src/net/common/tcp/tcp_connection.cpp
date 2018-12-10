@@ -42,7 +42,8 @@ void TcpConnection::InitAccepted(std::string &errMsg) {
             LOG(WARNING) << "TcpConnection has been destoryed";
             return;
         }
-        event_->DisableReadNotify();
+        //always notify
+        //event_->DisableReadNotify();
         readHandler();
     });
     event_->EnableReadNotify();
@@ -60,7 +61,8 @@ void TcpConnection::InitConnected(std::string &errMsg) {
             LOG(WARNING) << "TcpConnection has been destoryed";
             return;
         }
-        event_->DisableReadNotify();
+        //always notify
+        //event_->DisableReadNotify();
         readHandler();
     });
     event_->EnableReadNotify();
@@ -77,14 +79,15 @@ void TcpConnection::AsyncWrite(writeHandlerT handler) {
     userWriteHandler_ = handler;
     std::weak_ptr<TcpConnection> weakThis = shared_from_this();
     event_->SetWriteEvent([weakThis, this](){
-                auto realThis = weakThis.lock();
-                if (!realThis) {
-                    LOG(WARNING) << "TcpConnection has been destoryed";
-                    return;
-                }
-                event_->DisableWriteNotify();
-                writeHandler();
-            });
+        auto realThis = weakThis.lock();
+        if (!realThis) {
+            LOG(WARNING) << "TcpConnection has been destoryed";
+            return;
+        }
+        //not notify until data's recv finished
+        //event_->DisableWriteNotify();
+        writeHandler();
+    });
     event_->EnableWriteNotify();
 }
 

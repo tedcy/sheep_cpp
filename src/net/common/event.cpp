@@ -12,6 +12,7 @@ Event::Event(EventLoop &loop, uint64_t type, int64_t fd):
 }
 
 Event::~Event() {
+    //LOG(DEBUG) << "~Event";
     auto poller = poller_.lock();
     if (!poller) {
         LOG(WARNING) << "poller destroyed";
