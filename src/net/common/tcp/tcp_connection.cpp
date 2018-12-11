@@ -70,7 +70,7 @@ void TcpConnection::InitConnected(std::string &errMsg) {
 
 void TcpConnection::AsyncRead(uint64_t expectSize,
         readHandlerT handler) {
-    if (readedSize_ >= expectSize_) {
+    if (readedSize_ >= expectSize) {
         std::string errMsg;
         Reset();
         handler(errMsg);
@@ -132,7 +132,6 @@ void TcpConnection::writeHandler() {
     char buf[1024];
     int64_t count = WriteBuffer_.Read(buf, 1024);
     if (count == 0) {
-        Reset();
         userWriteHandler_(errMsg);
         event_->DisableWriteNotify();
         return;
@@ -140,7 +139,6 @@ void TcpConnection::writeHandler() {
     count = socket_->Write(errMsg, buf, count);
     WriteBuffer_.UpdateReadIndex(count);
     if (!errMsg.empty()) {
-        Reset();
         userWriteHandler_(errMsg);
         Finish(errMsg);
         return;
