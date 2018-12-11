@@ -84,11 +84,14 @@ int64_t Event::GetId() {
 
 void Event::Do() {
     //FIXME stale event
+    bool rProcessed = false;
     if (readAble_ && readNotify_) {
+        rProcessed = true;
         readCb_();
         readAble_ = false;
     }
-    if (writeAble_ && writeNotify_) {
+    //avoid stale event
+    if (!rProcessed && writeAble_ && writeNotify_) {
         writeCb_();
         writeAble_ = false;
     }

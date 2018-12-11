@@ -37,6 +37,18 @@ SetNewConnectionHandler
 SetConnectFailedHandler
 ```
 
+PS:
+2.1 目前只驱动了epoll的LT模式  
+2.2 TcpConnection的readEvent是一直监视的,用来读取对端关闭连接，
+writeEvent是只有建立了写事件才会注册，一旦完成了这一次写事件要写完的buffer就会取消注册  
+2.3 stale event  
+见man epoll的Possible pitfalls and ways to avoid them部分  
+man的建议是通过一个clean list来判断已经被关闭的描述符  
+我的实现是当一个TcpConnection被关闭的时候，他的event会被析构，从而使得执行的weak指针已经为空
+以避免stale event。这种实现是通过C++的生命周期实现来考虑的。
+给回调函数生命周期，当描述符被删除时（TcpConnection被销毁），回调函数也被销毁，保证不会再被调用。
+
+
 3 用户可调用的类和函数
 
 ```

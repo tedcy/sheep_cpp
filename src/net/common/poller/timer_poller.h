@@ -14,7 +14,7 @@ uint64_t UnixTimeMilliSecond();
 class TimerPoller: public Poller {
 public:
     TimerPoller(); 
-    std::vector<std::shared_ptr<Event>> Poll(std::string &) override;
+    std::vector<std::weak_ptr<Event>> Poll(std::string &) override;
     void UpdateEvent(std::shared_ptr<Event> event) override;
     void RemoveEvent(Event *event) override;
 private:

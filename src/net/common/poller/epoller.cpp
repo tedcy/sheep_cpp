@@ -11,9 +11,9 @@ Epoller::Epoller() :
     epollfd_(::epoll_create(1000)){
 }
 
-std::vector<std::shared_ptr<Event>> Epoller::Poll(
+std::vector<std::weak_ptr<Event>> Epoller::Poll(
         std::string &errMsg) {
-    std::vector<std::shared_ptr<Event>> events;
+    std::vector<std::weak_ptr<Event>> events;
     int num;
     num = ::epoll_wait(epollfd_, &(*pollEvents_.begin()),
             MaxSize_, PollerMaxTime_);
@@ -35,12 +35,14 @@ std::vector<std::shared_ptr<Event>> Epoller::Poll(
         }
         if (pollEvent.events & EPOLLIN) {
             event->SetReadAble();
+            //LOG(DEBUG) << event->GetFd() << " readable";
         }else {
             if (pollEvent.events & EPOLLOUT || 
                 pollEvent.events & EPOLLERR ||
                 pollEvent.events & EPOLLHUP) {
                 //TODO add event errable
                 event->SetWriteAble();
+                //LOG(DEBUG) << event->GetFd() << " writeable";
             }else {
                 LOG(FATAL) << "can't access here " << pollEvent.events;
             }
@@ -69,8 +71,8 @@ void Epoller::UpdateEvent(std::shared_ptr<Event> event) {
         ::epoll_ctl(epollfd_, EPOLL_CTL_ADD, fd, &epollEvent);
         return;
     }
-    //LOG(DEBUG) << "modify " << fd << event->GetReadNotify()
-    //       << event->GetWriteNotify(); 
+    LOG(DEBUG) << "modify " << fd << event->GetReadNotify()
+           << event->GetWriteNotify(); 
     //exists and has flag, modify
     ::epoll_ctl(epollfd_, EPOLL_CTL_MOD, fd, &epollEvent);
 }

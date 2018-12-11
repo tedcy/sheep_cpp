@@ -31,12 +31,17 @@ void EventLoop::loop() {
 
 void EventLoop::doPoller(std::shared_ptr<Poller> &poller) {
     std::string errMsg;
-    auto events = poller->Poll(errMsg);
+    auto weakEvents = poller->Poll(errMsg);
     if (!errMsg.empty()) {
         LOG(ERROR) << errMsg;
         return;
     }
-    for (auto &event: events) {
+    for (auto &weakEvent: weakEvents) {
+        auto event = weakEvent.lock();
+        if (!event) {
+            LOG(WARNING) << "event has been destoryed(stale event)";
+            continue;
+        }
         event->Do();
     }
 }

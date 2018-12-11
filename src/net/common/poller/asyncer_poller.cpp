@@ -7,8 +7,8 @@ namespace net{
 AsyncerPoller::AsyncerPoller() :
     lock_(small_lock::MakeLock()){
 }
-std::vector<std::shared_ptr<Event>> AsyncerPoller::Poll(std::string &) {
-    std::vector<std::shared_ptr<Event>> events;
+std::vector<std::weak_ptr<Event>> AsyncerPoller::Poll(std::string &) {
+    std::vector<std::weak_ptr<Event>> events;
     small_lock::UniqueGuard guard(lock_);
     for(auto &weakEvent: events_) {
         auto event = weakEvent.lock();

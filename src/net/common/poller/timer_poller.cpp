@@ -24,8 +24,8 @@ uint64_t UnixTimeMilliSecond() {
 TimerPoller::TimerPoller() {
 }
 
-std::vector<std::shared_ptr<Event>> TimerPoller::Poll(std::string &errMsg) {
-    std::vector<std::shared_ptr<Event>> events;
+std::vector<std::weak_ptr<Event>> TimerPoller::Poll(std::string &errMsg) {
+    std::vector<std::weak_ptr<Event>> events;
     auto now = UnixTimeMilliSecond();
     auto endIter = events_.upper_bound(now);
     for (auto iter = events_.begin();iter != endIter;iter++) {
