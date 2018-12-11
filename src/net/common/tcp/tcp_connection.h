@@ -40,6 +40,10 @@ private:
     void SetFinishHandler(finishHandlerT handler) {
         finishHandler_ = handler;
     }
+    void Reset() {
+        expectSize_ = 0;
+        readedSize_ = 0;
+    }
 
     void readHandler();
     void writeHandler();

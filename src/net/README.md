@@ -97,7 +97,7 @@ AsyncWrite是调用以后才设置的epoll，因此不可能出现先发生的�
 
 4 TODO|FIXME
 1 T EPOLLERR, EPOLLHUP
-2 F epoll stale event
+2 OK F epoll stale event
 3 T asyncer with RAII
 4 T buffer zero copy
 5 T buffer delete unuse read data

@@ -35,7 +35,7 @@ int main(){
         std::string errMsg;
         client.AsyncConnect(errMsg);
         if (!errMsg.empty()) {
-            LOG(FATAL) << errMsg;
+            LOG(ERROR) << errMsg;
         }
         //loop.Stop();
     });
