@@ -24,11 +24,11 @@ int main(){
         });
     });
     server.SetDisconnectedHandler([](const std::string &errMsg) {
+        LOG(INFO) << "disconnected";
         if(!errMsg.empty()) {
             LOG(ERROR) << errMsg;
             return;
         }
-        LOG(INFO) << "disconnected";
     });
     server.Serve(errMsg);
     if (!errMsg.empty()) {

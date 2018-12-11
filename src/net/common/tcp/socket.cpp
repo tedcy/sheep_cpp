@@ -82,7 +82,7 @@ void Socket::Connect(std::string &errMsg,
         if(errno == EINPROGRESS) {
             return;
         }
-        formatErrMsg(errMsg, "connect", result);
+        formatErrMsg(errMsg, "connect", errno);
         return;
     }
     return;
@@ -109,7 +109,7 @@ int Socket::Read(std::string &errMsg, char *buf, int len) {
         if (errno == EAGAIN) {
             return result;
         }
-        formatErrMsg(errMsg, "read", result);
+        formatErrMsg(errMsg, "read", errno);
         return result;
     }
     return result;
@@ -120,7 +120,7 @@ int Socket::Write(std::string &errMsg, char *buf, int len) {
         if (errno == EAGAIN) {
             return result;
         }
-        formatErrMsg(errMsg, "read", result);
+        formatErrMsg(errMsg, "read", errno);
         return result;
     }
     return result;
@@ -200,7 +200,7 @@ int Socket::Accept(std::string &errMsg) {
         if (errno == EAGAIN) {
             return newFd;
         }
-        formatErrMsg(errMsg, "accpet", newFd);
+        formatErrMsg(errMsg, "accpet", errno);
     }
     return newFd;
 }
