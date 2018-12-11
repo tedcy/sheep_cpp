@@ -12,7 +12,8 @@ Client::Client(EventLoop &loop,
             const std::string &addr, int port) :
     loop_(loop), 
     addr_(addr), port_(port),
-    lock_(small_lock::MakeLock()){
+    //FIXME: is there a way to no use recursive lock
+    lock_(small_lock::MakeRecursiveLock()){
 }
 
 //any thread
