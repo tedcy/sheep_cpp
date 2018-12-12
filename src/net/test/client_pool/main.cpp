@@ -21,7 +21,7 @@ int main(){
     for (int i = 0;i < 10;i++) {
         auto timer = std::make_shared<sheep::net::Timer>(loop);
         ts.push_back(timer);
-        timer->AsyncWait(1000 * (i+1), [&clientPool](const std::string &errMsg){
+        timer->AsyncWait(1000, [&clientPool](const std::string &errMsg){
             LOG(INFO) << "call SetConnectedHandler";
             auto client = clientPool.Get();
             if (!client) {

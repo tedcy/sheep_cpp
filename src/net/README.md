@@ -35,6 +35,28 @@ Connect
 无法重复使用，因为一旦连接上了，内部成员会转移给TcpConenction
 SetNewConnectionHandler
 SetConnectFailedHandler
+* EpollerPoller
+以fd作为标识符，设置读写事件
+存储结构是vector<event>
+events_作为数组存在，然后判断events_[fd]的状态来判断fd是否在epoll内核中
+update先判断events_[fd]是否存在
+不存在就add，直接赋值，并且epoll_add 用户操作O(1)，内核操作O(nlgn)
+否则就直接epoll_ctl 没有用户操作，内核操作O(nlgn)
+remove是赋值一个空的weak_ptr，用户操作O(1)，内核操作O(nlgn)
+* TimerPoller(TODO，性能可以优化到O(1))
+存储结构是map<timeFd, map<id, event>>，主键是毫秒为单位的时间，值是一个map
+辅助结构set<id>判断这个事件是否存在
+update先判断set中是否存在
+不存在就是add，直接insert到map，当同一毫秒有多个event时，会通过id的先后次序保证event的顺序性O(nlgn)
+存在就先remove再add,O(nlgn)
+remove是删除map的值再删除set的值O(nlgn)
+* AsyncerPoller
+存储结构是list<event>
+辅助存储结构hash<id, list::iter>
+update先判断在hash中是否存在
+不存在就是add，直接pushback，并且记录下iter用于后面可以删除，时间复杂度O(1)
+存在就先remove在add，O(1)
+remove是通过hash中拿到iter去list删除，O(1)
 ```
 
 PS:

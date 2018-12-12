@@ -49,7 +49,13 @@ void TimerPoller::UpdateEvent(std::shared_ptr<Event> event) {
     //no exists but has flag, should add
     if (iter == eventSet_.end()) {
         eventSet_.insert(id);
-        auto map = std::make_shared<std::map<int64_t, std::weak_ptr<Event>>>();
+        auto eventsIter = events_.find(timeFd);
+        std::shared_ptr<std::map<int64_t, std::weak_ptr<Event>>> map;
+        if (eventsIter == events_.end()) {
+            map = std::make_shared<std::map<int64_t, std::weak_ptr<Event>>>();
+        }else {
+            map = eventsIter->second;
+        }
         map->insert({id, event});
         events_.insert({timeFd, map});
         return;
