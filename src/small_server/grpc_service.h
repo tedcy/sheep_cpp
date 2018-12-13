@@ -111,11 +111,11 @@ public:
     std::string GetTraceId() {
         return coreCtx_->GetTraceId();
     }
-    std::shared_ptr<HttpClient<GrpcServiceCtx>> GetHttpClient(
+    std::shared_ptr<HttpClientWithService<GrpcServiceCtx>> GetHttpClient(
             const std::string &method,
             const std::string &host,const std::string &port,
             const std::string &target,const std::string &req) {
-        auto httpClient = std::make_shared<HttpClient<GrpcServiceCtx>>(
+        auto httpClient = std::make_shared<HttpClientWithService<GrpcServiceCtx>>(
                 method, host, port, target, req);
         httpClient->SetServiceCtx(myself_);
         return httpClient;
