@@ -25,12 +25,12 @@ if [[ $clean == "clean" ]]; then
         $sheep_pkg_path/init_tools/clean.sh
         cd $v/test
         $sheep_pkg_path/init_tools/clean.sh
-        cd -
     done
     else
     for v in ${small_pkgs_arr[@]};do
         echo "----------$v building start----------------"
         cd $v
+        rm build/compile_commands.json
         $sheep_pkg_path/init_tools/build.sh
         echo "----------$v building end------------------"
         echo "-------------------------------------------"
@@ -39,9 +39,13 @@ if [[ $clean == "clean" ]]; then
         echo "----------$v/test building start-----------"
         cd $v/test
         $sheep_pkg_path/init_tools/build.sh
-        cd -
         echo "----------$v/test building end-------------"
         echo "-------------------------------------------"
         echo "-------------------------------------------"
+        cd $v
+        found=`find build -maxdepth 1 -name compile_commands.json|wc -l`
+        if (($found == 0));then
+            cp test/build/compile_commands.json build
+        fi
     done
 fi
