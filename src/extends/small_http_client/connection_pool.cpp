@@ -36,6 +36,7 @@ void ConnectionPool::InitOne() {
     };
     auto onClose = [this, c = std::weak_ptr<Connection>(connection)]
     (const std::string &resp,
+    const std::shared_ptr<std::map<std::string,std::string>> respHeaders,
     const std::string &errMsg){
         auto connection = c.lock();
         if (!connection) {

@@ -51,7 +51,9 @@ int main() {
             "8081", 
             "/dmp/api/tag/getTagsByUserId",
             reqStr);
-        auto onDone = [](const std::string &respStr, const std::string &errMsg) {
+        auto onDone = [](const std::string &respStr, 
+                const std::shared_ptr<std::map<std::string, std::string>>,
+                const std::string &errMsg) {
             LOG(INFO) << respStr;
             if (errMsg != "") {
                 LOG(ERROR) << errMsg;

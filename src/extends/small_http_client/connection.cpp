@@ -106,7 +106,7 @@ void Connection::onWrite(boost::system::error_code ec,
     if(ec) {
         wCallback_("write failed " + ec.message());
         wCallback_ = nullptr;
-        closeCallback_("", "read failed " + ec.message());
+        closeCallback_("", nullptr, "read failed " + ec.message());
         
         boost::system::error_code ec1;
         socket_.shutdown(tcp::socket::shutdown_both, ec1);
@@ -125,14 +125,18 @@ void Connection::onRead(boost::system::error_code ec,
         available_ = false;
         boost::system::error_code ec1;
         if(rCallback_ != nullptr) {
-            rCallback_("", "read failed " + ec.message());
+            rCallback_("", nullptr, "read failed " + ec.message());
             rCallback_ = nullptr;
         }
-        closeCallback_("", "read failed " + ec.message());
+        closeCallback_("", nullptr, "read failed " + ec.message());
         socket_.shutdown(tcp::socket::shutdown_both, ec1);
         return;
     }
-    rCallback_(resp_.get().body(), "");
+    auto headers = std::make_shared<headerMap>();
+    for (auto &header : resp_->base()) {
+        headers->insert({header.name_string().to_string(), header.value().to_string()});
+    }
+    rCallback_(resp_.get().body(), headers, "");
     rCallback_ = nullptr;
     Reset();
     StartRead();

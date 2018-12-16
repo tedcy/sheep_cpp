@@ -10,17 +10,21 @@
 
 #include <string>
 #include <functional>
+#include <map>
+#include <memory>
 
 #include "small_timer_factory.h"
 
 namespace small_http_client{
 //TODO timeout
 class Connection: public std::enable_shared_from_this<Connection> {
-    using argErrMsgCallback = 
-        std::function<void(const std::string& errMsg)>;
-    using argRespAndErrMsgCallback = 
-        std::function<void(const std::string &resp,
-        const std::string& errMsg)>;
+using headerMap = std::map<std::string, std::string>;
+using argErrMsgCallback = 
+    std::function<void(const std::string& errMsg)>;
+using argRespAndErrMsgCallback = 
+    std::function<void(const std::string &resp,
+    const std::shared_ptr<headerMap> respHeaders,
+    const std::string& errMsg)>;
 public:
     ~Connection();
     void AsyncDo(uint32_t writeTimeout, uint32_t readTimeout,

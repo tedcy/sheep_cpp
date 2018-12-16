@@ -25,16 +25,16 @@ Async::~Async() {
     }
 }
 
-void Async::doReq(const std::function<void(const std::string&, const std::string&)> &onDone) {
+void Async::doReq(const onDoneHandler &onDone) {
     onDone_ = onDone;
     connectionPool_ = ConnectionPoolManager::GetInstance().get(host_, port_);
     if (connectionPool_ == nullptr) {
-        onDone_("", "find connectionPool failed: " + host_ + ":" + port_);
+        onDone_("", nullptr, "find connectionPool failed: " + host_ + ":" + port_);
         return;
     }
     connection_ = connectionPool_->get();
     if (connection_ == nullptr) {
-        onDone_("", "find connection failed: " + host_ + ":" + port_);
+        onDone_("", nullptr, "find connection failed: " + host_ + ":" + port_);
         return;
     }
     auto self(shared_from_this());
@@ -45,29 +45,31 @@ void Async::doReq(const std::function<void(const std::string&, const std::string
             << "errMsg: " << errMsg;
         }
         if (errMsg != "") {
-            onDone_("", errMsg);
+            onDone_("", nullptr, errMsg);
             onDone_ = nullptr;
         }
     },
     [this, self](const std::string &resp,
+        const std::shared_ptr<std::map<std::string, std::string>> respHeaders,
         const std::string& errMsg) {
         if(!traceId_.empty()) {
             LOG(DEBUG) << "HttpId: " << traceId_ << " ReadEvent"
             << "errMsg: " << errMsg;
         }
-        onRead(resp, errMsg);
+        onRead(resp, respHeaders, errMsg);
     });
     return;
 }
 
 void Async::onRead(const std::string &resp, 
+        const std::shared_ptr<std::map<std::string, std::string>> respHeaders,
         const std::string &errMsg) {
     if (errMsg != "") {
-        onDone_("", errMsg);
+        onDone_("", nullptr, errMsg);
         onDone_ = nullptr;
         return;
     }
-    onDone_(resp, "");
+    onDone_(resp, respHeaders, "");
     onDone_ = nullptr;
 }
 
