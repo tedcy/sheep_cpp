@@ -20,7 +20,7 @@ Etcd::~Etcd() {
 }
 void Etcd::Init(std::string &errMsg) {
     for (auto &ip: ips_) {
-        small_http_client::ConnectionPoolManager::GetInstance().add(ip, std::to_string(port_), 1);
+        small_http_client::ConnectionPoolManager::GetInstance().add(ip, std::to_string(port_), 100);
     }
     std::this_thread::sleep_for(std::chrono::seconds(1));
     //todo errMsg test
@@ -58,6 +58,7 @@ void Etcd::createEphemeral(const std::string &path, const std::string &value, co
                             {"Content-Type","application/x-www-form-urlencoded"}
                         }));
     auto onDone = [this, path, value](const std::string &respStr, 
+        const std::shared_ptr<std::map<std::string, std::string>> respHeaders,
         const std::string &errMsg){
         if (errMsg != "") {
             LOG(ERROR) << errMsg;
@@ -106,6 +107,7 @@ void Etcd::refresh(const std::string &path, const std::string &value,
                             {"Content-Type","application/x-www-form-urlencoded"}
                         }));
     auto onDone = [this, path, value](const std::string &respStr, 
+        const std::shared_ptr<std::map<std::string, std::string>> respHeaders,
         const std::string &errMsg){
         if (errMsg != "") {
             LOG(ERROR) << errMsg;
@@ -157,5 +159,74 @@ void Etcd::nextRefresh(const std::string &path, const std::string &value) {
     t->AsyncWait(5000, [this, t, path, value](const std::string &errMsg) {
             refresh(path, value, errMsg);
         });
+}
+void Etcd::List(const std::string &path, onListFunc handler) {
+    //TODO rand ips
+    auto c = std::make_shared<small_http_client::Async>("GET", ips_[0], std::to_string(port_), 
+        "/v2/keys" + path + "/", "");
+    auto onDone = [this, path, handler](const std::string &respStr, 
+        const std::shared_ptr<std::map<std::string, std::string>> respHeaders,
+        const std::string &argErrMsg){
+        std::string errMsg;
+        if (argErrMsg != "") {
+            handler(argErrMsg, 0, nullptr);
+            return;
+        }
+        rapidjson::Document jsonDoc;
+        jsonDoc.Parse(respStr.c_str());
+        if (jsonDoc.HasParseError()) {
+            auto parseErrMsg = ("parse " + respStr +
+                " Failed: code " + std::to_string(jsonDoc.GetParseError()) +
+                " offset " + std::to_string(jsonDoc.GetErrorOffset()));
+            handler(parseErrMsg, 0, nullptr);
+            return;
+        }
+        if (jsonDoc.HasMember("errorCode")) {
+            auto errorCode = jsonDoc["errorCode"].GetUint64();
+            if (jsonDoc.HasMember("message")) {
+                auto message = jsonDoc["message"].GetString();
+                errMsg = "errorCode: " + std::to_string(errorCode) + " message: " + message;
+                handler(errMsg, 0, nullptr);
+                return;
+            }
+            errMsg = "errorCode: " + std::to_string(errorCode);
+            handler(errMsg, 0, nullptr);
+            return;
+        }
+        auto etcdIndexStr = (*respHeaders)["X-Etcd-Index"];
+        int64_t etcdIndex = -1;
+        etcdIndex = std::stoll(etcdIndexStr);
+        if (etcdIndex == -1) {
+            errMsg = "invalid etcdIndex " + etcdIndexStr;
+            handler(errMsg, 0, nullptr);
+            return;
+        }
+        auto keys = std::make_shared<std::vector<std::string>>();
+        if (jsonDoc.HasMember("node")) {
+            auto node = jsonDoc["node"].GetObject();
+            if (node.HasMember("nodes")) {
+                auto nodes = node["nodes"].GetArray();
+                for (auto &n : nodes) {
+                    if (n.HasMember("key")) {
+                        auto key = n["key"].GetString();
+                        keys->push_back(key);
+                    }
+                }
+            }
+        }
+        handler(errMsg, etcdIndex + 1, keys);
+    };
+    c->doReq(onDone);
+}
+void Etcd::Watch(const uint64_t afterIndex,
+        const std::string &path, onNotifyFunc handler) {
+    auto c = std::make_shared<small_http_client::Async>("GET", ips_[0], std::to_string(port_), 
+        "/v2/keys" + path + "?wait=true&recursive=true", "");
+    auto onDone = [this, path, handler](const std::string &respStr, 
+        const std::shared_ptr<std::map<std::string, std::string>> respHeaders,
+        const std::string &argErrMsg){
+        handler(argErrMsg);
+    };
+    c->doReq(onDone);
 }
 }//namespace small_watcher

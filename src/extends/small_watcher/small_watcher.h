@@ -2,11 +2,10 @@
 #include <string>
 #include <functional>
 #include <vector>
+#include <memory>
 
 namespace small_watcher{
 
-//TODO timeout
-using onNotifyFunc = std::function<void(uint64_t&, std::string &)>;
 /*class WatcherCtxI{
 public:
     WatcherCtxI() = default;
@@ -15,6 +14,9 @@ public:
 };*/
 class WatcherI{
 public:
+using onNotifyFunc = std::function<void(const std::string &errMsg)>;
+using onListFunc = std::function<void(const std::string &errMsg, uint64_t afterIndex,
+        std::shared_ptr<std::vector<std::string>> keys)>;
     WatcherI() = default;
     virtual ~WatcherI() = default;
     virtual void Init(std::string &errMsg) = 0;
@@ -26,11 +28,9 @@ public:
     
     //virtual void Read(WatcherCtxI &ctx, 
     //        const std::string path, std::string &value) = 0;
-    //virtual void List(WatcherCtxI &ctx, 
-    //        const std::string &path, std::vector<std::string> &keys) = 0;
+    virtual void List(const std::string &path, onListFunc func) = 0;
 
-    //virtual void Watch(WatcherCtxI &ctx, 
-    //        const std::string &path, const onNotifyFunc &func) = 0;
+    virtual void Watch(const uint64_t afterIndex, const std::string &path, onNotifyFunc func) = 0;
     virtual void CreateEphemeral(const std::string &path, const std::string &value) = 0;
     //void CreateEphemeralInOrder(WatcherCtxI &ctx,
     //        const std::string &path, const std::string &value);
