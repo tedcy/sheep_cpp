@@ -40,7 +40,6 @@ using HttpClientOnDone =
     uint64_t writeTimeout_ = 0;
     std::string traceId_;
 protected:
-    std::string respStr_;
     template <typename T>
     void doReq(std::function<void(T&, const std::string&)> &onDone) {
         auto realOnDone = [onDone](HttpClient &c, const std::string &errMsg) {
@@ -61,13 +60,18 @@ protected:
         if (writeTimeout_ != 0) {
             client_->SetWriteTimeout(writeTimeout_);
         }
-        auto smallHttpLibOnDone = [this, realOnDone](const std::string &respStr, const std::string &errMsg) {
+        auto smallHttpLibOnDone = [this, realOnDone](const std::string &respStr, 
+                const std::shared_ptr<std::map<std::string, std::string>> respHeaders,
+                const std::string &errMsg) {
             respStr_ = respStr;
+            respHeaders_ = respHeaders;
             realOnDone(*this, errMsg);
         };
         client_->doReq(smallHttpLibOnDone);
     }
 private:
+    std::string respStr_;
+    std::shared_ptr<std::map<std::string, std::string>> respHeaders_;
     //composition
     std::shared_ptr<small_http_client::Async> client_;
 };

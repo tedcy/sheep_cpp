@@ -18,4 +18,13 @@ std::shared_ptr<std::list<std::string>>
     }
     return resultS;
 }
+std::string TrimLeft(const std::string &str, const std::string &trimStr) {
+    std::string result;
+    auto index = str.find(trimStr);
+    if (index < 0) {
+        return result;
+    }
+    result = str.substr(index, trimStr.size());
+    return result;
+}
 }//namespace small_strings

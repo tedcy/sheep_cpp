@@ -70,13 +70,26 @@ void TcpConnection::InitConnected(std::string &errMsg) {
 
 void TcpConnection::AsyncRead(uint64_t expectSize,
         readHandlerT handler) {
+    anyFlag_ = false;
     if (readedSize_ >= expectSize) {
         std::string errMsg;
-        Reset();
+        ResetRead();
         handler(errMsg);
         return;
     }
     expectSize_ = expectSize;
+    userReadHandler_ = handler;
+}
+
+void TcpConnection::AsyncReadAny(readHandlerT handler) {
+    anyFlag_ = true;
+    if (readedSize_ != 0) {
+        userReadHandler_ = handler;
+        std::string errMsg;
+        ResetRead();
+        handler(errMsg);
+        return;
+    }
     userReadHandler_ = handler;
 }
 
@@ -103,7 +116,7 @@ void TcpConnection::readHandler() {
     auto count = socket_->Read(errMsg, buf, 1024);
     if (!errMsg.empty()) {
         if (userReadHandler_ != nullptr) {
-            Reset();
+            ResetRead();
             userReadHandler_(errMsg);
         }
         Finish(errMsg);
@@ -118,9 +131,9 @@ void TcpConnection::readHandler() {
     }
     ReadBuffer_.Write(buf, count);
     readedSize_ += count;
-    if (readedSize_ >= expectSize_) {
+    if (anyFlag_ || readedSize_ >= expectSize_) {
         if (userReadHandler_ != nullptr) {
-            Reset();
+            ResetRead();
             userReadHandler_(errMsg);
         }
         return;

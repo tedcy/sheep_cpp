@@ -130,3 +130,4 @@ AsyncWrite是调用以后才设置的epoll，因此不可能出现先发生的�
 10 OK F client无法复用，断开连接后connect直接core
 11 F timer迅速调用两次，并且是相同时间，会导致调用失败
 12 OK F client-server的流量异常低，并且server端报reset by peer，应该是数据没读写完就close了
+13 F ClientPool还连接的时候需要清理连接信息

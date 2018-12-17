@@ -27,6 +27,7 @@ public:
     ~TcpConnection();
     void AsyncRead(uint64_t expectSize,
             readHandlerT handler);
+    void AsyncReadAny(readHandlerT handler);
     void AsyncWrite(writeHandlerT handler);
     void Finish(std::string &errMsg);
     //FIXME: Buffer split into ReadBuffer && WriteBuffer
@@ -40,7 +41,7 @@ private:
     void SetFinishHandler(finishHandlerT handler) {
         finishHandler_ = handler;
     }
-    void Reset() {
+    void ResetRead() {
         expectSize_ = 0;
         readedSize_ = 0;
     }
@@ -50,6 +51,7 @@ private:
 
     uint64_t expectSize_ = 0;
     uint64_t readedSize_ = 0;
+    bool anyFlag_ = false;
     readHandlerT userReadHandler_;
     writeHandlerT userWriteHandler_;
     finishHandlerT finishHandler_;
