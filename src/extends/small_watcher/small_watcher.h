@@ -17,6 +17,8 @@ public:
 using onNotifyFunc = std::function<void(const std::string &errMsg)>;
 using onListFunc = std::function<void(const std::string &errMsg, uint64_t afterIndex,
         std::shared_ptr<std::vector<std::string>> keys)>;
+using onListWatchFunc = std::function<void(const std::string &errMsg, bool &stop, 
+        std::shared_ptr<std::vector<std::string>> keys)>;
     WatcherI() = default;
     virtual ~WatcherI() = default;
     virtual void Init(std::string &errMsg) = 0;
@@ -30,8 +32,9 @@ using onListFunc = std::function<void(const std::string &errMsg, uint64_t afterI
     //        const std::string path, std::string &value) = 0;
     virtual void List(const std::string &path, onListFunc func) = 0;
 
-    virtual void Watch(const uint64_t afterIndex, const std::string &path, onNotifyFunc func) = 0;
+    virtual void WatchOnce(const uint64_t afterIndex, const std::string &path, onNotifyFunc func) = 0;
     virtual void CreateEphemeral(const std::string &path, const std::string &value) = 0;
+    virtual void ListWatch(const std::string &path, const onListWatchFunc &func) = 0;
     //void CreateEphemeralInOrder(WatcherCtxI &ctx,
     //        const std::string &path, const std::string &value);
 };

@@ -218,7 +218,7 @@ void Etcd::List(const std::string &path, onListFunc handler) {
     };
     c->doReq(onDone);
 }
-void Etcd::Watch(const uint64_t afterIndex,
+void Etcd::WatchOnce(const uint64_t afterIndex,
         const std::string &path, onNotifyFunc handler) {
     auto c = std::make_shared<small_http_client::Async>("GET", ips_[0], std::to_string(port_), 
         "/v2/keys" + path + "?wait=true&recursive=true", "");
@@ -228,5 +228,42 @@ void Etcd::Watch(const uint64_t afterIndex,
         handler(argErrMsg);
     };
     c->doReq(onDone);
+}
+void Etcd::ListWatch(const std::string &path, 
+            const onListWatchFunc &func) {
+    watch(0, func, [this, func](){
+        listWatch(func);
+    });
+}
+void Etcd::watch(const uint64_t afterIndex, const onListWatchFunc &func,
+        const std::function<void()> &optFunc) {
+    WatchOnce(afterIndex, "/dsp_se", [this, afterIndex, func, optFunc](const std::string &argErrMsg){
+        if (!argErrMsg.empty()) {
+            LOG(WARNING) << argErrMsg;
+            auto t = small_timer::MakeTimer();
+            t->AsyncWait(5000, [this, t, afterIndex, func, optFunc](const std::string &errMsg) {
+                watch(afterIndex, func, optFunc);
+            });
+            return;
+        }
+        listWatch(func);
+    });
+}
+void Etcd::listWatch(const onListWatchFunc &func) {
+    List("/dsp_se", [this, func](const std::string &argErrMsg, uint64_t afterIndex, 
+    std::shared_ptr<std::vector<std::string>> keys){
+        bool stop = false;
+        if (!argErrMsg.empty()) {
+            LOG(WARNING) << argErrMsg;
+        }else {
+            func(argErrMsg, stop, keys);
+        }
+        if (stop) {
+            return;
+        }
+        watch(afterIndex, func, [this, func](){
+            listWatch(func);
+        });
+    });
 }
 }//namespace small_watcher

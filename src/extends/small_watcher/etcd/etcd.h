@@ -16,8 +16,10 @@ public:
             const std::string &value) override;
     void GetLocalIp(std::string &ip) override;
     void List(const std::string &path, onListFunc func) override;
-    void Watch(const uint64_t afterIndex, 
+    void WatchOnce(const uint64_t afterIndex, 
             const std::string &path, onNotifyFunc func) override;
+    void ListWatch(const std::string &path, 
+            const onListWatchFunc &func) override;
 private:
     void createEphemeral(const std::string &path, 
             const std::string &value, const std::string &errMsg);
@@ -25,6 +27,10 @@ private:
         const std::string &errMsg);
     void nextRefresh(const std::string &path, const std::string &value);
     void nextCreateEphemral(const std::string &path, const std::string &value);
+
+    void watch(const uint64_t afterIndex, const onListWatchFunc &func,
+            const std::function<void()> &optFunc);
+    void listWatch(const onListWatchFunc &func);
     
     std::vector<std::string> ips_;
     uint32_t port_;

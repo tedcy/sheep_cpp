@@ -41,31 +41,15 @@ struct Test{
         });
     }
     void TestListWatcher() {
-        testListWatcher1(0);
-    }
-    void testListWatcher1(uint64_t afterIndex) {
-        std::this_thread::sleep_for(std::chrono::seconds(1));
-        watcher_->Watch(afterIndex, "/dsp_se", [this, afterIndex](const std::string &argErrMsg){
-            if (!argErrMsg.empty()) {
-                LOG(WARNING) << argErrMsg;
-                testListWatcher1(afterIndex);
-                return;
-            }
-            testListWatcher2();
-        });
-    }
-    void testListWatcher2() {
-        watcher_->List("/dsp_se", [this](const std::string &argErrMsg, uint64_t afterIndex, 
+        watcher_->ListWatch("/dsp_se", [](const std::string &argErrMsg, bool &stop,
             std::shared_ptr<std::vector<std::string>> keys){
             if (!argErrMsg.empty()) {
                 LOG(WARNING) << argErrMsg;
-            }else {
-                LOG(INFO) << afterIndex;
-                for (auto &key: *keys) {
-                    LOG(INFO) << key;
-                }
+                return;
             }
-            testListWatcher1(afterIndex);
+            for (auto &key: *keys) {
+                LOG(INFO) << key;
+            }
         });
     }
     std::shared_ptr<small_watcher::WatcherI> watcher_;
