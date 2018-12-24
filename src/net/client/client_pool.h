@@ -3,6 +3,7 @@
 #include "event_loop.h"
 #include <set>
 #include <memory>
+#include "small_packages.h"
 
 namespace sheep{
 namespace net{
@@ -26,6 +27,8 @@ private:
     std::set<std::shared_ptr<Client>> clients_;
     std::set<std::shared_ptr<Client>> allClients_;
     std::shared_ptr<bool> exist_;
+    std::shared_ptr<small_lock::LockI> lock_;
+    bool inited_ = false;
 };
 }
 }

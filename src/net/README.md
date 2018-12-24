@@ -1,5 +1,15 @@
+1 全部类生命周期关系图
 
-1 生命周期关系图
+```
+tree -I "build*|test*" -P "*.cpp|*.h"
+```
+
+外部类有  
+EventLoop,Timer,Client,ClientPool,Server,TcpConnection
+内部类有  
+外部类的内部实现Connector,Acceptor,Asyncer  
+TCP的封装Buffer,Socket,Event  
+核心调度器实现AsyncPoller,Epoller,TimerPoller  
 
 ```mermaid
 graph LR;
@@ -29,12 +39,25 @@ AsyncerEvent1[AsyncerEvent]-->Asyncer
 ```
 
 2 内部类和函数
+
 ```
 * Connector
 Connect
 无法重复使用，因为一旦连接上了，内部成员会转移给TcpConenction
 SetNewConnectionHandler
 SetConnectFailedHandler
+* Acceptor
+* Asyncer
+* Buffer
+* Socket
+* Event
+* AsyncerPoller
+存储结构是list<event>
+辅助存储结构hash<id, list::iter>
+update先判断在hash中是否存在
+不存在就是add，直接pushback，并且记录下iter用于后面可以删除，时间复杂度O(1)
+存在就先remove在add，O(1)
+remove是通过hash中拿到iter去list删除，O(1)
 * EpollerPoller
 以fd作为标识符，设置读写事件
 存储结构是vector<event>
@@ -50,13 +73,6 @@ update先判断set中是否存在
 不存在就是add，直接insert到map，当同一毫秒有多个event时，会通过id的先后次序保证event的顺序性O(nlgn)
 存在就先remove再add,O(nlgn)
 remove是删除map的值再删除set的值O(nlgn)
-* AsyncerPoller
-存储结构是list<event>
-辅助存储结构hash<id, list::iter>
-update先判断在hash中是否存在
-不存在就是add，直接pushback，并且记录下iter用于后面可以删除，时间复杂度O(1)
-存在就先remove在add，O(1)
-remove是通过hash中拿到iter去list删除，O(1)
 ```
 
 PS:
@@ -77,27 +93,27 @@ man的建议是通过一个clean list来判断已经被关闭的描述符
 * EventLoop
 Wait
 Stop
+* Timer
+AsyncWait
+Cancel
 * Client
 SetConnectedHandler
 SetDisconnectedHandler
 AsyncConnect
 GetTcpConnection
+* ClientPool
+Init
+Get
+Insert
 * Server
 SetConnectedHandler
 SetDisconnectedHandler
 Serve
-* Timer
-AsyncWait
-Cancel
 * TcpConnection
 AsyncRead
 AsyncWrite
 WriteBufferPushBack
 ReadBufferPopHead
-* ClientPool
-Init
-Get
-Insert
 ```
 
 PS:
@@ -116,6 +132,7 @@ GetTcpConnection因为必须再连接建立以后才调用，不存在读写并�
 AsyncWait没有任何特殊操作，本身时间的有序性就能保证执行到handler  
 AsyncRead是判断Buffer的未读长度是否满足expectSize  
 AsyncWrite是调用以后才设置的epoll，因此不可能出现先发生的情况  
+2.4 ClientPool对象设计为不可复用以减少复杂程度，假如Init失败了再次Init必定会失败
 
 4 TODO|FIXME
 1 T EPOLLERR, EPOLLHUP
@@ -125,9 +142,9 @@ AsyncWrite是调用以后才设置的epoll，因此不可能出现先发生的�
 5 T buffer delete unuse read data
 6 F Buffer split into read write buffer
 7 F GetTcpConnection if need lock
-8 F client pool thread unsafe
+8 OK F client pool thread unsafe
 9 OK F 即使server不开,client也能connect success
 10 OK F client无法复用，断开连接后connect直接core
-11 F timer迅速调用两次，并且是相同时间，会导致调用失败
+11 OK F timer迅速调用两次，并且是相同时间，会导致调用失败
 12 OK F client-server的流量异常低，并且server端报reset by peer，应该是数据没读写完就close了
 13 F ClientPool还连接的时候需要清理连接信息

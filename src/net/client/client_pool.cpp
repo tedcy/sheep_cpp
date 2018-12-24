@@ -9,10 +9,18 @@ ClientPool::ClientPool(EventLoop &loop,
     loop_(loop),
     addr_(addr), port_(port),
     maxSize_(maxSize), 
-    exist_(std::make_shared<bool>()){
+    exist_(std::make_shared<bool>()),
+    //TODO instead of NormalLock
+    lock_(small_lock::MakeRecursiveLock()){
 }
 
 void ClientPool::Init(std::string &errMsg) {
+    small_lock::UniqueGuard guard(lock_);
+    if (inited_) {
+        errMsg = "ClientPool has been inited";
+        return;
+    }
+    inited_ = true;
     for (uint64_t i = 0;i < maxSize_;i++) {
         auto client = std::make_shared<Client>(loop_, addr_, port_);
         std::weak_ptr<bool> weakExist = exist_;
@@ -73,6 +81,7 @@ void ClientPool::Init(std::string &errMsg) {
 void ClientPool::initClient(std::string &errMsg,
         std::shared_ptr<Client> &client) {
     //earse for reconnect
+    small_lock::UniqueGuard guard(lock_);
     clients_.erase(client);
     allClients_.insert(client);
     client->AsyncConnect(errMsg);
@@ -82,15 +91,18 @@ void ClientPool::initClient(std::string &errMsg,
 }
 
 std::shared_ptr<Client> ClientPool::Get() {
+    small_lock::UniqueGuard guard(lock_);
     if (clients_.empty()) {
         return nullptr;
     }
     auto iter = clients_.begin();
+    auto client = *iter;
     clients_.erase(iter);
-    return *iter;
+    return client;
 }
 
 void ClientPool::Insert(std::shared_ptr<Client> client) {
+    small_lock::UniqueGuard guard(lock_);
     clients_.insert(client);
 }
 }
