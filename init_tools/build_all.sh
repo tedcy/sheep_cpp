@@ -42,5 +42,9 @@ if [[ $clean == "clean" ]]; then
         echo "-------------------------------------------"
         echo "-------------------------------------------"
         cd $v
+        export found=($(find build -maxdepth 1 -name compile_commands.json -mmin 1))
+        if ((${#found[@]} == 0));then
+            cp test/build/compile_commands.json build
+        fi
     done
 fi

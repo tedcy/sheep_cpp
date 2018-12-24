@@ -27,3 +27,16 @@ foreach (TARGET server client redis_client)
 
     target_link_libraries(${TARGET} pthread)
 endforeach()
+
+foreach (TARGET bench_redis_client)
+    aux_source_directory(${PROJECT_SOURCE_DIR}/bench/${TARGET} ${TARGET}LIST_SRC)
+    add_executable(${TARGET} ${${TARGET}LIST_SRC})
+
+    include_directories(${PROJECT_SOURCE_DIR}/bench/${TARGET})
+
+    find_package(small_server REQUIRED)
+    include_directories(${TARGET} ${small_server_INCLUDE_DIRS})
+    target_link_libraries(${TARGET} ${small_server_LIBRARIES})
+
+    target_link_libraries(${TARGET} pthread)
+endforeach()
