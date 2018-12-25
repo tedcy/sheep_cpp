@@ -107,7 +107,7 @@ private:
     }
     std::map<std::string, std::shared_ptr<sheep::net::ClientPool>> clientPools_;
     sheep::net::EventLoop &loop_;
-    uint64_t maxSize_ = 500;
+    uint64_t maxSize_ = 50;
     std::unique_ptr<Balancer> balancer_;
     std::string lbPolicyType_ = "random";
     std::string resolverType_ = "etcd";

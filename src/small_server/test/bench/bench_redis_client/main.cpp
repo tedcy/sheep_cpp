@@ -8,7 +8,7 @@ void DoReq(std::string &errMsg,
         std::set<std::shared_ptr<small_server::RedisClient>> &clients,
         std::shared_ptr<small_lock::LockI> &lock) {
     small_lock::UniqueGuard guard(lock);
-    if (clients.size() >= 500) {
+    if (clients.size() >= 50) {
         return;
     }
     auto clientPtr = std::make_shared<small_server::RedisClient>();
