@@ -4,12 +4,14 @@
 #include <functional>
 #include "small_packages.h"
 #include "buffer.h"
+#include "small_packages.h"
 
 namespace sheep{
 namespace net{
 class Event;
 class EventLoop;
 class Socket;
+class Asyncer;
 
 class TcpConnection: public small_packages::noncopyable,
     public std::enable_shared_from_this<TcpConnection>{
@@ -60,6 +62,8 @@ private:
     //composition
     std::unique_ptr<Socket> socket_;
     std::shared_ptr<Event> event_;
+    std::shared_ptr<Asyncer> asyncer_;
+    std::shared_ptr<small_lock::LockI> lock_;
 };
 }
 }

@@ -3,6 +3,7 @@
 #include "small_server.h"
 #include "small_net.h"
 #include "small_packages.h"
+#include "small_pprof.h"
 
 void DoReq(std::string &errMsg,
         std::set<std::shared_ptr<small_server::RedisClient>> &clients,
@@ -41,6 +42,7 @@ void DoReq(std::string &errMsg,
 }
 
 int main() {
+    ghttpd();
     std::string errMsg;
     small_server::SheepNetCore::GetInstance()->Init();
     //small_net::AsioNet::GetInstance().Init();

@@ -35,14 +35,14 @@ std::vector<std::weak_ptr<Event>> Epoller::Poll(
         }
         if (pollEvent.events & EPOLLIN) {
             event->SetReadAble();
-            //LOG(DEBUG) << event->GetFd() << " readable";
+            //LOG(DEBUG) << event->GetFd() << " id " << event->GetId() << " readable";
         }else {
             if (pollEvent.events & EPOLLOUT || 
                 pollEvent.events & EPOLLERR ||
                 pollEvent.events & EPOLLHUP) {
                 //TODO add event errable
                 event->SetWriteAble();
-                //LOG(DEBUG) << event->GetFd() << " writeable";
+                //LOG(DEBUG) << event->GetFd() << " id " << event->GetId() << " writeable";
             }else {
                 LOG(FATAL) << "can't access here " << pollEvent.events;
             }
@@ -71,8 +71,8 @@ void Epoller::UpdateEvent(std::shared_ptr<Event> event) {
         ::epoll_ctl(epollfd_, EPOLL_CTL_ADD, fd, &epollEvent);
         return;
     }
-    //LOG(DEBUG) << "modify " << fd << event->GetReadNotify()
-    //       << event->GetWriteNotify(); 
+    //LOG(DEBUG) << "modify " << fd << " id " << event->GetId() 
+    //  << event->GetReadNotify() << event->GetWriteNotify(); 
     //exists and has flag, modify
     ::epoll_ctl(epollfd_, EPOLL_CTL_MOD, fd, &epollEvent);
 }

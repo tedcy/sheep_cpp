@@ -38,5 +38,9 @@ foreach (TARGET bench_redis_client)
     include_directories(${TARGET} ${small_server_INCLUDE_DIRS})
     target_link_libraries(${TARGET} ${small_server_LIBRARIES})
 
+    find_package(small_pprof REQUIRED)
+    include_directories(${TARGET} ${small_pprof_INCLUDE_DIRS})
+    target_link_libraries(${TARGET} ${small_pprof_LIBRARIES})
+
     target_link_libraries(${TARGET} pthread)
 endforeach()

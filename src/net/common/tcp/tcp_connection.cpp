@@ -3,19 +3,23 @@
 #include "event.h"
 #include "log.h"
 #include "epoller.h"
+#include "asyncer.h"
+#include "small_packages.h"
 
 namespace sheep{
 namespace net{
 TcpConnection::TcpConnection(EventLoop &loop, int fd) :
     socket_(new Socket(fd)),
-    event_(std::make_shared<Event>(loop, EpollerFactory::Get()->GetPollerType(), fd)){
+    event_(std::make_shared<Event>(loop, EpollerFactory::Get()->GetPollerType(), fd)),
+    lock_(small_lock::MakeRecursiveLock()){
 }
 
 TcpConnection::TcpConnection(EventLoop &loop,
         std::unique_ptr<Socket> &socket,
         std::shared_ptr<Event> event) :
     socket_(std::move(socket)), 
-    event_(event){
+    event_(event),
+    lock_(small_lock::MakeRecursiveLock()){
 }
 
 TcpConnection::~TcpConnection() {
@@ -103,19 +107,29 @@ void TcpConnection::AsyncReadAny(readHandlerT handler) {
 }
 
 void TcpConnection::AsyncWrite(writeHandlerT handler) {
-    userWriteHandler_ = handler;
+    small_lock::UniqueGuard guard(lock_);
+    asyncer_ = std::make_shared<Asyncer>(event_->GetLooper());
     std::weak_ptr<TcpConnection> weakThis = shared_from_this();
-    event_->SetWriteEvent([weakThis, this](){
+    asyncer_->AsyncDo([this, weakThis, handler](const std::string &errMsg){
         auto realThis = weakThis.lock();
         if (!realThis) {
             LOG(WARNING) << "TcpConnection has been destoryed";
             return;
         }
-        //not notify until data's recv finished
-        //event_->DisableWriteNotify();
-        writeHandler();
+        userWriteHandler_ = handler;
+        std::weak_ptr<TcpConnection> weakThis = shared_from_this();
+        event_->SetWriteEvent([weakThis, this](){
+            auto realThis = weakThis.lock();
+            if (!realThis) {
+                LOG(WARNING) << "TcpConnection has been destoryed";
+                return;
+            }
+            //not notify until data's recv finished
+            //event_->DisableWriteNotify();
+            writeHandler();
+        });
+        event_->EnableWriteNotify();
     });
-    event_->EnableWriteNotify();
 }
 
 void TcpConnection::readHandler() {

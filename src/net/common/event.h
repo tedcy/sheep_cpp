@@ -28,12 +28,16 @@ public:
     void SetWriteAble() {
         writeAble_ = true;
     }
+    EventLoop& GetLooper() {
+        return loop_;
+    }
     int64_t GetFd();
     int64_t GetId();
     void Do();
 
 private:
     void update();
+    EventLoop &loop_;
     //associated
     std::weak_ptr<Poller> poller_;
 

@@ -7,6 +7,7 @@
 namespace sheep{
 namespace net{
 Event::Event(EventLoop &loop, uint64_t type, int64_t fd):
+    loop_(loop),
     poller_(loop.GetPoller(type)), 
     fd_(fd), id_(EventIdCreator::Get()->Create()){
 }
