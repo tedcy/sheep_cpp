@@ -17,6 +17,7 @@ public:
 private:
 //for tcp_connection
 friend class TcpConnection;
+    void Reset();
     void Write(char *buf, uint64_t len);
     uint64_t Read(char *buf, uint64_t len);
     uint64_t UpdateReadIndex(uint64_t len);

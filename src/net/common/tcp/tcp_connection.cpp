@@ -22,6 +22,15 @@ TcpConnection::~TcpConnection() {
     //LOG(DEBUG) << "~TcpConnection";
 }
 
+void TcpConnection::Reset() {
+    userReadHandler_ = nullptr;
+    userWriteHandler_ = nullptr;
+    anyFlag_ = false;
+    ReadBuffer_.Reset();
+    WriteBuffer_.Reset();
+    ResetRead();
+}
+
 void TcpConnection::InitAccepted(std::string &errMsg) {
     if (finishHandler_ == nullptr) {
         errMsg = "invalid finish handler";

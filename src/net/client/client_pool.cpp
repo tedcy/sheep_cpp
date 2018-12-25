@@ -102,6 +102,7 @@ std::shared_ptr<Client> ClientPool::Get() {
 }
 
 void ClientPool::Insert(std::shared_ptr<Client> client) {
+    client->Reset();
     small_lock::UniqueGuard guard(lock_);
     clients_.insert(client);
 }

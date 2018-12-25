@@ -10,6 +10,7 @@ namespace sheep{
 namespace net{
 class Connector;
 class Asyncer;
+class ClientPool;
 
 //can be reuse to reconnect
 class Client: public small_packages::noncopyable{
@@ -23,6 +24,10 @@ public:
     void SetDisconnectedHandler(disconnectedHandlerT);
     TcpConnection& GetTcpConnection();
 private:
+    friend ClientPool;
+    void Reset() {
+        connection_->Reset();
+    }
     void newConnectionHandler(std::unique_ptr<Socket> &, std::shared_ptr<Event>);
     EventLoop &loop_;
     const std::string addr_;

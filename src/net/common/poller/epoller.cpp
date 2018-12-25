@@ -71,8 +71,8 @@ void Epoller::UpdateEvent(std::shared_ptr<Event> event) {
         ::epoll_ctl(epollfd_, EPOLL_CTL_ADD, fd, &epollEvent);
         return;
     }
-    LOG(DEBUG) << "modify " << fd << event->GetReadNotify()
-           << event->GetWriteNotify(); 
+    //LOG(DEBUG) << "modify " << fd << event->GetReadNotify()
+    //       << event->GetWriteNotify(); 
     //exists and has flag, modify
     ::epoll_ctl(epollfd_, EPOLL_CTL_MOD, fd, &epollEvent);
 }

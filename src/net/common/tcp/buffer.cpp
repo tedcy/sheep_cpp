@@ -6,6 +6,13 @@ namespace net{
 Buffer::Buffer() :
     buffer_(InitSize_){
 }
+
+void Buffer::Reset() {
+    readIndex_ = 0;
+    writeIndex_ = 0;
+    std::vector<char> tmp;
+    buffer_.swap(tmp);
+}
     
 void Buffer::Push(char *buf, uint64_t len) {
     Write(buf, len);
@@ -39,8 +46,7 @@ uint64_t Buffer::UpdateReadIndex(uint64_t len) {
     readIndex_ += len;
     //read finish, reset indexs
     if (readIndex_ == writeIndex_) {
-        readIndex_ = 0;
-        writeIndex_ = 0;
+        Reset();
     }
     return len;
 }

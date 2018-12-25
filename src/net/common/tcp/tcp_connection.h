@@ -29,6 +29,7 @@ public:
             readHandlerT handler);
     void AsyncReadAny(readHandlerT handler);
     void AsyncWrite(writeHandlerT handler);
+    void Reset();
     void Finish(std::string &errMsg);
     //FIXME: Buffer split into ReadBuffer && WriteBuffer
     Buffer ReadBuffer_;
