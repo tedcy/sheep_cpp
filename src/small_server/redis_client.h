@@ -52,33 +52,41 @@ protected:
         auto &connection = client_->GetTcpConnection();
         ReqPush(errMsg, connection);
         if (!errMsg.empty()) {
-            onDone_(*this, errMsg);
+            Finish(errMsg);
             return;
         }
         connection.AsyncWrite([this](std::string &errMsg){
             if(!errMsg.empty()) {
-                onDone_(*this, errMsg);
+                Finish(errMsg);
+                return;
             }
             reader_ = redisReaderCreate();
             auto &connection = client_->GetTcpConnection();
             connection.AsyncReadAny([this](std::string &errMsg) {
                 if(!errMsg.empty()) {
-                    onDone_(*this, errMsg);
+                    Finish(errMsg);
+                    return;
                 }
                 auto &connection = client_->GetTcpConnection();
                 bool finish;
                 RespPop(errMsg, finish, connection);
                 if(!errMsg.empty()) {
-                    onDone_(*this, errMsg);
+                    Finish(errMsg);
+                    return;
                 }
                 if (finish) {
-                    onDone_(*this, "");
-                    clientPool_->Insert(client_);
+                    Finish("");
                 }
             });
         });
     }
 private:
+    void Finish(const std::string &errMsg) {
+        auto clientPool = clientPool_;
+        auto client = client_;
+        onDone_(*this, errMsg);
+        clientPool->Insert(client);
+    }
     void ReqPush(std::string &errMsg, sheep::net::TcpConnection &connection) {
         cmdBufLen_ = redisFormatCommand(&cmdBuf_, command_.c_str());
         if (cmdBufLen_ < 0) {
