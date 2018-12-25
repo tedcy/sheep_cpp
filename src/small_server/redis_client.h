@@ -24,6 +24,9 @@ using RedisClientOnDone =
         if (reader_ != nullptr) {
             redisReaderFree(reader_);
         }
+        if (reply_ != nullptr) {
+            freeReplyObject(reply_);
+        }
     }
     std::string GetResp(bool &ok) {
         ok = ok_;
