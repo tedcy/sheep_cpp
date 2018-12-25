@@ -4,9 +4,12 @@
 #include "timer_poller.h"
 #include "asyncer_poller.h"
 #include "log.h"
+#include <thread>
+#include <sstream>
 
 namespace sheep{
 namespace net{
+unsigned long long g_tid = 0;
 EventLoop::EventLoop(){
     AddPoller(EpollerFactory::Get());
     AddPoller(TimerPollerFactory::Get());
@@ -22,6 +25,10 @@ std::weak_ptr<Poller> EventLoop::GetPoller(uint64_t pollerType) {
 }
 
 void EventLoop::loop() {
+    std::ostringstream oss;
+    oss << std::this_thread::get_id();
+    std::string stid = oss.str();
+    g_tid = std::stoull(stid);
     for (;!stop_;) {
         for (auto &pollerPair: pollers_) {
             doPoller(pollerPair.second); 
