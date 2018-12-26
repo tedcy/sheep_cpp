@@ -24,7 +24,7 @@ std::string TrimLeft(const std::string &str, const std::string &trimStr) {
     if (index < 0) {
         return result;
     }
-    result = str.substr(index, trimStr.size());
+    result = str.substr(index + trimStr.size(), str.size() - trimStr.size());
     return result;
 }
 }//namespace small_strings
