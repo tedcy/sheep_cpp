@@ -229,28 +229,44 @@ void Etcd::WatchOnce(const uint64_t afterIndex,
     };
     c->doReq(onDone);
 }
+/*ListWatch
+ *  listWatch
+ *    List
+ *    ok
+ *      cb
+ *      watch
+ *    failed
+ *      watch
+ *
+ *  watch
+ *     WatchOnce
+ *     ok
+ *       listWatch
+ *     failed
+ *       sleep to watch
+ */
 void Etcd::ListWatch(const std::string &path, 
             const onListWatchFunc &func) {
-    watch(0, func, [this, func](){
-        listWatch(func);
-    });
+    listWatch(path, func);
 }
-void Etcd::watch(const uint64_t afterIndex, const onListWatchFunc &func,
+void Etcd::watch(const uint64_t afterIndex, 
+        const std::string &path,
+        const onListWatchFunc &func,
         const std::function<void()> &optFunc) {
-    WatchOnce(afterIndex, "/dsp_se", [this, afterIndex, func, optFunc](const std::string &argErrMsg){
+    WatchOnce(afterIndex, path, [this, afterIndex, path, func, optFunc](const std::string &argErrMsg){
         if (!argErrMsg.empty()) {
             LOG(WARNING) << argErrMsg;
             auto t = small_timer::MakeTimer();
-            t->AsyncWait(5000, [this, t, afterIndex, func, optFunc](const std::string &errMsg) {
-                watch(afterIndex, func, optFunc);
+            t->AsyncWait(5000, [this, t, path, afterIndex, func, optFunc](const std::string &errMsg) {
+                watch(afterIndex, path, func, optFunc);
             });
             return;
         }
-        listWatch(func);
+        listWatch(path, func);
     });
 }
-void Etcd::listWatch(const onListWatchFunc &func) {
-    List("/dsp_se", [this, func](const std::string &argErrMsg, uint64_t afterIndex, 
+void Etcd::listWatch(const std::string &path, const onListWatchFunc &func) {
+    List(path, [this, path, func](const std::string &argErrMsg, uint64_t afterIndex, 
     std::shared_ptr<std::vector<std::string>> keys){
         bool stop = false;
         if (!argErrMsg.empty()) {
@@ -261,8 +277,8 @@ void Etcd::listWatch(const onListWatchFunc &func) {
         if (stop) {
             return;
         }
-        watch(afterIndex, func, [this, func](){
-            listWatch(func);
+        watch(afterIndex, path, func, [this, path, func](){
+            listWatch(path, func);
         });
     });
 }

@@ -28,9 +28,11 @@ private:
     void nextRefresh(const std::string &path, const std::string &value);
     void nextCreateEphemral(const std::string &path, const std::string &value);
 
-    void watch(const uint64_t afterIndex, const onListWatchFunc &func,
-            const std::function<void()> &optFunc);
-    void listWatch(const onListWatchFunc &func);
+    void watch(const uint64_t afterIndex, 
+        const std::string &path,
+        const onListWatchFunc &func,
+        const std::function<void()> &optFunc);
+    void listWatch(const std::string &path, const onListWatchFunc &func);
     
     std::vector<std::string> ips_;
     uint32_t port_;
