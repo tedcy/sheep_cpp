@@ -4,6 +4,7 @@
 #include <grpcpp/grpcpp.h>
 
 #include "grpc_core.h"
+#include "grpc_client_core.h"
 
 namespace small_server{
 template <typename ReqT, typename RespT, typename Stub>
@@ -31,23 +32,24 @@ public:
     }
     ReqT req_;
     RespT resp_;
-    void DoReq(const std::string &addr,
-            std::function<void(GrpcClient&, const std::string&)> onDone) {
-        doReq<GrpcClient>(addr, onDone);
+    void DoReq(std::function<void(GrpcClient&, const std::string&)> onDone) {
+        doReq<GrpcClient>(onDone);
     }
 protected:
     template <typename T>
-    void doReq(const std::string &addr,
-            std::function<void(T&, const std::string&)> &onDone) {
+    void doReq(std::function<void(T&, const std::string&)> &onDone) {
         onDone_ = [onDone](GrpcClient &c, const std::string &errMsg) {
             T &t = dynamic_cast<T&>(c);
             onDone(t, errMsg);
         };
 
+        bool ok;
+        auto stub = GrpcClientCore<Stub>::GetInstance()->GetClientPool(ok);
+        if (!ok) {
+            onDone_(*this, "stub is nullptr");
+            return;
+        }
         auto cq = GrpcCore::GetInstance()->GetCompletionQueue().get();
-        //todo stub manager
-        auto stub = Stub::NewStub(
-            grpc::CreateChannel(addr, grpc::InsecureChannelCredentials()));
         responseReader_ = stub->PrepareAsyncHandler(
             &grpcContext_, req_, cq);
         responseReader_->StartCall();
@@ -65,9 +67,8 @@ private:
 template <typename ReqT, typename RespT, typename Stub, typename ServiceCtxT>
 class GrpcClientWithService: public GrpcClient<ReqT, RespT, Stub>{
 public:
-    void DoReq(const std::string &addr,
-            std::function<void(GrpcClientWithService&, const std::string&)> onDone) {
-        this->template doReq<GrpcClientWithService>(addr, onDone);
+    void DoReq(std::function<void(GrpcClientWithService&, const std::string&)> onDone) {
+        this->template doReq<GrpcClientWithService>(onDone);
     }
     std::weak_ptr<ServiceCtxT> GetServiceCtx() {
         return serviceCtx_;

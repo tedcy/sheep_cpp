@@ -1,18 +1,18 @@
 #pragma once
 #include "log.h"
-#include "net.h"
 #include "small_packages.h"
 #include "client_channel/balancer.h"
 #include "client_channel/client_manager.h"
+
+#include <grpcpp/grpcpp.h>
+
 namespace small_server{
-class SheepNetClientCore: public small_packages::noncopyable{
+template<typename StubManager>
+class GrpcClientCore: public small_packages::noncopyable {
 public:
-    SheepNetClientCore(sheep::net::EventLoop &loop):
-        loop_(loop) {
-    }
-    virtual ~SheepNetClientCore() = default;
-    void SetMaxSize(const uint64_t maxSize) {
-        maxSize_ = maxSize;
+    static GrpcClientCore* GetInstance() {
+        static GrpcClientCore instance_;
+        return &instance_;
     }
     void SetLbPolicyType(const std::string &LbPolicyType) {
         lbPolicyType_ = LbPolicyType;
@@ -25,30 +25,22 @@ public:
         auto weakPtr = std::weak_ptr<bool>(exist_);
         clientManager_.SetMakeClientHandler([weakPtr, this](std::string &errMsg,
                     const std::string &addrPort){
-            std::shared_ptr<sheep::net::ClientPool> clientPool;
+            std::shared_ptr<typename StubManager::Stub> stub;
             auto exist = weakPtr.lock();
             if(!exist) {
                 LOG(WARNING) << "SheepNetClientCore destoryed";
-                return clientPool;
+                return stub;
             }
-            bool ok;
-            std::string addr;
-            int port;
-            clientManager_.AddrPort2addrAndPort(ok, addrPort, addr, port);
-            clientPool = std::make_shared<sheep::net::ClientPool>(loop_, addr, port, maxSize_);
-            clientPool->Init(errMsg);
-            if (!errMsg.empty()) {
-                clientPool = nullptr;
-                return clientPool;
-            }
-            return clientPool;
+            stub = StubManager::NewStub(
+                grpc::CreateChannel(addrPort, grpc::InsecureChannelCredentials()));
+            return stub;
         });
         balancer_ = std::unique_ptr<Balancer>(new Balancer(ips, port, target, lbPolicyType_, resolverType_));
         balancer_->Init(errMsg, [this](std::set<std::string> &nodes){
             clientManager_.Update(nodes);
         });
     }
-    std::shared_ptr<sheep::net::ClientPool> GetClientPool(bool &ok) {
+    std::shared_ptr<typename StubManager::Stub> GetClientPool(bool &ok) {
         auto addr = balancer_->Get(ok);
         if (!ok) {
             return nullptr;
@@ -56,10 +48,10 @@ public:
         return clientManager_.GetClientPool(ok, addr);
     }
 private:
+    GrpcClientCore() {
+    }
     std::shared_ptr<bool> exist_ = std::make_shared<bool>();
-    ClientManager<sheep::net::ClientPool> clientManager_;
-    sheep::net::EventLoop &loop_;
-    uint64_t maxSize_ = 50;
+    ClientManager<typename StubManager::Stub> clientManager_;
     std::unique_ptr<Balancer> balancer_;
     std::string lbPolicyType_ = "random";
     std::string resolverType_ = "etcd";

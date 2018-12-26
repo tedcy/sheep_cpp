@@ -29,8 +29,7 @@ public:
                     helloworld::HelloReply, helloworld::Greeter>();
                 ctx.GetTask()->client = client;
                 client->req_.set_name("server");
-                client->DoReq("127.0.0.1:8888", 
-                    [](GrpcServiceClientTest &client, const std::string &errMsg) {
+                client->DoReq([](GrpcServiceClientTest &client, const std::string &errMsg) {
                         auto serviceCtx = client.GetServiceCtx().lock();
                         if (!serviceCtx) {
                             return;

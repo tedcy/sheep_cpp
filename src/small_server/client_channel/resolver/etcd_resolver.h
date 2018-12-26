@@ -1,6 +1,7 @@
 #pragma once
 #include "resolver_interface.h"
 #include "small_watcher_factory.h"
+#include "log.h"
 namespace small_server{
 namespace resolver{
 class EtcdResolver: public ResolverI{
