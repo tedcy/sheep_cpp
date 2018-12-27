@@ -22,9 +22,9 @@ int main() {
     watcher->CreateEphemeral("/test/" + ip + ":8888", "");
 
     //FIXME when here etcd, failed
+    //small_server::GrpcClientCore<helloworld::Greeter>::
+    //    GetInstance()->SetResolverType("string");
     small_server::GrpcClientCore<helloworld::Greeter>::
-        GetInstance()->SetResolverType("string");
-    small_server::GrpcClientCore<helloworld::Greeter>::
-        GetInstance()->Init(errMsg, {"192.168.2.128"}, 8888, "");
+        GetInstance()->Init(errMsg, {"172.16.187.149"}, 2379, "/test");
     server.Run();
 }

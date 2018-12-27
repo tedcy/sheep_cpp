@@ -23,6 +23,10 @@ std::shared_ptr<ConnectionPool> ConnectionPoolManager::get(const std::string &ho
     return poolPtr->second;
 }
 void ConnectionPoolManager::add(const std::string &host,const std::string &port, int size) {
+    auto iter = connectionPools.find(host + port);
+    if (iter != connectionPools.end()) {
+        return;
+    }
     auto connectionPool = std::shared_ptr<ConnectionPool>(
             new ConnectionPool(small_net::AsioNet::GetInstance().GetIos(), host, port, size));
     connectionPool->Init();
