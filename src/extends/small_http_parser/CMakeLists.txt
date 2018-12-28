@@ -16,7 +16,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-g -O3 ${CMAKE_CXX_FLAGS}")
 set(CMAKE_MODULE_PATH ${SHEEP_PROJECT_SOURCE_DIR}/cmake)
 
 aux_source_directory(${PROJECT_SOURCE_DIR}/ LIST_SRC)
-aux_source_directory(${PROJECT_SOURCE_DIR}/http-parser LIST_SRC)
+set(LIST_SRC ${LIST_SRC} http-parser/http_parser.c)
 add_library(${TARGET} STATIC ${LIST_SRC})
 
 include_directories(${TARGET} ${PROJECT_SOURCE_DIR}/)
