@@ -36,3 +36,4 @@ env.sh
 
 gperftools-httpd*
 hiredis*
+http-parser*

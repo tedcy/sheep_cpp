@@ -9,11 +9,6 @@ if [[ $load_env == "" ]];then
         source "env.sh"
     fi
 fi
-path=`find . -maxdepth 1 -name build.sh`
-if [[ $path != "" ]];then
-    ./build.sh
-    exit 0
-fi
 mkdir -pv build
 cd build
 $cmake_path .. -DCMAKE_BUILD_TYPE=$build_type \

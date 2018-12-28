@@ -8,6 +8,7 @@ fi
 source "env.sh"
 
 small_pkgs_arr=(${small_pkgs_arr[@]} "$sheep_pkg_path/src/log")
+small_pkgs_arr=(${small_pkgs_arr[@]} "$sheep_pkg_path/src/extends/small_http_parser")
 small_pkgs_arr=(${small_pkgs_arr[@]} "$sheep_pkg_path/src/extends/small_pprof")
 small_pkgs_arr=(${small_pkgs_arr[@]} "$sheep_pkg_path/src/extends/small_hiredis")
 small_pkgs_arr=(${small_pkgs_arr[@]} "$sheep_pkg_path/src/extends/small_packages")
@@ -30,11 +31,17 @@ if [[ $clean == "clean" ]]; then
     for v in ${small_pkgs_arr[@]};do
         echo "----------$v building start----------------"
         cd $v
-        $sheep_pkg_path/init_tools/build.sh
+        export buildshFound=($(find . -maxdepth 1 -name build.sh))
+        if ((${#buildshFound[@]} != 0));then
+            ./build.sh
+        fi
+        export cmakeFound=($(find . -maxdepth 1 -name CMakeLists.txt))
+        if ((${#cmakeFound[@]} != 0));then
+            $sheep_pkg_path/init_tools/build.sh
+        fi
         echo "----------$v building end------------------"
         echo "-------------------------------------------"
         echo "-------------------------------------------"
-        cd $v
         echo "----------$v/test building start-----------"
         cd $v/test
         $sheep_pkg_path/init_tools/build.sh
