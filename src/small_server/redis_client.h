@@ -6,16 +6,19 @@
 #include "small_packages.h"
 #include "log.h"
 #include "redis_core.h"
+#include "net_client.h"
 namespace small_server{
-class RedisClient: public small_packages::noncopyable{
+class RedisClient : public NetClient{
 public:
 using RedisClientOnDone = 
     std::function<void(RedisClient& c, const std::string &errMsg)>;
-    RedisClient() {
+    RedisClient(RedisCore &core) :
+        NetClient(core) ,
+        reader_(redisReaderCreate()){
     }
     void DoReq(const std::string &command, RedisClientOnDone onDone) {
         command_ = command;
-        doReq(onDone);
+        doReq<RedisClient>(onDone);
     }
     ~RedisClient() {
         if (cmdBuf_ != nullptr) {
@@ -32,65 +35,8 @@ using RedisClientOnDone =
         ok = ok_;
         return value_;
     }
-protected:
-    template <typename T>
-    void doReq(std::function<void(T&, const std::string&)> &onDone) {
-        auto realOnDone = [onDone](RedisClient &c,const std::string &errMsg) {
-            T &t = dynamic_cast<T&>(c);
-            onDone(t, errMsg);
-        };
-        onDone_ = realOnDone;
-        bool ok;
-        clientPool_ = RedisCore::GetInstance()->GetClientPool(ok);
-        if (!ok) {
-            onDone_(*this, "clientPool nullptr");
-            return;
-        }
-        client_ = clientPool_->Get();
-        if (!client_) {
-            onDone_(*this, "client nullptr");
-            return;
-        }
-        std::string errMsg;
-        auto &connection = client_->GetTcpConnection();
-        ReqPush(errMsg, connection);
-        if (!errMsg.empty()) {
-            Finish(errMsg);
-            return;
-        }
-        connection.AsyncWrite([this](std::string &errMsg){
-            if(!errMsg.empty()) {
-                Finish(errMsg);
-                return;
-            }
-            reader_ = redisReaderCreate();
-            auto &connection = client_->GetTcpConnection();
-            connection.AsyncReadAny([this](std::string &errMsg) {
-                if(!errMsg.empty()) {
-                    Finish(errMsg);
-                    return;
-                }
-                auto &connection = client_->GetTcpConnection();
-                bool finish;
-                RespPop(errMsg, finish, connection);
-                if(!errMsg.empty()) {
-                    Finish(errMsg);
-                    return;
-                }
-                if (finish) {
-                    Finish("");
-                }
-            });
-        });
-    }
 private:
-    void Finish(const std::string &errMsg) {
-        auto clientPool = clientPool_;
-        auto client = client_;
-        onDone_(*this, errMsg);
-        clientPool->Insert(client);
-    }
-    void ReqPush(std::string &errMsg, sheep::net::TcpConnection &connection) {
+    void ReqPush(std::string &errMsg, sheep::net::TcpConnection &connection) override {
         cmdBufLen_ = redisFormatCommand(&cmdBuf_, command_.c_str());
         if (cmdBufLen_ < 0) {
             errMsg = "redisFormatCommand error! len = " + std::to_string(cmdBufLen_);
@@ -98,7 +44,7 @@ private:
         }
         connection.WriteBuffer_.Push(cmdBuf_, cmdBufLen_);
     }
-    void RespPop(std::string &errMsg, bool &finish, sheep::net::TcpConnection &connection) {
+    void RespPop(std::string &errMsg, bool &finish, sheep::net::TcpConnection &connection) override{
         for (;;) {
             char tmpBuf[1024];
             uint64_t len;

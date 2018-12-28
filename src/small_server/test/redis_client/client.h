@@ -2,8 +2,9 @@
 #include "small_server.h"
 #include "log.h"
 
-std::shared_ptr<small_server::RedisClient> DoReq(std::string &errMsg) {
-    auto client = std::make_shared<small_server::RedisClient>();
+std::shared_ptr<small_server::RedisClient> DoReq(std::string &errMsg,
+        small_server::RedisCore &redisCore) {
+    auto client = std::make_shared<small_server::RedisClient>(redisCore);
     client->DoReq("GET A", 
     [](small_server::RedisClient &client, 
         const std::string &errMsg) {
