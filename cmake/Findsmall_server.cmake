@@ -25,6 +25,10 @@ else (gRPC_FOUND)
 endif(gRPC_FOUND)
 SET(small_server_LIBRARIES ${small_server_LIBRARIES} ${gRPC_LIBS})
 
+find_package(small_http_parser REQUIRED)
+SET(small_server_INCLUDE_DIRS ${small_server_INCLUDE_DIRS} ${small_http_parser_INCLUDE_DIRS})
+SET(small_server_LIBRARIES ${small_server_LIBRARIES} ${small_http_parser_LIBRARIES})
+
 find_package(small_watcher REQUIRED)
 SET(small_server_INCLUDE_DIRS ${small_server_INCLUDE_DIRS} ${small_watcher_INCLUDE_DIRS})
 SET(small_server_LIBRARIES ${small_server_LIBRARIES} ${small_watcher_LIBRARIES})
