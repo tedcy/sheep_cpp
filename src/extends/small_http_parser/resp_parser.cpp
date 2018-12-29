@@ -12,6 +12,7 @@ void RespParser::Init() {
         return;
     }
     parser_->data = this;
+    parser_->http_errno = 0;
     inited_ = true;
     settings_->on_chunk_complete = nullptr;
     settings_->on_chunk_header = nullptr;
@@ -27,8 +28,14 @@ void RespParser::Init() {
 void RespParser::Feed(std::string &errMsg, bool &finished, const std::string &str) {
     Init();
     int nparsed = http_parser_execute(parser_.get(), settings_.get(), str.c_str(), str.size());
+    if (parser_->http_errno != 0) {
+        errMsg = std::string("RespParser Feed failed: ") +
+            ::http_errno_description(static_cast<enum ::http_errno>(parser_->http_errno));
+        finished = false;
+        return;
+    }
     if (nparsed != str.size()) {
-        errMsg = "RespParser Feed failed";
+        errMsg = "RespParser Feed failed: unknown";
         finished = false;
         return;
     }
