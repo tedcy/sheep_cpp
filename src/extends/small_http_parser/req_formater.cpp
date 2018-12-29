@@ -16,6 +16,8 @@ ReqFormater::ReqFormater(const std::string &method, const std::string &host,
 const std::string& ReqFormater::Format() {
     int i = 0;
     std::string flag;
+
+    //query string
     for (auto &queryString : queryStrings_.kvs_) {
         if (i == 0) {
             flag = "?";
@@ -25,6 +27,9 @@ const std::string& ReqFormater::Format() {
         target_ += (flag + UrlEncode(queryString.first) + "=" + UrlEncode(queryString.second));
     }
     result_ = method_ + " " + target_ + " HTTP/1.1" + LR;
+    
+    //header
+    headers_.Set(Host, host_);
     if (method_ == ReqFormater::MethodPUT || method_ == ReqFormater::MethodPOST) {
         headers_.Set(ContentLength, std::to_string(body_.size()));
     }
@@ -32,6 +37,8 @@ const std::string& ReqFormater::Format() {
         result_ += (header.first + ": " + header.second + LR);
     }
     result_ += LR;
+
+    //body
     if (method_ == ReqFormater::MethodPUT || method_ == ReqFormater::MethodPOST) {
         result_ += body_;
     }
@@ -39,7 +46,6 @@ const std::string& ReqFormater::Format() {
 }
 void ReqFormater::SetHeader(const Map &map) {
     headers_ = map;
-    headers_.Set(Host, host_);
 }
 void ReqFormater::SetQueryString(const Map &map) {
     queryStrings_ = map;
