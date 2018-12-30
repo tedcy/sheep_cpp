@@ -1,13 +1,13 @@
 #pragma once
-#include "small_server.h"
+#include "small_client.h"
 #include "make_watcher.h"
 #include "log.h"
 namespace small_watcher{
-class WatcherResolver: public small_server::resolver::ResolverI{
+class WatcherResolver: public small_client::resolver::ResolverI{
 public:
     WatcherResolver(const std::vector<std::string> &ips, uint32_t port,
             const std::string &target):
-        watcher_(small_watcher::MakeWatcher(ips, port)),
+        watcher_(MakeWatcher(ips, port)),
         target_(target) {
     }
     void Init(std::string &errMsg) override {
@@ -28,19 +28,22 @@ public:
 private:
     std::string target_;
     WatcherChangeHandlerT handler_;
-    std::shared_ptr<small_watcher::WatcherI> watcher_;
+    std::shared_ptr<WatcherI> watcher_;
 };
 
-class WatcherResolverFactory: public small_server::resolver::ResolverFactoryI{
+class WatcherResolverFactory: public small_client::resolver::ResolverFactoryI{
 public:
     static WatcherResolverFactory* GetInstance() {
         static WatcherResolverFactory instance;
-        small_server::resolver::ResolverManager::GetInstance()->Register("watcher", &instance);
         return &instance;
     }
-    std::unique_ptr<small_server::resolver::ResolverI> Create(const std::vector<std::string> &ips, uint32_t port,
+    void Init() {
+        small_client::resolver::ResolverManager::GetInstance()->
+            Register("watcher", WatcherResolverFactory::GetInstance());
+    }
+    std::unique_ptr<small_client::resolver::ResolverI> Create(const std::vector<std::string> &ips, uint32_t port,
             const std::string &target) override {
-        return std::unique_ptr<small_server::resolver::ResolverI>(new WatcherResolver(ips, port, target));
+        return std::unique_ptr<small_client::resolver::ResolverI>(new WatcherResolver(ips, port, target));
     }
 private:
     WatcherResolverFactory() = default;

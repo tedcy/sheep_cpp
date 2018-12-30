@@ -3,8 +3,8 @@
 #include <string>
 #include "small_packages.h"
 #include "log.h"
-#include "sheep_net_client_core.h"
-namespace small_server{
+#include "client_core.h"
+namespace small_client{
 class NetClient: public small_packages::noncopyable{
 public:
 using NetClientOnDone = 

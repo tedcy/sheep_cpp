@@ -1,6 +1,6 @@
 #pragma once
 #include "small_watcher_interface.h"
-#include "small_server.h"
+#include "small_client.h"
 #include "net.h"
 
 #include <memory>
@@ -38,8 +38,8 @@ private:
     
     std::vector<std::string> ips_;
     uint32_t port_;
-    std::shared_ptr<small_server::SheepNetClientCore> core_;
-    std::set<std::shared_ptr<small_server::HttpClientBackUp>> httpClients_;
+    std::shared_ptr<small_client::SheepNetClientCore> core_;
+    std::set<std::shared_ptr<small_client::HttpClient>> httpClients_;
     std::set<std::shared_ptr<sheep::net::Timer>> timers_;
 };
 }//namespace small_watcher

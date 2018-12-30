@@ -5,14 +5,13 @@
 #include "small_hiredis.h"
 #include "small_packages.h"
 #include "log.h"
-#include "redis_core.h"
 #include "net_client.h"
-namespace small_server{
+namespace small_client{
 class RedisClient : public NetClient{
 public:
 using RedisClientOnDone = 
     std::function<void(RedisClient& c, const std::string &errMsg)>;
-    RedisClient(RedisCore &core) :
+    RedisClient(SheepNetClientCore &core) :
         NetClient(core) ,
         reader_(redisReaderCreate()){
     }

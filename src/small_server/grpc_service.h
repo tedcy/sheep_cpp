@@ -9,8 +9,7 @@
 #include <atomic>
 
 #include "log.h"
-//#include "http_client.h"
-#include "http_client_backup.h"
+#include "small_client.h"
 #include "grpc_client.h"
 
 namespace small_server{
@@ -111,20 +110,11 @@ public:
     std::string GetTraceId() {
         return coreCtx_->GetTraceId();
     }
-    /*std::shared_ptr<HttpClientWithService<GrpcServiceCtx>> GetHttpClient(
-            const std::string &method,
-            const std::string &host,const std::string &port,
-            const std::string &target,const std::string &req) {
-        auto httpClient = std::make_shared<HttpClientWithService<GrpcServiceCtx>>(
-                method, host, port, target, req);
-        httpClient->SetServiceCtx(myself_);
-        return httpClient;
-    }*/
-    std::shared_ptr<HttpClientBackUpWithService<GrpcServiceCtx>> GetHttpClientBackUp(
-            SheepNetClientCore &core,
+    std::shared_ptr<small_client::HttpClientWithService<GrpcServiceCtx>> GetHttpClient(
+            small_client::SheepNetClientCore &core,
             const std::string &method, const std::string &host,
             const std::string &target,const std::string &req) {
-        auto httpClient = std::make_shared<HttpClientBackUpWithService<GrpcServiceCtx>>(
+        auto httpClient = std::make_shared<small_client::HttpClientWithService<GrpcServiceCtx>>(
                 core, method, host, target, req);
         httpClient->SetServiceCtx(myself_);
         return httpClient;

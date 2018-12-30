@@ -13,7 +13,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-g -O3 ${CMAKE_CXX_FLAGS}")
 
 set(CMAKE_MODULE_PATH ${SHEEP_PROJECT_SOURCE_DIR}/cmake)
 
-foreach (TARGET server grpc_client redis_client http_client)
+foreach (TARGET server grpc_client)
     aux_source_directory(${PROJECT_SOURCE_DIR}/${TARGET} ${TARGET}LIST_SRC)
     aux_source_directory(${PROJECT_SOURCE_DIR}/protos/test ${TARGET}LIST_SRC)
     add_executable(${TARGET} ${${TARGET}LIST_SRC})
@@ -21,26 +21,33 @@ foreach (TARGET server grpc_client redis_client http_client)
     include_directories(${PROJECT_SOURCE_DIR}/protos/test)
     include_directories(${PROJECT_SOURCE_DIR}/${TARGET})
 
-    find_package(small_server REQUIRED)
-    include_directories(${TARGET} ${small_server_INCLUDE_DIRS})
-    target_link_libraries(${TARGET} ${small_server_LIBRARIES})
-
-    target_link_libraries(${TARGET} pthread)
-endforeach()
-
-foreach (TARGET bench_redis_client)
-    aux_source_directory(${PROJECT_SOURCE_DIR}/bench/${TARGET} ${TARGET}LIST_SRC)
-    add_executable(${TARGET} ${${TARGET}LIST_SRC})
-
-    include_directories(${PROJECT_SOURCE_DIR}/bench/${TARGET})
+    find_package(small_client REQUIRED)
+    include_directories(${TARGET} ${small_client_INCLUDE_DIRS})
+    target_link_libraries(${TARGET} ${small_client_LIBRARIES})
 
     find_package(small_server REQUIRED)
     include_directories(${TARGET} ${small_server_INCLUDE_DIRS})
     target_link_libraries(${TARGET} ${small_server_LIBRARIES})
 
-    find_package(small_pprof REQUIRED)
-    include_directories(${TARGET} ${small_pprof_INCLUDE_DIRS})
-    target_link_libraries(${TARGET} ${small_pprof_LIBRARIES})
-
+    find_package(small_watcher REQUIRED)
+    include_directories(${TARGET} ${small_watcher_INCLUDE_DIRS})
+    target_link_libraries(${TARGET} ${small_watcher_LIBRARIES})
     target_link_libraries(${TARGET} pthread)
 endforeach()
+
+#foreach (TARGET bench_redis_client)
+#    aux_source_directory(${PROJECT_SOURCE_DIR}/bench/${TARGET} ${TARGET}LIST_SRC)
+#    add_executable(${TARGET} ${${TARGET}LIST_SRC})
+#
+#    include_directories(${PROJECT_SOURCE_DIR}/bench/${TARGET})
+#
+#    find_package(small_server REQUIRED)
+#    include_directories(${TARGET} ${small_server_INCLUDE_DIRS})
+#    target_link_libraries(${TARGET} ${small_server_LIBRARIES})
+#
+#    find_package(small_pprof REQUIRED)
+#    include_directories(${TARGET} ${small_pprof_INCLUDE_DIRS})
+#    target_link_libraries(${TARGET} ${small_pprof_LIBRARIES})
+#
+#    target_link_libraries(${TARGET} pthread)
+#endforeach()

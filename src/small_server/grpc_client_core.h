@@ -35,7 +35,8 @@ public:
                 grpc::CreateChannel(addrPort, grpc::InsecureChannelCredentials()));
             return stub;
         });
-        balancer_ = std::unique_ptr<Balancer>(new Balancer(ips, port, target, lbPolicyType_, resolverType_));
+        balancer_ = std::unique_ptr<small_client::Balancer>(
+                new small_client::Balancer(ips, port, target, lbPolicyType_, resolverType_));
         balancer_->Init(errMsg, [this](std::set<std::string> &nodes){
             clientManager_.Update(nodes);
         });
@@ -51,9 +52,9 @@ private:
     GrpcClientCore() {
     }
     std::shared_ptr<bool> exist_ = std::make_shared<bool>();
-    ClientManager<typename StubManager::Stub> clientManager_;
-    std::unique_ptr<Balancer> balancer_;
+    small_client::ClientManager<typename StubManager::Stub> clientManager_;
+    std::unique_ptr<small_client::Balancer> balancer_;
     std::string lbPolicyType_ = "random";
-    std::string resolverType_ = "etcd";
+    std::string resolverType_ = "watcher";
 };
 }

@@ -14,8 +14,8 @@ Etcd::Etcd(const std::vector<std::string> &ips, uint32_t port):
 Etcd::~Etcd() {
 }
 void Etcd::Init(std::string &errMsg) {
-    core_ = std::make_shared<small_server::SheepNetClientCore>(
-            small_server::SheepNetCore::GetInstance()->GetLoop());
+    core_ = std::make_shared<small_client::SheepNetClientCore>(
+            small_client::SheepNetCore::GetInstance()->GetLoop());
     core_->SetResolverType("string");
     core_->SetMaxSize(10);
     core_->Init(errMsg, ips_, port_, "");
@@ -59,13 +59,13 @@ void Etcd::createEphemeral(const std::string &path, const std::string &value, co
         nextCreateEphemral(path, path);
         return;
     }
-    auto httpClient = std::make_shared<small_server::HttpClientBackUp>(*core_.get(), "PUT", ips_[0],
+    auto httpClient = std::make_shared<small_client::HttpClient>(*core_.get(), "PUT", ips_[0],
         "/v2/keys" + path, "value=" + value + "&ttl=12");
     httpClients_.insert(httpClient);
-    auto weakPtr = std::weak_ptr<small_server::HttpClientBackUp>(httpClient);
+    auto weakPtr = std::weak_ptr<small_client::HttpClient>(httpClient);
     small_http_parser::Map headers;
     headers.Set("Content-Type","application/x-www-form-urlencoded");
-    auto onDone = [this, weakPtr, path, value](small_server::HttpClientBackUp &client,
+    auto onDone = [this, weakPtr, path, value](small_client::HttpClient &client,
         const std::string &errMsg) {
         if (errMsg != "") {
             LOG(ERROR) << errMsg;
@@ -111,13 +111,13 @@ void Etcd::refresh(const std::string &path, const std::string &value,
         nextCreateEphemral(path, value);
         return;
     }
-    auto httpClient = std::make_shared<small_server::HttpClientBackUp>(*core_.get(),
+    auto httpClient = std::make_shared<small_client::HttpClient>(*core_.get(),
             "PUT", ips_[0], "/v2/keys" + path, "value=" + value + "&ttl=12&refresh=true");
     httpClients_.insert(httpClient);
-    auto weakPtr = std::weak_ptr<small_server::HttpClientBackUp>(httpClient);
+    auto weakPtr = std::weak_ptr<small_client::HttpClient>(httpClient);
     small_http_parser::Map headers;
     headers.Set("Content-Type","application/x-www-form-urlencoded");
-    auto onDone = [this, weakPtr, path, value](small_server::HttpClientBackUp &httpClient, 
+    auto onDone = [this, weakPtr, path, value](small_client::HttpClient &httpClient, 
         const std::string &errMsg){
         if (errMsg != "") {
             LOG(ERROR) << errMsg;
@@ -163,7 +163,7 @@ void Etcd::refresh(const std::string &path, const std::string &value,
 void Etcd::nextCreateEphemral(const std::string &path, const std::string &value) {
     //sleep short to create
     //LOG(INFO) << "short to create";
-    auto t = std::make_shared<sheep::net::Timer>(small_server::SheepNetCore::GetInstance()->GetLoop());
+    auto t = std::make_shared<sheep::net::Timer>(small_client::SheepNetCore::GetInstance()->GetLoop());
     timers_.insert(t);
     auto weakPtr = std::weak_ptr<sheep::net::Timer>(t);
     t->AsyncWait(1000, [this, weakPtr, path, value](const std::string &errMsg) {
@@ -174,7 +174,7 @@ void Etcd::nextCreateEphemral(const std::string &path, const std::string &value)
 void Etcd::nextRefresh(const std::string &path, const std::string &value) {
     //sleep long to refresh
     //LOG(INFO) << "long to refresh";
-    auto t = std::make_shared<sheep::net::Timer>(small_server::SheepNetCore::GetInstance()->GetLoop());
+    auto t = std::make_shared<sheep::net::Timer>(small_client::SheepNetCore::GetInstance()->GetLoop());
     timers_.insert(t);
     auto weakPtr = std::weak_ptr<sheep::net::Timer>(t);
     t->AsyncWait(5000, [this, weakPtr, path, value](const std::string &errMsg) {
@@ -183,11 +183,11 @@ void Etcd::nextRefresh(const std::string &path, const std::string &value) {
     });
 }
 void Etcd::List(const std::string &path, onListFunc handler) {
-    auto httpClient = std::make_shared<small_server::HttpClientBackUp>(*core_.get(),
+    auto httpClient = std::make_shared<small_client::HttpClient>(*core_.get(),
         "GET", ips_[0],  "/v2/keys" + path + "/", "");
     httpClients_.insert(httpClient);
-    auto weakPtr = std::weak_ptr<small_server::HttpClientBackUp>(httpClient);
-    auto onDone = [this, weakPtr, path, handler](small_server::HttpClientBackUp &client, 
+    auto weakPtr = std::weak_ptr<small_client::HttpClient>(httpClient);
+    auto onDone = [this, weakPtr, path, handler](small_client::HttpClient &client, 
         const std::string &argErrMsg){
         std::string errMsg;
         if (argErrMsg != "") {
@@ -251,11 +251,11 @@ void Etcd::List(const std::string &path, onListFunc handler) {
 }
 void Etcd::WatchOnce(const uint64_t afterIndex,
         const std::string &path, onNotifyFunc handler) {
-    auto httpClient = std::make_shared<small_server::HttpClientBackUp>(*core_.get(),
+    auto httpClient = std::make_shared<small_client::HttpClient>(*core_.get(),
             "GET", ips_[0], "/v2/keys" + path + "?wait=true&recursive=true", "");
     httpClients_.insert(httpClient);
-    auto weakPtr = std::weak_ptr<small_server::HttpClientBackUp>(httpClient);
-    auto onDone = [this, weakPtr, path, handler](small_server::HttpClientBackUp &client, 
+    auto weakPtr = std::weak_ptr<small_client::HttpClient>(httpClient);
+    auto onDone = [this, weakPtr, path, handler](small_client::HttpClient &client, 
         const std::string &argErrMsg){
         handler(argErrMsg);
         httpClients_.erase(weakPtr.lock());
@@ -289,7 +289,7 @@ void Etcd::watch(const uint64_t afterIndex,
     WatchOnce(afterIndex, path, [this, afterIndex, path, func, optFunc](const std::string &argErrMsg){
         if (!argErrMsg.empty()) {
             LOG(WARNING) << argErrMsg;
-            auto t = std::make_shared<sheep::net::Timer>(small_server::SheepNetCore::GetInstance()->GetLoop());
+            auto t = std::make_shared<sheep::net::Timer>(small_client::SheepNetCore::GetInstance()->GetLoop());
             timers_.insert(t);
             auto weakPtr = std::weak_ptr<sheep::net::Timer>(t);
             t->AsyncWait(5000, [this, weakPtr, path, afterIndex, func, optFunc](const std::string &errMsg) {

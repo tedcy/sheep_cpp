@@ -3,7 +3,7 @@
 #include <string>
 #include <set>
 #include <memory>
-namespace small_server{
+namespace small_client{
 namespace lb_policy{
 class LbPolicyI: public small_packages::noncopyable {
 public:

@@ -4,7 +4,7 @@
 #include "small_packages.h"
 #include <string>
 #include <map>
-namespace small_server{
+namespace small_client{
 namespace lb_policy{
 class LbPolicyManager: public small_packages::noncopyable{
 public:

@@ -3,7 +3,7 @@
 #include "net.h"
 #include "small_packages.h"
 #include <thread>
-namespace small_server{
+namespace small_client{
 //thread unsafe
 class SheepNetCore: public small_packages::noncopyable{
 public:

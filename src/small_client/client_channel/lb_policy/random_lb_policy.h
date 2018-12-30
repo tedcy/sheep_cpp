@@ -2,7 +2,7 @@
 #include "lb_policy.h"
 #include <ctime>
 #include <random>
-namespace small_server{
+namespace small_client{
 namespace lb_policy{
 class RandomLbPolicy: public LbPolicyI{
 public:

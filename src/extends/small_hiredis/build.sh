@@ -6,10 +6,14 @@ if [[ $path != "" ]];then
     exit 0
 fi
 
-git clone https://github.com/redis/hiredis
-cd hiredis
-make
-cd -
+path=""
+path=`find . -name hiredis`
+if [[ $path == "" ]];then
+    git clone https://github.com/redis/hiredis
+    cd hiredis
+    make
+    cd -
+fi
 
 rm -rf build
 mkdir -pv build

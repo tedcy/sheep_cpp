@@ -4,7 +4,8 @@
 #include "small_packages.h"
 #include <string>
 #include <map>
-namespace small_server{
+#include "log.h"
+namespace small_client{
 namespace resolver{
 class ResolverManager: public small_packages::noncopyable{
 public:
@@ -19,6 +20,7 @@ public:
     ResolverFactoryI* GetResolverFactory(const std::string &type) {
         auto iter = ResolverFactorys_.find(type);
         if(iter == ResolverFactorys_.end()) {
+            LOG(FATAL) << "type " << type << " do not exist";
             return nullptr;
         }
         return iter->second;

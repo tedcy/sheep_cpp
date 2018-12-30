@@ -4,7 +4,7 @@
 #include "small_packages.h"
 #include "client_channel/balancer.h"
 #include "client_channel/client_manager.h"
-namespace small_server{
+namespace small_client{
 class SheepNetClientCore: public small_packages::noncopyable{
 public:
     SheepNetClientCore(sheep::net::EventLoop &loop):
@@ -62,6 +62,6 @@ private:
     uint64_t maxSize_ = 50;
     std::unique_ptr<Balancer> balancer_;
     std::string lbPolicyType_ = "random";
-    std::string resolverType_ = "etcd";
+    std::string resolverType_ = "string";
 };
 }

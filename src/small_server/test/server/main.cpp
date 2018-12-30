@@ -1,4 +1,5 @@
 #include "service.h"
+#include "small_watcher.h"
 #include "log.h"
 
 int main() {
@@ -10,14 +11,16 @@ int main() {
     server.Register(&service);
 
     std::string errMsg;
-    /*auto watcher = small_watcher::MakeWatcher({"172.16.187.149"}, 2379);
+    small_client::SheepNetCore::GetInstance()->Init();
+    small_watcher::WatcherResolverFactory::GetInstance()->Init();
+    auto watcher = small_watcher::MakeWatcher({"172.16.187.149"}, 2379);
     watcher->Init(errMsg);
     if(!errMsg.empty()) {
         LOG(FATAL) << errMsg;
     }
     std::string ip;
     watcher->GetLocalIp(ip);
-    watcher->CreateEphemeral("/test/" + ip + ":8888", "");*/
+    watcher->CreateEphemeral("/test/" + ip + ":8888", "");
 
     //FIXME when here etcd, failed
     //small_server::GrpcClientCore<helloworld::Greeter>::

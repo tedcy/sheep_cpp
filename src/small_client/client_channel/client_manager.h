@@ -4,7 +4,7 @@
 #include "balancer.h"
 #include "log.h"
 
-namespace small_server{
+namespace small_client{
 template <typename ClientPoolT>
 class ClientManager: public small_packages::noncopyable{
 public:
@@ -72,6 +72,7 @@ private:
     void addAddr(std::string &errMsg, const std::string &addrPort) {
         auto clientPool = handler_(errMsg, addrPort);
         if(!errMsg.empty()) {
+            LOG(WARNING) << errMsg;
             return;
         }
         clientPools_.insert({addrPort, clientPool});

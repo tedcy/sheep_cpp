@@ -3,7 +3,7 @@
 #include <set>
 #include <functional>
 #include <vector>
-namespace small_server{
+namespace small_client{
 namespace resolver{
 class ResolverI: public small_packages::noncopyable{
 public:

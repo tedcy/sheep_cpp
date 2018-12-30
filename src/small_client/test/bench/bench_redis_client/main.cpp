@@ -1,21 +1,21 @@
 #include "client.h"
 #include "log.h"
-#include "small_server.h"
+#include "small_client.h"
 #include "small_packages.h"
 #include "small_pprof.h"
 
-void DoReq(std::string &errMsg, small_server::RedisCore &redisCore,
-        std::set<std::shared_ptr<small_server::RedisClient>> &clients,
+void DoReq(std::string &errMsg, small_client::SheepNetClientCore &redisCore,
+        std::set<std::shared_ptr<small_client::RedisClient>> &clients,
         std::shared_ptr<small_lock::LockI> &lock) {
     small_lock::UniqueGuard guard(lock);
     if (clients.size() >= 50) {
         return;
     }
-    auto clientPtr = std::make_shared<small_server::RedisClient>(redisCore);
-    auto weakPtr = std::weak_ptr<small_server::RedisClient>(clientPtr);
+    auto clientPtr = std::make_shared<small_client::RedisClient>(redisCore);
+    auto weakPtr = std::weak_ptr<small_client::RedisClient>(clientPtr);
     clients.insert(clientPtr);
     clientPtr->DoReq("GET A", 
-    [&clients, weakPtr, &lock](small_server::RedisClient &client, 
+    [&clients, weakPtr, &lock](small_client::RedisClient &client, 
         const std::string &errMsg) {
         small_lock::UniqueGuard guard(lock);
         auto clientPtr = weakPtr.lock();
@@ -43,21 +43,24 @@ void DoReq(std::string &errMsg, small_server::RedisCore &redisCore,
 int main() {
     ghttpd();
     std::string errMsg;
-    small_server::SheepNetCore::GetInstance()->Init();
+    small_client::SheepNetCore::GetInstance()->Init();
     //small_net::AsioNet::GetInstance().Init();
-    small_server::RedisCore redisCore;
-    redisCore.Init(errMsg, {"127.0.0.1"}, 6379, "/");
+    small_client::SheepNetClientCore core(
+            small_client::SheepNetCore::GetInstance()->GetLoop());
+    core.SetResolverType("string");
+    core.SetMaxSize(10);
+    core.Init(errMsg, {"127.0.0.1"}, 6379, "/");
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    std::set<std::shared_ptr<small_server::RedisClient>> clients;
+    std::set<std::shared_ptr<small_client::RedisClient>> clients;
     auto lock = small_lock::MakeRecursiveLock();
     for (;;) {
-        DoReq(errMsg, redisCore, clients, lock);
+        DoReq(errMsg, core, clients, lock);
         if (!errMsg.empty()) {
             LOG(INFO) << errMsg;
             return -1;
         }
     }
     std::this_thread::sleep_for(std::chrono::seconds(100));
-    small_server::SheepNetCore::GetInstance()->Shutdown();
+    small_client::SheepNetCore::GetInstance()->Shutdown();
     //small_net::AsioNet::GetInstance().Shutdown();
 }

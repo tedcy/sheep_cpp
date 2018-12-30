@@ -1,6 +1,6 @@
 #pragma once
 #include "resolver_interface.h"
-namespace small_server{
+namespace small_client{
 namespace resolver{
 class StringResolver: public ResolverI{
 public:
