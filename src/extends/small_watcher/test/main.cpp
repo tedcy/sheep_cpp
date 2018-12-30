@@ -46,6 +46,7 @@ struct Test{
                 LOG(WARNING) << argErrMsg;
                 return;
             }
+            LOG(INFO) << "new keys " << keys->size();
             for (auto &key: *keys) {
                 LOG(INFO) << key;
             }
