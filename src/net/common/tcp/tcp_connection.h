@@ -33,6 +33,7 @@ public:
     void AsyncWrite(writeHandlerT handler);
     void Reset();
     void Finish(std::string &errMsg);
+    void GetLocalIp(std::string &errMsg, std::string &ip);
     //FIXME: Buffer split into ReadBuffer && WriteBuffer
     Buffer ReadBuffer_;
     Buffer WriteBuffer_;

@@ -205,6 +205,24 @@ int Socket::Accept(std::string &errMsg) {
     return newFd;
 }
 
+void Socket::GetLocalIp(std::string &errMsg, std::string &ip) {
+    sockaddr_in local_addr;
+    socklen_t len = sizeof(sockaddr);
+    auto result = ::getsockname(fd_, (sockaddr*)&local_addr, &len);
+    if (result < 0) {
+        formatErrMsg(errMsg, "getsockname", result);
+        return;
+    }
+    char addr_buffer[INET_ADDRSTRLEN];
+    auto p = ::inet_ntop(AF_INET, &local_addr.sin_addr, 
+            addr_buffer, INET_ADDRSTRLEN);
+    if (p == nullptr) {
+        formatErrMsg(errMsg, "inet_ntop", 1);
+        return;
+    }
+    ip = addr_buffer;
+}
+
 int Socket::GetFd() {
     return fd_;
 }

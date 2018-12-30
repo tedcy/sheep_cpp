@@ -188,5 +188,13 @@ void TcpConnection::writeHandler() {
 void TcpConnection::Finish(std::string &errMsg) {
     finishHandler_(errMsg, shared_from_this());
 }
+
+void TcpConnection::GetLocalIp(std::string &errMsg, std::string &ip) {
+    if (socket_ == nullptr) {
+        errMsg = "socket is nullptr";
+        return;
+    }
+    socket_->GetLocalIp(errMsg, ip);
+}
 }
 }

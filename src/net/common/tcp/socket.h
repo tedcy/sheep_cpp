@@ -24,6 +24,7 @@ public:
     //for tcp_connection
     int Read(std::string &errMsg, char* buf, int len);
     int Write(std::string &errMsg, char* buf, int len);
+    void GetLocalIp(std::string &errMsg, std::string &ip);
 
     //ops
     void SetBlock(std::string &errMsg);
