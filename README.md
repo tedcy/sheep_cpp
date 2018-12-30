@@ -1,8 +1,9 @@
 # TODO list
 small\_watcher etcd driver need a refactoring, to store Async Req in Etcd
 
-# package relationship
+# small\_server small\_watcher package relationship refactor
 
+at master c1781505213ce42f9f41b0d3f7c19bba0b3fbab1
 ```
 1 small_watcher -> make_watcher -> etcd -> http_client -> resolver manager
 small_watcher -> watcher_resolver(and register watcher_resolver in resolver manager)
@@ -19,7 +20,7 @@ http_client->client_channel
 redis_client->client_channel
 ```
 
-want
+and now changed to
 
 ```
 1 small_watcher->http_client 
