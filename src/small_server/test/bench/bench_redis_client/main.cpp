@@ -1,7 +1,6 @@
 #include "client.h"
 #include "log.h"
 #include "small_server.h"
-#include "small_net.h"
 #include "small_packages.h"
 #include "small_pprof.h"
 

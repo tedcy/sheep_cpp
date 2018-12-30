@@ -39,6 +39,7 @@ private:
         connection.WriteBuffer_.Push(const_cast<char*>(req.c_str()), req.size());
     }
     void RespPop(std::string &errMsg, bool &finish, sheep::net::TcpConnection &connection) override{
+        finish = false;
         for (;;) {
             char tmpBuf[1024];
             uint64_t len;
@@ -46,7 +47,8 @@ private:
             if (len == 0) {
                 break;
             }
-            parser_.Feed(errMsg, finish, std::string(tmpBuf, len));
+            std::string tmp(tmpBuf, len);
+            parser_.Feed(errMsg, finish, tmp);
         }
     }
     std::shared_ptr<sheep::net::ClientPool> clientPool_;

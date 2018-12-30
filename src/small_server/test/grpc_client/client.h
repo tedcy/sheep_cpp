@@ -3,10 +3,8 @@
 #include "helloworld.grpc.pb.h"
 #include "helloworld.pb.h"
 #include "log.h"
-#include "small_net.h"
 
 void Init(std::string &errMsg) {
-    small_net::AsioNet::GetInstance().Init();
     small_server::GrpcClientCore<helloworld::Greeter>::
         GetInstance()->Init(errMsg, {"172.16.187.149"}, 2379, "/test");
 }

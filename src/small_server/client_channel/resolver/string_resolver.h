@@ -1,6 +1,5 @@
 #pragma once
 #include "resolver_interface.h"
-#include "small_watcher_factory.h"
 namespace small_server{
 namespace resolver{
 class StringResolver: public ResolverI{
@@ -23,7 +22,6 @@ private:
     uint32_t port_;
     std::string target_;
     WatcherChangeHandlerT handler_;
-    std::shared_ptr<small_watcher::WatcherI> watcher_;
 };
 
 class StringResolverFactory: public ResolverFactoryI{

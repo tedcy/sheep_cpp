@@ -1,6 +1,5 @@
 #pragma once
 #include "resolver_interface.h"
-#include "etcd_resolver.h"
 #include "string_resolver.h"
 #include "small_packages.h"
 #include <string>
@@ -11,7 +10,6 @@ class ResolverManager: public small_packages::noncopyable{
 public:
     static ResolverManager* GetInstance() {
         static ResolverManager instance;
-        instance.Register("etcd", EtcdResolverFactory::GetInstance());
         instance.Register("string", StringResolverFactory::GetInstance());
         return &instance;
     }

@@ -8,9 +8,8 @@
 #include "small_packages.h"
 #include <atomic>
 
-#include "small_timer_factory.h"
 #include "log.h"
-#include "http_client.h"
+//#include "http_client.h"
 #include "http_client_backup.h"
 #include "grpc_client.h"
 
@@ -112,7 +111,7 @@ public:
     std::string GetTraceId() {
         return coreCtx_->GetTraceId();
     }
-    std::shared_ptr<HttpClientWithService<GrpcServiceCtx>> GetHttpClient(
+    /*std::shared_ptr<HttpClientWithService<GrpcServiceCtx>> GetHttpClient(
             const std::string &method,
             const std::string &host,const std::string &port,
             const std::string &target,const std::string &req) {
@@ -120,12 +119,12 @@ public:
                 method, host, port, target, req);
         httpClient->SetServiceCtx(myself_);
         return httpClient;
-    }
+    }*/
     std::shared_ptr<HttpClientBackUpWithService<GrpcServiceCtx>> GetHttpClientBackUp(
             SheepNetClientCore &core,
             const std::string &method, const std::string &host,
             const std::string &target,const std::string &req) {
-        auto httpClient = std::make_shared<HttpClientWithService<GrpcServiceCtx>>(
+        auto httpClient = std::make_shared<HttpClientBackUpWithService<GrpcServiceCtx>>(
                 core, method, host, target, req);
         httpClient->SetServiceCtx(myself_);
         return httpClient;

@@ -1,23 +1,22 @@
 #include "small_watcher_factory.h"
+#include "small_server.h"
 #include "log.h"
 
 #include <chrono>
 #include <thread>
 #include <string>
 
-#include "small_net.h"
-
 struct Test{
     Test() {
         //small_log::Init();
-        small_net::AsioNet::GetInstance().Init();
+        small_server::SheepNetCore::GetInstance()->Init();
         std::vector<std::string> ips{"172.16.187.149"};
         uint32_t port = 2379;
         watcher_ = small_watcher::MakeWatcher(ips, port);
     }
     ~Test() {
         std::this_thread::sleep_for(std::chrono::seconds(100));
-        small_net::AsioNet::GetInstance().Shutdown();
+        small_server::SheepNetCore::GetInstance()->Shutdown();
     }
     void Init(std::string &errMsg) {
         watcher_->Init(errMsg);

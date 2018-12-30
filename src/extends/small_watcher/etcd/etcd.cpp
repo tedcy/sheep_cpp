@@ -1,16 +1,11 @@
 #include "etcd.h"
 #include "small_watcher.h"
 
-#include "connection_pool_manager.h"
-#include "small_http_client.h"
-
 #include "log.h"
 
 #include "rapidjson/document.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/stringbuffer.h"
-
-#include "small_timer_factory.h"
 
 namespace small_watcher{
 Etcd::Etcd(const std::vector<std::string> &ips, uint32_t port):
@@ -19,17 +14,30 @@ Etcd::Etcd(const std::vector<std::string> &ips, uint32_t port):
 Etcd::~Etcd() {
 }
 void Etcd::Init(std::string &errMsg) {
-    for (auto &ip: ips_) {
-        small_http_client::ConnectionPoolManager::GetInstance().add(ip, std::to_string(port_), 100);
-    }
+    core_ = std::make_shared<small_server::SheepNetClientCore>(
+            small_server::SheepNetCore::GetInstance()->GetLoop());
+    core_->SetResolverType("string");
+    core_->SetMaxSize(10);
+    core_->Init(errMsg, ips_, port_, "");
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    //todo errMsg test
-    errMsg = "";
 }
 void Etcd::GetLocalIp(std::string &ip) {
-    auto &connectionPoolManager = small_http_client::ConnectionPoolManager::GetInstance();
-    auto connectionPool = connectionPoolManager.get(ips_[0], std::to_string(port_));
-    connectionPool->GetLocalIp(ip);
+    bool ok;
+    auto clientPool = core_->GetClientPool(ok);
+    if (!ok) {
+        LOG(FATAL) << "Etcd can't get LocalIp";
+    }
+    auto client = clientPool->Get();
+    if (client == nullptr) {
+        LOG(FATAL) << "Etcd can't get LocalIp";
+    }
+    auto &connection = client->GetTcpConnection();
+    std::string errMsg;
+    connection.GetLocalIp(errMsg, ip);
+    if (!errMsg.empty()) {
+        LOG(FATAL) << errMsg;
+    }
+    clientPool->Insert(client);
 }
 /*createEphemeral
  * ok
@@ -51,20 +59,21 @@ void Etcd::createEphemeral(const std::string &path, const std::string &value, co
         nextCreateEphemral(path, path);
         return;
     }
-    //TODO rand ips
-    auto c = std::make_shared<small_http_client::Async>("PUT", ips_[0], std::to_string(port_), 
+    auto httpClient = std::make_shared<small_server::HttpClientBackUp>(*core_.get(), "PUT", ips_[0],
         "/v2/keys" + path, "value=" + value + "&ttl=12");
-    auto headers = std::shared_ptr<small_http_client::Headers>(new small_http_client::Headers({
-                            {"Content-Type","application/x-www-form-urlencoded"}
-                        }));
-    auto onDone = [this, path, value](const std::string &respStr, 
-        const std::shared_ptr<std::map<std::string, std::string>> respHeaders,
-        const std::string &errMsg){
+    httpClients_.insert(httpClient);
+    auto weakPtr = std::weak_ptr<small_server::HttpClientBackUp>(httpClient);
+    small_http_parser::Map headers;
+    headers.Set("Content-Type","application/x-www-form-urlencoded");
+    auto onDone = [this, weakPtr, path, value](small_server::HttpClientBackUp &client,
+        const std::string &errMsg) {
         if (errMsg != "") {
             LOG(ERROR) << errMsg;
             nextCreateEphemral(path, path);
+            httpClients_.erase(weakPtr.lock());
             return;
         }
+        auto &respStr = client.GetRespStr();
         rapidjson::Document jsonDoc;
         jsonDoc.Parse(respStr.c_str());
         if (jsonDoc.HasParseError()) {
@@ -74,6 +83,7 @@ void Etcd::createEphemeral(const std::string &path, const std::string &value, co
             LOG(ERROR) << parseErrMsg;
             //ignore err to refresh
             nextRefresh(path, value);
+            httpClients_.erase(weakPtr.lock());
             return;
         }
         if (jsonDoc.HasMember("errorCode")) {
@@ -86,12 +96,13 @@ void Etcd::createEphemeral(const std::string &path, const std::string &value, co
             }
             LOG(ERROR) << "errorCode: " << errorCode;
             nextCreateEphemral(path, value);
+            httpClients_.erase(weakPtr.lock());
             return;
         }
         nextRefresh(path, value);
     };
-    c->setHeaders(headers);
-    c->doReq(onDone);
+    httpClient->SetHeaders(headers);
+    httpClient->DoReq(onDone);
 }
 void Etcd::refresh(const std::string &path, const std::string &value, 
         const std::string &errMsg) {
@@ -100,20 +111,21 @@ void Etcd::refresh(const std::string &path, const std::string &value,
         nextCreateEphemral(path, value);
         return;
     }
-    //TODO rand ips
-    auto c = std::make_shared<small_http_client::Async>("PUT", ips_[0], std::to_string(port_), 
-        "/v2/keys" + path, "value=" + value + "&ttl=12&refresh=true");
-    auto headers = std::shared_ptr<small_http_client::Headers>(new small_http_client::Headers({
-                            {"Content-Type","application/x-www-form-urlencoded"}
-                        }));
-    auto onDone = [this, path, value](const std::string &respStr, 
-        const std::shared_ptr<std::map<std::string, std::string>> respHeaders,
+    auto httpClient = std::make_shared<small_server::HttpClientBackUp>(*core_.get(),
+            "PUT", ips_[0], "/v2/keys" + path, "value=" + value + "&ttl=12&refresh=true");
+    httpClients_.insert(httpClient);
+    auto weakPtr = std::weak_ptr<small_server::HttpClientBackUp>(httpClient);
+    small_http_parser::Map headers;
+    headers.Set("Content-Type","application/x-www-form-urlencoded");
+    auto onDone = [this, weakPtr, path, value](small_server::HttpClientBackUp &httpClient, 
         const std::string &errMsg){
         if (errMsg != "") {
             LOG(ERROR) << errMsg;
             nextCreateEphemral(path, path);
+            httpClients_.erase(weakPtr.lock());
             return;
         }
+        auto &respStr = httpClient.GetRespStr();
         rapidjson::Document jsonDoc;
         jsonDoc.Parse(respStr.c_str());
         if (jsonDoc.HasParseError()) {
@@ -123,6 +135,7 @@ void Etcd::refresh(const std::string &path, const std::string &value,
             LOG(ERROR) << parseErrMsg;
             //ignore err to refresh
             nextRefresh(path, value);
+            httpClients_.erase(weakPtr.lock());
             return;
         }
         if (jsonDoc.HasMember("errorCode")) {
@@ -131,47 +144,59 @@ void Etcd::refresh(const std::string &path, const std::string &value,
                 auto message = jsonDoc["message"].GetString();
                 LOG(ERROR) << "errorCode: " << errorCode << " message: " << message;
                 nextCreateEphemral(path, value);
+                httpClients_.erase(weakPtr.lock());
                 return;
             }
             LOG(ERROR) << "errorCode: " << errorCode;
             nextCreateEphemral(path, value);
+            httpClients_.erase(weakPtr.lock());
             return;
         }
         nextRefresh(path, value);
+        httpClients_.erase(weakPtr.lock());
         //auto node = jsonDoc["node"].GetObject();
         //auto index = node["modifiedIndex"].GetUint64();
     };
-    c->setHeaders(headers);
-    c->doReq(onDone);
+    httpClient->SetHeaders(headers);
+    httpClient->DoReq(onDone);
 }
 void Etcd::nextCreateEphemral(const std::string &path, const std::string &value) {
     //sleep short to create
     //LOG(INFO) << "short to create";
-    auto t = small_timer::MakeTimer();
-    t->AsyncWait(1000, [this, t, path, value](const std::string &errMsg) {
-            createEphemeral(path, value, errMsg);
-        });
+    auto t = std::make_shared<sheep::net::Timer>(small_server::SheepNetCore::GetInstance()->GetLoop());
+    timers_.insert(t);
+    auto weakPtr = std::weak_ptr<sheep::net::Timer>(t);
+    t->AsyncWait(1000, [this, weakPtr, path, value](const std::string &errMsg) {
+        createEphemeral(path, value, errMsg);
+        timers_.erase(weakPtr.lock());
+    });
 }
 void Etcd::nextRefresh(const std::string &path, const std::string &value) {
     //sleep long to refresh
     //LOG(INFO) << "long to refresh";
-    auto t = small_timer::MakeTimer();
-    t->AsyncWait(5000, [this, t, path, value](const std::string &errMsg) {
-            refresh(path, value, errMsg);
-        });
+    auto t = std::make_shared<sheep::net::Timer>(small_server::SheepNetCore::GetInstance()->GetLoop());
+    timers_.insert(t);
+    auto weakPtr = std::weak_ptr<sheep::net::Timer>(t);
+    t->AsyncWait(5000, [this, weakPtr, path, value](const std::string &errMsg) {
+        refresh(path, value, errMsg);
+        timers_.erase(weakPtr.lock());
+    });
 }
 void Etcd::List(const std::string &path, onListFunc handler) {
-    //TODO rand ips
-    auto c = std::make_shared<small_http_client::Async>("GET", ips_[0], std::to_string(port_), 
-        "/v2/keys" + path + "/", "");
-    auto onDone = [this, path, handler](const std::string &respStr, 
-        const std::shared_ptr<std::map<std::string, std::string>> respHeaders,
+    auto httpClient = std::make_shared<small_server::HttpClientBackUp>(*core_.get(),
+        "GET", ips_[0],  "/v2/keys" + path + "/", "");
+    httpClients_.insert(httpClient);
+    auto weakPtr = std::weak_ptr<small_server::HttpClientBackUp>(httpClient);
+    auto onDone = [this, weakPtr, path, handler](small_server::HttpClientBackUp &client, 
         const std::string &argErrMsg){
         std::string errMsg;
         if (argErrMsg != "") {
             handler(argErrMsg, 0, nullptr);
+            httpClients_.erase(weakPtr.lock());
             return;
         }
+        auto &respStr = client.GetRespStr();
+        auto &respHeaders = client.GetRespHeader();
         rapidjson::Document jsonDoc;
         jsonDoc.Parse(respStr.c_str());
         if (jsonDoc.HasParseError()) {
@@ -179,6 +204,7 @@ void Etcd::List(const std::string &path, onListFunc handler) {
                 " Failed: code " + std::to_string(jsonDoc.GetParseError()) +
                 " offset " + std::to_string(jsonDoc.GetErrorOffset()));
             handler(parseErrMsg, 0, nullptr);
+            httpClients_.erase(weakPtr.lock());
             return;
         }
         if (jsonDoc.HasMember("errorCode")) {
@@ -187,18 +213,22 @@ void Etcd::List(const std::string &path, onListFunc handler) {
                 auto message = jsonDoc["message"].GetString();
                 errMsg = "errorCode: " + std::to_string(errorCode) + " message: " + message;
                 handler(errMsg, 0, nullptr);
+                httpClients_.erase(weakPtr.lock());
                 return;
             }
             errMsg = "errorCode: " + std::to_string(errorCode);
             handler(errMsg, 0, nullptr);
+            httpClients_.erase(weakPtr.lock());
             return;
         }
-        auto etcdIndexStr = (*respHeaders)["X-Etcd-Index"];
+        std::string etcdIndexStr;
+        respHeaders.Get("X-Etcd-Index", etcdIndexStr);
         int64_t etcdIndex = -1;
         etcdIndex = std::stoll(etcdIndexStr);
         if (etcdIndex == -1) {
             errMsg = "invalid etcdIndex " + etcdIndexStr;
             handler(errMsg, 0, nullptr);
+            httpClients_.erase(weakPtr.lock());
             return;
         }
         auto keys = std::make_shared<std::vector<std::string>>();
@@ -215,19 +245,22 @@ void Etcd::List(const std::string &path, onListFunc handler) {
             }
         }
         handler(errMsg, etcdIndex + 1, keys);
+        httpClients_.erase(weakPtr.lock());
     };
-    c->doReq(onDone);
+    httpClient->DoReq(onDone);
 }
 void Etcd::WatchOnce(const uint64_t afterIndex,
         const std::string &path, onNotifyFunc handler) {
-    auto c = std::make_shared<small_http_client::Async>("GET", ips_[0], std::to_string(port_), 
-        "/v2/keys" + path + "?wait=true&recursive=true", "");
-    auto onDone = [this, path, handler](const std::string &respStr, 
-        const std::shared_ptr<std::map<std::string, std::string>> respHeaders,
+    auto httpClient = std::make_shared<small_server::HttpClientBackUp>(*core_.get(),
+            "GET", ips_[0], "/v2/keys" + path + "?wait=true&recursive=true", "");
+    httpClients_.insert(httpClient);
+    auto weakPtr = std::weak_ptr<small_server::HttpClientBackUp>(httpClient);
+    auto onDone = [this, weakPtr, path, handler](small_server::HttpClientBackUp &client, 
         const std::string &argErrMsg){
         handler(argErrMsg);
+        httpClients_.erase(weakPtr.lock());
     };
-    c->doReq(onDone);
+    httpClient->DoReq(onDone);
 }
 /*ListWatch
  *  listWatch
@@ -256,9 +289,12 @@ void Etcd::watch(const uint64_t afterIndex,
     WatchOnce(afterIndex, path, [this, afterIndex, path, func, optFunc](const std::string &argErrMsg){
         if (!argErrMsg.empty()) {
             LOG(WARNING) << argErrMsg;
-            auto t = small_timer::MakeTimer();
-            t->AsyncWait(5000, [this, t, path, afterIndex, func, optFunc](const std::string &errMsg) {
+            auto t = std::make_shared<sheep::net::Timer>(small_server::SheepNetCore::GetInstance()->GetLoop());
+            timers_.insert(t);
+            auto weakPtr = std::weak_ptr<sheep::net::Timer>(t);
+            t->AsyncWait(5000, [this, weakPtr, path, afterIndex, func, optFunc](const std::string &errMsg) {
                 watch(afterIndex, path, func, optFunc);
+                timers_.erase(weakPtr.lock());
             });
             return;
         }

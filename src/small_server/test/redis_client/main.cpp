@@ -1,12 +1,10 @@
 #include "client.h"
 #include "log.h"
 #include "small_server.h"
-#include "small_net.h"
 
 int main() {
     std::string errMsg;
     small_server::SheepNetCore::GetInstance()->Init();
-    //small_net::AsioNet::GetInstance().Init();
     small_server::RedisCore redisCore;
     redisCore.Init(errMsg, {"172.16.187.149"}, 6379, "/");
     std::this_thread::sleep_for(std::chrono::seconds(1));

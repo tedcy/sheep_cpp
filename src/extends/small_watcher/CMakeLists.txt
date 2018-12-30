@@ -22,17 +22,13 @@ add_library(${TARGET} STATIC ${LIST_SRC})
 include_directories(${TARGET} ${PROJECT_SOURCE_DIR}/)
 include_directories(${TARGET} ${PROJECT_SOURCE_DIR}/etcd)
 
-find_package(small_http_client REQUIRED)
-include_directories(${TARGET} ${small_http_client_INCLUDE_DIRS})
-target_link_libraries(${TARGET} ${small_http_client_LIBRARIES})
+find_package(small_server REQUIRED)
+include_directories(${TARGET} ${small_server_INCLUDE_DIRS})
+target_link_libraries(${TARGET} ${small_server_LIBRARIES})
 
-find_package(small_timer REQUIRED)
-include_directories(${TARGET} ${small_timer_INCLUDE_DIRS})
-target_link_libraries(${TARGET} ${small_timer_LIBRARIES})
-
-find_package(small_net REQUIRED)
-include_directories(${TARGET} ${small_net_INCLUDE_DIRS})
-target_link_libraries(${TARGET} ${small_net_LIBRARIES})
+find_package(net REQUIRED)
+include_directories(${TARGET} ${net_INCLUDE_DIRS})
+target_link_libraries(${TARGET} ${net_LIBRARIES})
 
 find_package(small_packages REQUIRED)
 include_directories(${TARGET} ${small_packages_INCLUDE_DIRS})

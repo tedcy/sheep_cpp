@@ -25,10 +25,6 @@ foreach (TARGET server grpc_client redis_client http_client)
     include_directories(${TARGET} ${small_server_INCLUDE_DIRS})
     target_link_libraries(${TARGET} ${small_server_LIBRARIES})
 
-    find_package(small_watcher REQUIRED)
-    include_directories(${TARGET} ${small_watcher_INCLUDE_DIRS})
-    target_link_libraries(${TARGET} ${small_watcher_LIBRARIES})
-
     target_link_libraries(${TARGET} pthread)
 endforeach()
 
