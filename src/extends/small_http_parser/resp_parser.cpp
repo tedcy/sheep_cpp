@@ -1,6 +1,6 @@
 #include "small_http_parser.h"
 #include "http-parser/http_parser.h"
-#include <iostream>
+#include "log.h"
 namespace small_http_parser{
 RespParser::RespParser() :
     settings_(std::make_shared<http_parser_settings>()),
@@ -16,7 +16,7 @@ void RespParser::Init() {
     inited_ = true;
     settings_->on_chunk_complete = nullptr;
     settings_->on_chunk_header = nullptr;
-    settings_->on_headers_complete = RespParser::onFeedFinished;
+    settings_->on_headers_complete = nullptr;
     settings_->on_message_begin = nullptr;
     settings_->on_message_complete = nullptr;
     settings_->on_url = nullptr;
@@ -27,7 +27,9 @@ void RespParser::Init() {
 }
 void RespParser::Feed(std::string &errMsg, bool &finished, const std::string &str) {
     Init();
-    int nparsed = http_parser_execute(parser_.get(), settings_.get(), str.c_str(), str.size());
+    auto offset = buf_.size();
+    buf_ += str;
+    int nparsed = http_parser_execute(parser_.get(), settings_.get(), buf_.c_str() + offset, str.size());
     if (parser_->http_errno != 0) {
         errMsg = std::string("RespParser Feed failed: ") +
             ::http_errno_description(static_cast<enum ::http_errno>(parser_->http_errno));
@@ -47,14 +49,8 @@ const Map& RespParser::GetHeader() {
 const std::string& RespParser::GetBody() {
     return body_;
 }
-const int RespParser::GetStatusCode() {
+int RespParser::GetStatusCode() {
     return parser_->status_code;
-}
-int RespParser::onFeedFinished(http_parser *parser) {
-    std::cout << "onFeedFinished" << std::endl;
-    auto t = static_cast<RespParser*>(parser->data);
-    t->finished_ = true;
-    return 0;
 }
 int RespParser::onHeaderField(http_parser *parser, const char *c, size_t len) {
     auto t = static_cast<RespParser*>(parser->data);
@@ -69,6 +65,7 @@ int RespParser::onHeaderValue(http_parser *parser, const char *c, size_t len) {
 int RespParser::onBody(http_parser *parser, const char *c, size_t len) {
     auto t = static_cast<RespParser*>(parser->data);
     t->body_ = std::string(c, len);
+    t->finished_ = true;
     return 0;
 }
 }

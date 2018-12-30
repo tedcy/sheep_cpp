@@ -15,6 +15,13 @@ public:
     void Set(const std::string &key, const std::string &value) {
         kvs_.insert({key, value});
     }
+    void Get(const std::string &key, std::string &value) const {
+        auto iter = kvs_.find(key);
+        if (iter == kvs_.end()) {
+            value = "";
+        }
+        value = iter->second;
+    }
     std::map<std::string, std::string> kvs_;
 };
 //TODO RespFormater and ReqParser
@@ -24,16 +31,16 @@ public:
     void Feed(std::string &errMsg, bool &finished, const std::string &str);
     const Map& GetHeader();
     const std::string& GetBody();
-    const int GetStatusCode();
+    int GetStatusCode();
 private:
     std::shared_ptr<http_parser_settings> settings_;
     std::shared_ptr<http_parser> parser_;
     Map headers_;
     std::string body_;
     std::string tmpField_;
+    std::string buf_;
 
     void Init();
-    static int onFeedFinished(http_parser *);
     static int onHeaderField(http_parser *, const char*, size_t);
     static int onHeaderValue(http_parser *, const char*, size_t);
     static int onBody(http_parser *, const char*, size_t);

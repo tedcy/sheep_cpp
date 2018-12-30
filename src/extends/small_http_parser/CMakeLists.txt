@@ -22,4 +22,8 @@ add_library(${TARGET} STATIC ${LIST_SRC})
 include_directories(${TARGET} ${PROJECT_SOURCE_DIR}/)
 include_directories(${TARGET} ${PROJECT_SOURCE_DIR}/http-parser)
 
+find_package(log REQUIRED)
+include_directories(${TARGET} ${log_INCLUDE_DIRS})
+target_link_libraries(${TARGET} ${log_LIBRARIES})
+
 target_link_libraries(${TARGET} pthread)

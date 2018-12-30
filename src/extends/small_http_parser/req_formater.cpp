@@ -1,4 +1,5 @@
 #include "small_http_parser.h"
+#include "log.h"
 namespace small_http_parser{
 const std::string ReqFormater::MethodGET = "GET";
 const std::string ReqFormater::MethodPOST = "POST";
@@ -29,7 +30,9 @@ const std::string& ReqFormater::Format() {
     result_ = method_ + " " + target_ + " HTTP/1.1" + LR;
     
     //header
-    headers_.Set(Host, host_);
+    if (!host_.empty()) {
+        headers_.Set(Host, host_);
+    }
     if (method_ == ReqFormater::MethodPUT || method_ == ReqFormater::MethodPOST) {
         headers_.Set(ContentLength, std::to_string(body_.size()));
     }
