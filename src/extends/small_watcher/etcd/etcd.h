@@ -1,5 +1,5 @@
 #pragma once
-#include "small_watcher.h"
+#include "small_watcher_interface.h"
 #include "small_server.h"
 #include "net.h"
 

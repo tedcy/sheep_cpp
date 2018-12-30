@@ -1,12 +1,11 @@
 #pragma once
-#include "resolver_interface.h"
-#include "small_watcher_factory.h"
+#include "small_server.h"
+#include "make_watcher.h"
 #include "log.h"
-namespace small_server{
-namespace resolver{
-class EtcdResolver: public ResolverI{
+namespace small_watcher{
+class WatcherResolver: public small_server::resolver::ResolverI{
 public:
-    EtcdResolver(const std::vector<std::string> &ips, uint32_t port,
+    WatcherResolver(const std::vector<std::string> &ips, uint32_t port,
             const std::string &target):
         watcher_(small_watcher::MakeWatcher(ips, port)),
         target_(target) {
@@ -32,18 +31,18 @@ private:
     std::shared_ptr<small_watcher::WatcherI> watcher_;
 };
 
-class EtcdResolverFactory: public ResolverFactoryI{
+class WatcherResolverFactory: public small_server::resolver::ResolverFactoryI{
 public:
-    static EtcdResolverFactory* GetInstance() {
-        static EtcdResolverFactory instance;
+    static WatcherResolverFactory* GetInstance() {
+        static WatcherResolverFactory instance;
+        small_server::resolver::ResolverManager::GetInstance()->Register("watcher", &instance);
         return &instance;
     }
-    std::unique_ptr<ResolverI> Create(const std::vector<std::string> &ips, uint32_t port,
+    std::unique_ptr<small_server::resolver::ResolverI> Create(const std::vector<std::string> &ips, uint32_t port,
             const std::string &target) override {
-        return std::unique_ptr<ResolverI>(new EtcdResolver(ips, port, target));
+        return std::unique_ptr<small_server::resolver::ResolverI>(new WatcherResolver(ips, port, target));
     }
 private:
-    EtcdResolverFactory() = default;
+    WatcherResolverFactory() = default;
 };
-}
 }
