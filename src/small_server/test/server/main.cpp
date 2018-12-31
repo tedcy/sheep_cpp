@@ -11,7 +11,7 @@ int main() {
     server.Register(&service);
 
     std::string errMsg;
-    small_client::SheepNetCore::GetInstance()->Init();
+    small_client::Looper::GetInstance()->Init();
     small_watcher::WatcherResolverFactory::GetInstance()->Init();
     auto watcher = small_watcher::MakeWatcher({"172.16.187.149"}, 2379);
     watcher->Init(errMsg);

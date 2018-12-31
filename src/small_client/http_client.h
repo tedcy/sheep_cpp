@@ -4,16 +4,16 @@
 #include "net.h"
 #include "small_packages.h"
 #include "log.h"
-#include "net_client.h"
+#include "base_client.h"
 #include "small_http_parser.h"
 namespace small_client{
-class HttpClient : public NetClient{
+class HttpClient : public BaseClient{
 public:
 using HttpClientOnDone = 
     std::function<void(HttpClient& c, const std::string &errMsg)>;
-    HttpClient(SheepNetClientCore &core, const std::string method,
+    HttpClient(ClientChannel &core, const std::string method,
             const std::string &host, const std::string &target, const std::string &body) :
-        NetClient(core) ,
+        BaseClient(core) ,
         formarter_(method, host, target, body){
     }
     void SetHeaders(const small_http_parser::Map &map) {
@@ -64,7 +64,7 @@ private:
 template<typename ServiceCtxT>
 class HttpClientWithService: public HttpClient{
 public:
-    HttpClientWithService(SheepNetClientCore &core, const std::string &method,
+    HttpClientWithService(ClientChannel &core, const std::string &method,
             const std::string &host,
             const std::string &target,const std::string &body) :
         HttpClient(core, method, host, target, body) {

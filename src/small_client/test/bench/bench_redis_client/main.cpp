@@ -4,14 +4,14 @@
 #include "small_packages.h"
 #include "small_pprof.h"
 
-void DoReq(std::string &errMsg, small_client::SheepNetClientCore &redisCore,
+void DoReq(std::string &errMsg, small_client::ClientChannel &channel,
         std::set<std::shared_ptr<small_client::RedisClient>> &clients,
         std::shared_ptr<small_lock::LockI> &lock) {
     small_lock::UniqueGuard guard(lock);
     if (clients.size() >= 50) {
         return;
     }
-    auto clientPtr = std::make_shared<small_client::RedisClient>(redisCore);
+    auto clientPtr = std::make_shared<small_client::RedisClient>(channel);
     auto weakPtr = std::weak_ptr<small_client::RedisClient>(clientPtr);
     clients.insert(clientPtr);
     clientPtr->DoReq("GET A", 
@@ -43,24 +43,24 @@ void DoReq(std::string &errMsg, small_client::SheepNetClientCore &redisCore,
 int main() {
     ghttpd();
     std::string errMsg;
-    small_client::SheepNetCore::GetInstance()->Init();
+    small_client::Looper::GetInstance()->Init();
     //small_net::AsioNet::GetInstance().Init();
-    small_client::SheepNetClientCore core(
-            small_client::SheepNetCore::GetInstance()->GetLoop());
-    core.SetResolverType("string");
-    core.SetMaxSize(10);
-    core.Init(errMsg, {"127.0.0.1"}, 6379, "/");
+    small_client::ClientChannel channel(
+            small_client::Looper::GetInstance()->GetLoop());
+    channel.SetResolverType("string");
+    channel.SetMaxSize(50);
+    channel.Init(errMsg, {"127.0.0.1"}, 6379, "/");
     std::this_thread::sleep_for(std::chrono::seconds(1));
     std::set<std::shared_ptr<small_client::RedisClient>> clients;
     auto lock = small_lock::MakeRecursiveLock();
     for (;;) {
-        DoReq(errMsg, core, clients, lock);
+        DoReq(errMsg, channel, clients, lock);
         if (!errMsg.empty()) {
             LOG(INFO) << errMsg;
             return -1;
         }
     }
     std::this_thread::sleep_for(std::chrono::seconds(100));
-    small_client::SheepNetCore::GetInstance()->Shutdown();
+    small_client::Looper::GetInstance()->Shutdown();
     //small_net::AsioNet::GetInstance().Shutdown();
 }

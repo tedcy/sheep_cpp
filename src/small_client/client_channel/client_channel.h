@@ -2,15 +2,15 @@
 #include "log.h"
 #include "net.h"
 #include "small_packages.h"
-#include "client_channel/balancer.h"
-#include "client_channel/client_manager.h"
+#include "balancer.h"
+#include "client_manager.h"
 namespace small_client{
-class SheepNetClientCore: public small_packages::noncopyable{
+class ClientChannel: public small_packages::noncopyable{
 public:
-    SheepNetClientCore(sheep::net::EventLoop &loop):
+    ClientChannel(sheep::net::EventLoop &loop):
         loop_(loop) {
     }
-    virtual ~SheepNetClientCore() = default;
+    virtual ~ClientChannel() = default;
     void SetMaxSize(const uint64_t maxSize) {
         maxSize_ = maxSize;
     }
@@ -28,7 +28,7 @@ public:
             std::shared_ptr<sheep::net::ClientPool> clientPool;
             auto exist = weakPtr.lock();
             if(!exist) {
-                LOG(WARNING) << "SheepNetClientCore destoryed";
+                LOG(WARNING) << "ClientChannel destoryed";
                 return clientPool;
             }
             bool ok;

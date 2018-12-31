@@ -5,13 +5,13 @@
 #include <thread>
 namespace small_client{
 //thread unsafe
-class SheepNetCore: public small_packages::noncopyable{
+class Looper: public small_packages::noncopyable{
 public:
-    static SheepNetCore* GetInstance() {
-        static SheepNetCore redisCore;
+    static Looper* GetInstance() {
+        static Looper redisCore;
         return &redisCore;
     }
-    ~SheepNetCore() {
+    ~Looper() {
         Shutdown();
     }
     void Init() {
@@ -30,7 +30,7 @@ public:
         return loop_;
     }
 private:
-    SheepNetCore() = default;
+    Looper() = default;
     sheep::net::EventLoop loop_;
     std::unique_ptr<std::thread> thread_;
 };

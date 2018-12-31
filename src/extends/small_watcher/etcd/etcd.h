@@ -38,7 +38,7 @@ private:
     
     std::vector<std::string> ips_;
     uint32_t port_;
-    std::shared_ptr<small_client::SheepNetClientCore> core_;
+    std::shared_ptr<small_client::ClientChannel> channel_;
     std::set<std::shared_ptr<small_client::HttpClient>> httpClients_;
     std::set<std::shared_ptr<sheep::net::Timer>> timers_;
 };

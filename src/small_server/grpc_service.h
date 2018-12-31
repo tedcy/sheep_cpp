@@ -111,11 +111,11 @@ public:
         return coreCtx_->GetTraceId();
     }
     std::shared_ptr<small_client::HttpClientWithService<GrpcServiceCtx>> GetHttpClient(
-            small_client::SheepNetClientCore &core,
+            small_client::ClientChannel &channel,
             const std::string &method, const std::string &host,
             const std::string &target,const std::string &req) {
         auto httpClient = std::make_shared<small_client::HttpClientWithService<GrpcServiceCtx>>(
-                core, method, host, target, req);
+                channel, method, host, target, req);
         httpClient->SetServiceCtx(myself_);
         return httpClient;
     }

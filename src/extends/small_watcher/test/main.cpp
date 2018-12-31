@@ -9,14 +9,14 @@
 struct Test{
     Test() {
         //small_log::Init();
-        small_client::SheepNetCore::GetInstance()->Init();
+        small_client::Looper::GetInstance()->Init();
         std::vector<std::string> ips{"172.16.187.149"};
         uint32_t port = 2379;
         watcher_ = small_watcher::MakeWatcher(ips, port);
     }
     ~Test() {
         std::this_thread::sleep_for(std::chrono::seconds(100));
-        small_client::SheepNetCore::GetInstance()->Shutdown();
+        small_client::Looper::GetInstance()->Shutdown();
     }
     void Init(std::string &errMsg) {
         watcher_->Init(errMsg);
