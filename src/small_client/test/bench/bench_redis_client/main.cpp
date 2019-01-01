@@ -14,6 +14,7 @@ void DoReq(std::string &errMsg, small_client::ClientChannel &channel,
     auto clientPtr = std::make_shared<small_client::RedisClient>(channel);
     auto weakPtr = std::weak_ptr<small_client::RedisClient>(clientPtr);
     clients.insert(clientPtr);
+    clientPtr->SetTimeoutMs(5000);
     clientPtr->DoReq("GET A", 
     [&clients, weakPtr, &lock](small_client::RedisClient &client, 
         const std::string &errMsg) {
@@ -48,7 +49,7 @@ int main() {
     small_client::ClientChannel channel(
             small_client::Looper::GetInstance()->GetLoop());
     channel.SetResolverType("string");
-    channel.SetMaxSize(50);
+    channel.SetMaxSize(60);
     channel.Init(errMsg, {"127.0.0.1"}, 6379, "/");
     std::this_thread::sleep_for(std::chrono::seconds(1));
     std::set<std::shared_ptr<small_client::RedisClient>> clients;

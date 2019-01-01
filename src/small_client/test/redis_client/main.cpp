@@ -4,6 +4,7 @@
 std::shared_ptr<small_client::RedisClient> DoReq(std::string &errMsg,
         small_client::ClientChannel &channel) {
     auto client = std::make_shared<small_client::RedisClient>(channel);
+    client->SetTimeoutMs(1);
     client->DoReq("GET A", 
     [](small_client::RedisClient &client, 
         const std::string &errMsg) {
