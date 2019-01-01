@@ -18,7 +18,7 @@ class TcpConnection: public small_packages::noncopyable,
 using readHandlerT = std::function<void(std::string &errMsg)>;
 using writeHandlerT = std::function<void(std::string &errMsg)>;
 using finishHandlerT = std::function<void(std::string &errMsg,
-        std::shared_ptr<TcpConnection>)>;
+        std::shared_ptr<TcpConnection>&)>;
 public:
     //for acceptor
     TcpConnection(EventLoop &loop, int fd);

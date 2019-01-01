@@ -186,7 +186,8 @@ void TcpConnection::writeHandler() {
 }
 
 void TcpConnection::Finish(std::string &errMsg) {
-    finishHandler_(errMsg, shared_from_this());
+    auto sharedPtr = shared_from_this();
+    finishHandler_(errMsg, sharedPtr);
 }
 
 void TcpConnection::GetLocalIp(std::string &errMsg, std::string &ip) {
