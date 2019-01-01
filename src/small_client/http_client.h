@@ -12,9 +12,9 @@ public:
 using HttpClientOnDone = 
     std::function<void(HttpClient& c, const std::string &errMsg)>;
     HttpClient(ClientChannel &core, const std::string method,
-            const std::string &host, const std::string &target, const std::string &body) :
+            const std::string &target, const std::string &body) :
         BaseClient(core) ,
-        formarter_(method, host, target, body){
+        formarter_(method, target, body){
     }
     void SetHeaders(const small_http_parser::Map &map) {
         formarter_.SetHeader(map);
@@ -35,6 +35,7 @@ using HttpClientOnDone =
     }
 private:
     void ReqPush(std::string &errMsg, sheep::net::TcpConnection &connection) override {
+        formarter_.SetHost(GetAddr());
         const std::string &req = formarter_.Format();
         connection.WriteBuffer_.Push(const_cast<char*>(req.c_str()), req.size());
     }

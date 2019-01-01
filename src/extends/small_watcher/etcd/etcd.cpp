@@ -59,7 +59,7 @@ void Etcd::createEphemeral(const std::string &path, const std::string &value, co
         nextCreateEphemral(path, path);
         return;
     }
-    auto httpClient = std::make_shared<small_client::HttpClient>(*channel_.get(), "PUT", ips_[0],
+    auto httpClient = std::make_shared<small_client::HttpClient>(*channel_.get(), "PUT",
         "/v2/keys" + path, "value=" + value + "&ttl=12");
     httpClients_.insert(httpClient);
     auto weakPtr = std::weak_ptr<small_client::HttpClient>(httpClient);
@@ -112,7 +112,7 @@ void Etcd::refresh(const std::string &path, const std::string &value,
         return;
     }
     auto httpClient = std::make_shared<small_client::HttpClient>(*channel_.get(),
-            "PUT", ips_[0], "/v2/keys" + path, "value=" + value + "&ttl=12&refresh=true");
+            "PUT", "/v2/keys" + path, "value=" + value + "&ttl=12&refresh=true");
     httpClients_.insert(httpClient);
     auto weakPtr = std::weak_ptr<small_client::HttpClient>(httpClient);
     small_http_parser::Map headers;
@@ -184,7 +184,7 @@ void Etcd::nextRefresh(const std::string &path, const std::string &value) {
 }
 void Etcd::List(const std::string &path, onListFunc handler) {
     auto httpClient = std::make_shared<small_client::HttpClient>(*channel_.get(),
-        "GET", ips_[0],  "/v2/keys" + path + "/", "");
+        "GET", "/v2/keys" + path + "/", "");
     httpClients_.insert(httpClient);
     auto weakPtr = std::weak_ptr<small_client::HttpClient>(httpClient);
     auto onDone = [this, weakPtr, path, handler](small_client::HttpClient &client, 
@@ -252,7 +252,7 @@ void Etcd::List(const std::string &path, onListFunc handler) {
 void Etcd::WatchOnce(const uint64_t afterIndex,
         const std::string &path, onNotifyFunc handler) {
     auto httpClient = std::make_shared<small_client::HttpClient>(*channel_.get(),
-            "GET", ips_[0], "/v2/keys" + path + "?wait=true&recursive=true", "");
+            "GET", "/v2/keys" + path + "?wait=true&recursive=true", "");
     httpClients_.insert(httpClient);
     auto weakPtr = std::weak_ptr<small_client::HttpClient>(httpClient);
     auto onDone = [this, weakPtr, path, handler](small_client::HttpClient &client, 

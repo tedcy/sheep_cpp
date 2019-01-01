@@ -7,11 +7,10 @@ const std::string ReqFormater::MethodPUT = "PUT";
 const std::string ReqFormater::LR = "\r\n";
 const std::string ReqFormater::Host = "Host";
 const std::string ReqFormater::ContentLength = "Content-Length";
-ReqFormater::ReqFormater(const std::string &method, const std::string &host,
+ReqFormater::ReqFormater(const std::string &method,
         const std::string &target,
         const std::string &body) :
-    method_(method),
-    host_(host), target_(target),
+    method_(method),target_(target),
     body_(body) {
 }
 const std::string& ReqFormater::Format() {
@@ -46,6 +45,9 @@ const std::string& ReqFormater::Format() {
         result_ += body_;
     }
     return result_;
+}
+void ReqFormater::SetHost(const std::string &host) {
+    host_ = host;
 }
 void ReqFormater::SetHeader(const Map &map) {
     headers_ = map;

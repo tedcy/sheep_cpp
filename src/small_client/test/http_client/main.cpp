@@ -4,7 +4,7 @@
 std::shared_ptr<small_client::HttpClient> DoReq(std::string &errMsg,
         small_client::ClientChannel &channel) {
     auto client = std::make_shared<small_client::HttpClient>(channel,
-            small_http_parser::ReqFormater::MethodGET, "127.0.0.1", "/", "");
+            small_http_parser::ReqFormater::MethodGET, "/", "");
     client->DoReq([](small_client::HttpClient &client, 
         const std::string &errMsg) {
         LOG(INFO) << "DoReq Done";

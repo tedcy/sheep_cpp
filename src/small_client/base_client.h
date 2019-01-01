@@ -22,6 +22,12 @@ using BaseClientOnDone =
         timeoutMs_ = ms;
     }
 protected:
+    const std::string& GetAddr() {
+        return addr_;
+    }
+    int GetPort() {
+        return port_;
+    }
     template <typename T>
     void doReq(std::function<void(T&, const std::string&)> &onDone) {
         auto realOnDone = [onDone](BaseClient &c,const std::string &errMsg) {
@@ -40,6 +46,8 @@ protected:
             onDone_(*this, "client nullptr");
             return;
         }
+        addr_ = client_->GetAddr();
+        port_ = client_->GetPort();
         std::string errMsg;
         auto &connection = client_->GetTcpConnection();
         ReqPush(errMsg, connection);
@@ -110,6 +118,8 @@ private:
     ClientChannel &clientChannel_;
     std::shared_ptr<sheep::net::ClientPool> clientPool_;
     std::shared_ptr<sheep::net::Client> client_;
+    std::string addr_;
+    int port_;
     uint64_t timeoutMs_ = 0;
     BaseClientOnDone onDone_;
     std::shared_ptr<sheep::net::Timer> timer_;

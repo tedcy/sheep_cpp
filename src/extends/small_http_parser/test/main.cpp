@@ -41,7 +41,8 @@ void TestRespParser() {
 
 void TestReqFormater() {
     small_http_parser::ReqFormater formater(small_http_parser::ReqFormater::MethodPOST
-    , "www.baidu.com", "/", "wtf");
+    , "/", "wtf");
+    formater.SetHost("www.baidu.com");
     small_http_parser::Map headers;
     headers.Set("Accept", "*/*");
     headers.Set("Connection", "keep-alive");

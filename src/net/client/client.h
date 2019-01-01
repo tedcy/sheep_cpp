@@ -23,6 +23,12 @@ public:
     void SetConnectedHandler(connectedHandlerT);
     void SetDisconnectedHandler(disconnectedHandlerT);
     TcpConnection& GetTcpConnection();
+    const std::string& GetAddr() {
+        return addr_;
+    }
+    int GetPort() {
+        return port_;
+    }
 private:
     friend ClientPool;
     void Reset() {

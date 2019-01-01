@@ -53,9 +53,10 @@ public:
     static const std::string MethodGET;
     static const std::string MethodPOST;
     static const std::string MethodPUT;
-    ReqFormater(const std::string &method, const std::string &host,
+    ReqFormater(const std::string &method,
         const std::string &target, const std::string &body);
     const std::string& Format();
+    void SetHost(const std::string &host);
     void SetHeader(const Map &map);
     void SetQueryString(const Map &map);
 private:
