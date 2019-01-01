@@ -47,10 +47,11 @@ void ClientPool::Init(std::string &errMsg) {
         });
         client->SetDisconnectedHandler([weakExist, this, weakClient](
         const std::string &argErrMsg){
-            if (!argErrMsg.empty()) {
-                LOG(WARNING) << argErrMsg;
+            //when argErrMsg != "", means err happened, should reconnect
+            if (argErrMsg.empty()) {
                 return;
             }
+            LOG(WARNING) << argErrMsg;
             auto client = weakClient.lock();
             if (!client) {
                 LOG(WARNING) << 

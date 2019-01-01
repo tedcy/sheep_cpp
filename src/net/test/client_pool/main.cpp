@@ -18,10 +18,10 @@ int main(){
     }
     std::vector<std::shared_ptr<sheep::net::Timer>> ts;
     //FIXME something bug with timer twice or more called together
-    for (int i = 0;i < 10;i++) {
+    for (int i = 0;i < 1;i++) {
         auto timer = std::make_shared<sheep::net::Timer>(loop);
         ts.push_back(timer);
-        timer->AsyncWait(1000, [&clientPool](const std::string &errMsg){
+        timer->AsyncWait(1000 * i, [&clientPool](const std::string &errMsg){
             LOG(INFO) << "call SetConnectedHandler";
             auto client = clientPool.Get();
             if (!client) {
@@ -39,8 +39,11 @@ int main(){
                     char buf[100];
                     auto &connection = client->GetTcpConnection();
                     connection.ReadBuffer_.PopHead(buf, 100);
-                    clientPool.Insert(client);
-                    //connection.Finish(errMsg);
+                    //test pushback to clientPool
+                    //clientPool.Insert(client);
+                    //test reconnect
+                    errMsg = "shutdown";
+                    connection.Finish(errMsg);
                 });
             });
         });
