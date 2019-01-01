@@ -70,7 +70,9 @@ public:
         HttpClient(core, method, target, body) {
     }
     void DoReq(std::function<void(HttpClientWithService&, const std::string&)> onDone) {
-        auto realOnDone = [this, onDone](HttpClientWithService&, const std::string &errMsg) {
+        //FIXME: auto is invliad, wtf need this line???
+        std::function<void(HttpClientWithService&, const std::string&)> realOnDone;
+        realOnDone = [this, onDone](HttpClientWithService&, const std::string &errMsg) {
             auto realCtx = serviceCtx_.lock();
             if (!realCtx) {
                 return;
@@ -79,7 +81,7 @@ public:
             small_lock::UniqueGuard uniqueLock (lock);
             onDone(*this, errMsg);
         };
-        this->template doReq<HttpClientWithService>(realOnDone);
+        this->doReq<HttpClientWithService>(realOnDone);
     }
     std::weak_ptr<ServiceCtxT> GetServiceCtx() {
         return serviceCtx_;
