@@ -23,6 +23,7 @@ void Client::AsyncConnect(std::string &errMsg) {
         errMsg = "invalid connected or disconnected handler";
         return;
     }
+    connection_ = nullptr;
     connectCalled_ = true;
     connector_ = std::make_shared<Connector>(loop_, addr_, port_);
     asyncer_ = std::make_shared<Asyncer>(loop_);
@@ -85,9 +86,7 @@ void Client::newConnectionHandler(std::unique_ptr<Socket> &socket,
     std::string errMsg;
     //safe
     connection_->SetFinishHandler([this](
-    std::string &errMsg, std::shared_ptr<TcpConnection> connection){
-        //FIXME: why I need do this
-        connection_ = nullptr;
+    std::string &errMsg, std::shared_ptr<TcpConnection> &connection){
         disconnectedHandler_(errMsg);
     });
     connection_->InitConnected(errMsg);
