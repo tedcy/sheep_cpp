@@ -23,10 +23,10 @@ using BaseClientOnDone =
     }
 protected:
     const std::string& GetAddr() {
-        return addr_;
+        return client_->GetAddr();
     }
     int GetPort() {
-        return port_;
+        return client_->GetPort();
     }
     template <typename T>
     void doReq(std::function<void(T&, const std::string&)> &onDone) {
@@ -118,8 +118,6 @@ private:
     ClientChannel &clientChannel_;
     std::shared_ptr<sheep::net::ClientPool> clientPool_;
     std::shared_ptr<sheep::net::Client> client_;
-    std::string addr_;
-    int port_;
     uint64_t timeoutMs_ = 0;
     BaseClientOnDone onDone_;
     std::shared_ptr<sheep::net::Timer> timer_;

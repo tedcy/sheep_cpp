@@ -66,9 +66,8 @@ template<typename ServiceCtxT>
 class HttpClientWithService: public HttpClient{
 public:
     HttpClientWithService(ClientChannel &core, const std::string &method,
-            const std::string &host,
             const std::string &target,const std::string &body) :
-        HttpClient(core, method, host, target, body) {
+        HttpClient(core, method, target, body) {
     }
     void DoReq(std::function<void(HttpClientWithService&, const std::string&)> onDone) {
         auto realOnDone = [this, onDone](HttpClientWithService&, const std::string &errMsg) {
