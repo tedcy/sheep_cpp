@@ -46,8 +46,6 @@ protected:
             onDone_(*this, "client nullptr");
             return;
         }
-        addr_ = client_->GetAddr();
-        port_ = client_->GetPort();
         std::string errMsg;
         auto &connection = client_->GetTcpConnection();
         ReqPush(errMsg, connection);
