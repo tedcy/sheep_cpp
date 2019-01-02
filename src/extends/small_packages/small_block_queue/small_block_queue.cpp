@@ -31,7 +31,7 @@ void BlockQueue::looper() {
     while(!stop_) {
         std::unique_lock<std::mutex> lock(mtx_);
         cv_.wait(lock, [this]() {
-            return !cbs_.empty();
+            return cbs_.empty();
         });
         for (auto &cb: cbs_) {
             cb();
