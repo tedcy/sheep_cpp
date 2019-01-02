@@ -44,6 +44,7 @@ private:
     static int onHeaderField(http_parser *, const char*, size_t);
     static int onHeaderValue(http_parser *, const char*, size_t);
     static int onBody(http_parser *, const char*, size_t);
+    static int onMessageEnd(http_parser *);
 
     bool inited_ = false;
     bool finished_ = false;

@@ -18,7 +18,7 @@ void RespParser::Init() {
     settings_->on_chunk_header = nullptr;
     settings_->on_headers_complete = nullptr;
     settings_->on_message_begin = nullptr;
-    settings_->on_message_complete = nullptr;
+    settings_->on_message_complete = RespParser::onMessageEnd;;
     settings_->on_url = nullptr;
     settings_->on_status = nullptr;
     settings_->on_header_field = RespParser::onHeaderField;
@@ -64,7 +64,11 @@ int RespParser::onHeaderValue(http_parser *parser, const char *c, size_t len) {
 }
 int RespParser::onBody(http_parser *parser, const char *c, size_t len) {
     auto t = static_cast<RespParser*>(parser->data);
-    t->body_ = std::string(c, len);
+    t->body_ += std::string(c, len);
+    return 0;
+}
+int RespParser::onMessageEnd(http_parser *parser) {
+    auto t = static_cast<RespParser*>(parser->data);
     t->finished_ = true;
     return 0;
 }
