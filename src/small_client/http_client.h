@@ -22,6 +22,9 @@ using HttpClientOnDone =
     void SetQueryString(const small_http_parser::Map &map) {
         formarter_.SetQueryString(map);
     }
+    void SetHost(const std::string &host) {
+        host_ = host;
+    }
     void DoReq(HttpClientOnDone onDone) {
         doReq<HttpClient>(onDone);
     }
@@ -35,7 +38,10 @@ using HttpClientOnDone =
     }
 private:
     void ReqPush(std::string &errMsg, sheep::net::TcpConnection &connection) override {
-        formarter_.SetHost(GetAddr());
+        if (host_.empty()) {
+            host_ = GetAddr();
+        }
+        formarter_.SetHost(host_);
         const std::string &req = formarter_.Format();
         connection.WriteBuffer_.Push(const_cast<char*>(req.c_str()), req.size());
     }
@@ -55,6 +61,7 @@ private:
     std::shared_ptr<sheep::net::ClientPool> clientPool_;
     std::shared_ptr<sheep::net::Client> client_;
     HttpClientOnDone onDone_;
+    std::string host_;
 
     //req
     small_http_parser::ReqFormater formarter_;
