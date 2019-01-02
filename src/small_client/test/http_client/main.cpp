@@ -28,9 +28,9 @@ int main() {
     //small_net::AsioNet::GetInstance().Init();
     small_client::ClientChannel channel(
             small_client::Looper::GetInstance()->GetLoop());
-    channel.SetResolverType("string");
-    channel.SetMaxSize(10);
-    channel.Init(errMsg, {"127.0.0.1"}, 80, "");
+    channel.SetResolverType("dns");
+    channel.SetMaxSize(1);
+    channel.Init(errMsg, {"www.baidu.com"}, 80, "");
     if (!errMsg.empty()) {
         LOG(FATAL) << errMsg;
     }

@@ -1,6 +1,7 @@
 #pragma once
 #include "resolver_interface.h"
 #include "string_resolver.h"
+#include "dns_resolver.h"
 #include "small_packages.h"
 #include <string>
 #include <map>
@@ -12,6 +13,7 @@ public:
     static ResolverManager* GetInstance() {
         static ResolverManager instance;
         instance.Register("string", StringResolverFactory::GetInstance());
+        instance.Register("dns", DnsResolverFactory::GetInstance());
         return &instance;
     }
     void Register(const std::string &type, ResolverFactoryI *factory) {
