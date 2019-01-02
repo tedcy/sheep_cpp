@@ -14,13 +14,14 @@ ReqFormater::ReqFormater(const std::string &method,
     body_(body) {
 }
 const std::string& ReqFormater::Format() {
-    int i = 0;
     std::string flag;
 
     //query string
+    bool first = true;
     for (auto &queryString : queryStrings_.kvs_) {
-        if (i == 0) {
+        if (first) {
             flag = "?";
+            first = false;
         }else {
             flag = "&";
         }
