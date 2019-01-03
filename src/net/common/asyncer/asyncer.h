@@ -23,6 +23,8 @@ private:
     EventLoop &loop_;
     asyncerHandlerT handler_;
     std::shared_ptr<Event> event_;
+    bool done_;
+    bool used_ = false;
 };
 }
 }

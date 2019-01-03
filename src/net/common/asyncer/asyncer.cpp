@@ -10,10 +10,19 @@ Asyncer::Asyncer(EventLoop &loop) :
 }
 
 Asyncer::~Asyncer() {
+    if (!done_ && handler_) {
+        handler_("Asyncer Canceled");
+    }
 }
 
 //any thread
 void Asyncer::AsyncDo(asyncerHandlerT handler) {
+    if (used_) {
+        handler("Asyncer can't reuse");
+        return;
+    }
+    used_ = true;
+    done_ = false;
     Cancel();
     handler_ = handler;
     event_ = std::make_shared<Event>(loop_, AsyncerPollerFactory::Get()->GetPollerType(), 0);
@@ -26,7 +35,10 @@ void Asyncer::AsyncDo(asyncerHandlerT handler) {
             return;
         }
         event_->DisableReadNotify();
-        handler_("");
+        if (!done_) {
+            done_ = true;
+            handler_("");
+        }
     });
     event_->EnableReadNotify();
 }
@@ -36,7 +48,10 @@ void Asyncer::Cancel() {
         return;
     }
     event_->DisableReadNotify();
-    handler_("Asyncer Canceled");
+    if (!done_) {
+        done_ = true;
+        handler_("Asyncer Canceled");
+    }
 }
 }
 }

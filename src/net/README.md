@@ -48,6 +48,11 @@ SetNewConnectionHandler
 SetConnectFailedHandler
 * 2 Acceptor
 * 3 Asyncer
+AsyncDo
+Cancel
+~AsyncDo
+1 内部类，无法重复使用，重复使用会直接调用回调传递错误
+2 ~AsyncDo和Cancel等效，如果被释放前没有执行回调会调用一次回调
 * 4 Buffer
 * 5 Socket
 * 6 Event
@@ -119,6 +124,11 @@ WriteBufferPushBack
 ReadBufferPopHead
 ```
 
+### 可复用对象
+以下不可复用：
+Timer的AsyncWait
+CLientPool的Init
+
 ### 多线程安全
 1 EventLoop
 Stop，加锁调用  
@@ -144,7 +154,6 @@ Server和TcpConnection是一对多关系，因此Server的连接回调会有TcpC
 AsyncWait没有任何特殊操作，本身时间的有序性就能保证执行到handler  
 AsyncRead是判断Buffer的未读长度是否满足expectSize  
 AsyncWrite是调用以后才设置的epoll，因此不可能出现先发生的情况  
-4 ClientPool对象设计为不可复用以减少复杂程度，假如Init失败了再次Init必定会失败
 
 4 TODO|FIXME
 1 T EPOLLERR, EPOLLHUP

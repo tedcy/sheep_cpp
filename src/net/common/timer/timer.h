@@ -26,6 +26,8 @@ private:
     std::shared_ptr<Event> event_;
     std::shared_ptr<Asyncer> asyncer_;
     std::shared_ptr<small_lock::LockI> lock_;
+    bool done_;
+    bool used_ = false;
 };
 }
 }

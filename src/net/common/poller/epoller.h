@@ -15,7 +15,7 @@ public:
     void RemoveEvent(Event *event) override;
 private:
     static const uint64_t MaxSize_ = 100000;
-    static const uint64_t PollerMaxTime_ = 100;
+    static const uint64_t PollerMaxTime_ = 1;
     //can't use array for avoid including sys/epoll
     std::vector<struct epoll_event> pollEvents_;
     std::vector<std::weak_ptr<Event>> events_;
