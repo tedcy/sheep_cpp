@@ -50,9 +50,12 @@ void AsyncerPoller::updateEvent(std::shared_ptr<Event> &event) {
 //O(1)
 void AsyncerPoller::removeEvent(Event *event) {
     auto id = event->GetId();
-    auto iter = eventMap_[id];
+    auto iter = eventMap_.find(id);
     //iter must exist
-    events_.erase(iter);
+    if (iter == eventMap_.end()) {
+        return;
+    }
+    events_.erase(iter->second);
     eventMap_.erase(id);
 }
 }
