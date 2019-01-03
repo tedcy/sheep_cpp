@@ -161,3 +161,4 @@ AsyncWrite是调用以后才设置的epoll，因此不可能出现先发生的�
 12 OK F client-server的流量异常低，并且server端报reset by peer，应该是数据没读写完就close了
 13 F ClientPool还连接的时候需要清理连接信息
 14 F TcpConnection非线程安全bug
+15 F Asyncer添加了Cancel方法，需要排查是否有需要用这个方法的地方

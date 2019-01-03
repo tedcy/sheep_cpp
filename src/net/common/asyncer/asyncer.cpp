@@ -14,7 +14,7 @@ Asyncer::~Asyncer() {
 
 //any thread
 void Asyncer::AsyncDo(asyncerHandlerT handler) {
-    cancel();
+    Cancel();
     handler_ = handler;
     event_ = std::make_shared<Event>(loop_, AsyncerPollerFactory::Get()->GetPollerType(), 0);
     std::weak_ptr<Event> weakEvent = event_;
@@ -31,7 +31,7 @@ void Asyncer::AsyncDo(asyncerHandlerT handler) {
     event_->EnableReadNotify();
 }
 
-void Asyncer::cancel() {
+void Asyncer::Cancel() {
     if (event_ == nullptr) {
         return;
     }

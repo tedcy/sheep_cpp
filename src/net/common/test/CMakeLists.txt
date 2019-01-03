@@ -13,7 +13,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-g -O3 ${CMAKE_CXX_FLAGS}")
 
 set(CMAKE_MODULE_PATH ${SHEEP_PROJECT_SOURCE_DIR}/cmake)
 
-foreach (TARGET event_loop_timer_test event_loop_timerfd_test event_loop_stdin_test event_loop_asyncer_test)
+foreach (TARGET main)
     aux_source_directory(${PROJECT_SOURCE_DIR}/../ ${TARGET}LIST_SRC)
     aux_source_directory(${PROJECT_SOURCE_DIR}/../tcp ${TARGET}LIST_SRC)
     aux_source_directory(${PROJECT_SOURCE_DIR}/../timer ${TARGET}LIST_SRC)
@@ -32,6 +32,10 @@ foreach (TARGET event_loop_timer_test event_loop_timerfd_test event_loop_stdin_t
     include_directories(${TARGET} ${small_packages_INCLUDE_DIRS})
     target_link_libraries(${TARGET} ${small_packages_LIBRARIES})
     
+    find_package(small_test REQUIRED)
+    include_directories(${TARGET} ${small_test_INCLUDE_DIRS})
+    target_link_libraries(${TARGET} ${small_test_LIBRARIES})
+
     find_package(log REQUIRED)
     include_directories(${TARGET} ${log_INCLUDE_DIRS})
     target_link_libraries(${TARGET} ${log_LIBRARIES})

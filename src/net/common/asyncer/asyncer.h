@@ -18,8 +18,8 @@ public:
     Asyncer(EventLoop &loop);
     ~Asyncer();
     void AsyncDo(asyncerHandlerT handler);
+    void Cancel();
 private:
-    void cancel();
     EventLoop &loop_;
     asyncerHandlerT handler_;
     std::shared_ptr<Event> event_;

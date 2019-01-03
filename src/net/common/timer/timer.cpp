@@ -20,6 +20,10 @@ void Timer::AsyncWait(uint64_t ms, timerHandlerT handler) {
     small_lock::UniqueGuard guard(lock_);
     asyncer_ = std::make_shared<Asyncer>(loop_);
     asyncer_->AsyncDo([this, ms, handler](const std::string &errMsg){
+        if (!errMsg.empty()) {
+            handler_(errMsg);
+            return;
+        }
         //loop thread
         small_lock::UniqueGuard guard(lock_);
         cancel();
@@ -39,6 +43,7 @@ void Timer::AsyncWait(uint64_t ms, timerHandlerT handler) {
             handler_("");
         });
         event_->EnableReadNotify();
+        asyncer_ = nullptr;
     });
 }
 
@@ -49,6 +54,7 @@ void Timer::Cancel() {
 }
 
 void Timer::cancel() {
+    asyncer_->Cancel();
     if (event_ == nullptr) {
         return;
     }
