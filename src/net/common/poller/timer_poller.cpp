@@ -69,6 +69,9 @@ void TimerPoller::RemoveEvent(Event *event) {
     auto timeFd = event->GetFd();
     auto id = event->GetId();
     auto map = events_[timeFd];
+    if (map == nullptr) {
+        return;
+    }
     //map has one element, delete map
     if (map->size() == 1) {
         events_.erase(timeFd);
