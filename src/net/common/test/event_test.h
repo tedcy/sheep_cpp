@@ -17,12 +17,18 @@ public:
     virtual void SetUp() {
         loop_ = new(sheep::net::EventLoop);
         successed_ = false;
+        thread_ = new std::thread([this](){
+            loop_->Wait();
+        });
     }
     virtual void TearDown() {
+        delete(thread_);
         delete(loop_);
+        EXPECT_TRUE(successed_);
     }
 
     sheep::net::EventLoop *loop_;
+    std::thread *thread_;
     bool successed_;
 };
 
@@ -36,8 +42,6 @@ public:
         loop_->Stop();
     });
     event->EnableReadNotify();
-    loop_->Wait();
-    EXPECT_TRUE(successed_);
 }*/
 
 TEST_F(TestEvent, TimerFd) {
@@ -55,8 +59,6 @@ TEST_F(TestEvent, TimerFd) {
     //50ms
     howlong.it_value.tv_nsec = 50000000;
     ::timerfd_settime(timerfd, 0, &howlong, nullptr);
-
-    loop_->Wait();
+    thread_->join();
     ::close(timerfd);
-    EXPECT_TRUE(successed_);
 }
