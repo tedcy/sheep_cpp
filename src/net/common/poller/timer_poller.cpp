@@ -21,11 +21,16 @@ uint64_t UnixTimeMilliSecond() {
     return uint64_t(timestamp);
 }
 
-TimerPoller::TimerPoller() {
+TimerPoller::TimerPoller():
+    lock_(small_lock::MakeLock()){
 }
 
+//TODO check if exist "the internal strucure is destoryed problem"
+//unit test TestTimers.Threads doesn't exist the problem
+//should be check when core here
 std::vector<std::weak_ptr<Event>> TimerPoller::Poll(std::string &errMsg) {
     std::vector<std::weak_ptr<Event>> events;
+    small_lock::UniqueGuard guard(lock_);
     auto now = UnixTimeMilliSecond();
     auto endIter = events_.upper_bound(now);
     for (auto iter = events_.begin();iter != endIter;iter++) {
@@ -43,6 +48,14 @@ std::vector<std::weak_ptr<Event>> TimerPoller::Poll(std::string &errMsg) {
 }
 
 void TimerPoller::UpdateEvent(std::shared_ptr<Event> event) {
+    small_lock::UniqueGuard guard(lock_);
+    updateEvent(event);
+}
+void TimerPoller::RemoveEvent(Event *event) {
+    small_lock::UniqueGuard guard(lock_);
+    removeEvent(event);
+}
+void TimerPoller::updateEvent(std::shared_ptr<Event> event) {
     auto timeFd = event->GetFd();
     auto id = event->GetId();
     auto iter = eventSet_.find(id);
@@ -61,11 +74,11 @@ void TimerPoller::UpdateEvent(std::shared_ptr<Event> event) {
         return;
     }
     //exists and has flag, modify(remove and add)
-    RemoveEvent(event.get());
-    UpdateEvent(event);
+    removeEvent(event.get());
+    updateEvent(event);
 }
 
-void TimerPoller::RemoveEvent(Event *event) {
+void TimerPoller::removeEvent(Event *event) {
     auto timeFd = event->GetFd();
     auto id = event->GetId();
     auto map = events_[timeFd];

@@ -5,12 +5,17 @@
 namespace sheep{
 namespace net{
 AsyncerPoller::AsyncerPoller() :
-    lock_(small_lock::MakeLock()){
+    lock_(small_lock::MakeRecursiveLock()){
 }
 std::vector<std::weak_ptr<Event>> AsyncerPoller::Poll(std::string &) {
     std::vector<std::weak_ptr<Event>> events;
     small_lock::UniqueGuard guard(lock_);
-    for(auto &weakEvent: events_) {
+    //here must use a tmpEvents
+    //when weakEvent.lock() != nullptr, the event could be destoryed
+    //in the for loop, event destory call RemoveEvent
+    //then the events_ internal strucure is destoryed
+    weakEventsT tmpEvents(events_);
+    for(auto &weakEvent: tmpEvents) {
         auto event = weakEvent.lock();
         if (!event) {
             LOG(WARNING) << "async event has been destoryed";

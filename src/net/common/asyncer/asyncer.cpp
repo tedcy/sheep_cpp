@@ -26,12 +26,12 @@ void Asyncer::AsyncDo(asyncerHandlerT handler) {
     Cancel();
     handler_ = handler;
     event_ = std::make_shared<Event>(loop_, AsyncerPollerFactory::Get()->GetPollerType(), 0);
-    std::weak_ptr<Event> weakEvent = event_;
-    event_->SetReadEvent([weakEvent, this](){
+    std::weak_ptr<Asyncer> weakThis = shared_from_this();
+    event_->SetReadEvent([this, weakThis](){
         //loop thread
-        auto event = weakEvent.lock();
-        if (!event) {
-            LOG(WARNING) << "Asyncer has been destoryed";
+        auto realThis = weakThis.lock();
+        if (!realThis) {
+            //LOG(WARNING) << "Asyncer has been destoryed";
             return;
         }
         event_->DisableReadNotify();

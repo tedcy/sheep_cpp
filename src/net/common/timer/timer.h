@@ -11,7 +11,7 @@ namespace net{
 class Event;
 class Asyncer;
 
-class Timer{
+class Timer: public std::enable_shared_from_this<Timer>{
 using timerHandlerT = 
     std::function<void(const std::string &errMsg)>;
 public:

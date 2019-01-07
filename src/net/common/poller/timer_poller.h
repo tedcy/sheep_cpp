@@ -5,6 +5,7 @@
 #include <vector>
 #include <map>
 #include <set>
+#include "small_packages.h"
 
 namespace sheep{
 namespace net{
@@ -18,6 +19,9 @@ public:
     void UpdateEvent(std::shared_ptr<Event> event) override;
     void RemoveEvent(Event *event) override;
 private:
+    void updateEvent(std::shared_ptr<Event> event);
+    void removeEvent(Event *event);
+    std::shared_ptr<small_lock::LockI> lock_;
     //<timeFd, id, event>
     std::map<int64_t, 
         std::shared_ptr<

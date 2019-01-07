@@ -28,8 +28,15 @@ void Timer::AsyncWait(uint64_t ms, timerHandlerT handler) {
     used_ = true;
     done_ = false;
     cancel();
+    handler_ = handler;
     asyncer_ = std::make_shared<Asyncer>(loop_);
-    asyncer_->AsyncDo([this, ms, handler](const std::string &errMsg){
+    std::weak_ptr<Timer> weakThis = shared_from_this();
+    asyncer_->AsyncDo([this, weakThis, ms, handler](const std::string &errMsg){
+        auto realThis = weakThis.lock();
+        if (!realThis) {
+            //LOG(WARNING) << "Timer has been destoryed";
+            return;
+        }
         if (!errMsg.empty()) {
             if (!done_) {
                 done_ = true;
@@ -39,15 +46,13 @@ void Timer::AsyncWait(uint64_t ms, timerHandlerT handler) {
         }
         //loop thread
         small_lock::UniqueGuard guard(lock_);
-        handler_ = handler;
         event_ = std::make_shared<Event>(loop_, TimerPollerFactory::Get()->GetPollerType(), 
             UnixTimeMilliSecond() + ms);
-        std::weak_ptr<Event> weakEvent = event_;
-        event_->SetReadEvent([weakEvent, this](){
+        event_->SetReadEvent([this, weakThis, handler](){
             //loop thread
-            auto event = weakEvent.lock();
-            if (!event) {
-                LOG(WARNING) << "Timer has been destoryed";
+            auto realThis = weakThis.lock();
+            if (!realThis) {
+                //LOG(WARNING) << "Timer has been destoryed";
                 return;
             }
             small_lock::UniqueGuard guard(lock_);
@@ -75,7 +80,7 @@ void Timer::cancel() {
         return;
     }
     event_ ->DisableReadNotify();
-    if (!done_) {
+    if (!done_ && handler_) {
         done_ = true;
         handler_("Timer Canceled");
     }

@@ -11,7 +11,7 @@ class Event;
 
 //TODO: use with RAII
 //thread unsafe
-class Asyncer{
+class Asyncer: public std::enable_shared_from_this<Asyncer>{
 using asyncerHandlerT = 
     std::function<void(const std::string &errMsg)>;
 public:
