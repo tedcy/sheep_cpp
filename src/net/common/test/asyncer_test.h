@@ -28,8 +28,8 @@ public:
 };
 
 TEST_F(TestAsyncer,Normal) {
-    sheep::net::Asyncer asyncer(*loop_);
-    asyncer.AsyncDo([this](const std::string &errMsg) {
+    auto asyncer = std::make_shared<sheep::net::Asyncer>(*loop_);
+    asyncer->AsyncDo([this](const std::string &errMsg) {
         if(!errMsg.empty()) {
             successed_ = false;
             loop_->Stop();
@@ -42,8 +42,8 @@ TEST_F(TestAsyncer,Normal) {
 }
 
 TEST_F(TestAsyncer,Cancel) {
-    sheep::net::Asyncer asyncer(*loop_);
-    asyncer.AsyncDo([this](const std::string &errMsg) {
+    auto asyncer = std::make_shared<sheep::net::Asyncer>(*loop_);
+    asyncer->AsyncDo([this](const std::string &errMsg) {
         if(!errMsg.empty()) {
             successed_ = true;
             loop_->Stop();
@@ -52,7 +52,7 @@ TEST_F(TestAsyncer,Cancel) {
         successed_ = false;
         loop_->Stop();
     });
-    asyncer.Cancel();
+    asyncer->Cancel();
     thread_->join();
 }
 
@@ -72,8 +72,8 @@ TEST_F(TestAsyncer,SetNullptrCancel) {
 }
 
 TEST_F(TestAsyncer,CancelTwice) {
-    sheep::net::Asyncer asyncer(*loop_);
-    asyncer.AsyncDo([this](const std::string &errMsg) {
+    auto asyncer = std::make_shared<sheep::net::Asyncer>(*loop_);
+    asyncer->AsyncDo([this](const std::string &errMsg) {
         if(!errMsg.empty()) {
             successed_ = true;
             loop_->Stop();
@@ -82,14 +82,14 @@ TEST_F(TestAsyncer,CancelTwice) {
         successed_ = false;
         loop_->Stop();
     });
-    asyncer.Cancel();
-    asyncer.Cancel();
+    asyncer->Cancel();
+    asyncer->Cancel();
     thread_->join();
 }
 TEST_F(TestAsyncer,CancelBeforeAsyncDo) {
-    sheep::net::Asyncer asyncer(*loop_);
-    asyncer.Cancel();
-    asyncer.AsyncDo([this](const std::string &errMsg) {
+    auto asyncer = std::make_shared<sheep::net::Asyncer>(*loop_);
+    asyncer->Cancel();
+    asyncer->AsyncDo([this](const std::string &errMsg) {
         if(!errMsg.empty()) {
             successed_ = false;
             loop_->Stop();
@@ -101,9 +101,9 @@ TEST_F(TestAsyncer,CancelBeforeAsyncDo) {
     thread_->join();
 }
 TEST_F(TestAsyncer,CancelInAsyncDo) {
-    sheep::net::Asyncer asyncer(*loop_);
-    asyncer.AsyncDo([this, &asyncer](const std::string &errMsg) {
-        asyncer.Cancel();
+    auto asyncer = std::make_shared<sheep::net::Asyncer>(*loop_);
+    asyncer->AsyncDo([this, &asyncer](const std::string &errMsg) {
+        asyncer->Cancel();
         if(!errMsg.empty()) {
             successed_ = false;
             loop_->Stop();
@@ -115,10 +115,10 @@ TEST_F(TestAsyncer,CancelInAsyncDo) {
     thread_->join();
 }
 TEST_F(TestAsyncer, Reuse) {
-    sheep::net::Asyncer asyncer(*loop_);
-    asyncer.AsyncDo([this, &asyncer](const std::string &errMsg) {
+    auto asyncer = std::make_shared<sheep::net::Asyncer>(*loop_);
+    asyncer->AsyncDo([this, &asyncer](const std::string &errMsg) {
     });
-    asyncer.AsyncDo([this, &asyncer](const std::string &errMsg) {
+    asyncer->AsyncDo([this, &asyncer](const std::string &errMsg) {
         if(!errMsg.empty()) {
             successed_ = true;
             loop_->Stop();
@@ -127,5 +127,32 @@ TEST_F(TestAsyncer, Reuse) {
         successed_ = false;
         loop_->Stop();
     });
+    thread_->join();
+}
+
+TEST_F(TestAsyncer, Threads) {
+    std::vector<std::shared_ptr<std::thread>> threads;
+    std::atomic<int> count = {0};
+    int threads_count = 10;
+    int job_nums = 10000;
+    for (int i = 0;i < threads_count;i++) {
+        auto thread = std::make_shared<std::thread>([this, &count, job_nums](){
+            for (int i = 0;i < job_nums;i++) {
+                auto asyncer = std::make_shared<sheep::net::Asyncer>(*loop_);
+                asyncer->AsyncDo([this, &count](const std::string &errMsg) {
+                    count++;
+                });
+            }
+        });
+        threads.push_back(thread);
+    }
+    for (int i = 0;i < threads_count;i++) {
+        threads[i]->join();
+    }
+    if (count == threads_count * job_nums) {
+        successed_ = true;
+    }
+    EXPECT_EQ(count, threads_count * job_nums);
+    loop_->Stop();
     thread_->join();
 }

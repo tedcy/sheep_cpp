@@ -33,10 +33,9 @@ public:
 };
 
 TEST_F(TestTimer, Normal) {
-    sheep::net::Timer timer(*loop_);
-    timer.AsyncWait(g_normalTime, [this](const std::string &errMsg) {
+    auto timer = std::make_shared<sheep::net::Timer>(*loop_);
+    timer->AsyncWait(g_normalTime, [this](const std::string &errMsg) {
         if(!errMsg.empty()) {
-            LOG(INFO) << errMsg;
             successed_ = false;
             loop_->Stop();
             return;
@@ -48,8 +47,8 @@ TEST_F(TestTimer, Normal) {
 }
 
 TEST_F(TestTimer, Cancel) {
-    sheep::net::Timer timer(*loop_);
-    timer.AsyncWait(g_longTime, [this](const std::string &errMsg) {
+    auto timer = std::make_shared<sheep::net::Timer>(*loop_);
+    timer->AsyncWait(g_longTime, [this](const std::string &errMsg) {
         if(!errMsg.empty()) {
             successed_ = true;
             loop_->Stop();
@@ -58,13 +57,13 @@ TEST_F(TestTimer, Cancel) {
         successed_ = false;
         loop_->Stop();
     });
-    timer.Cancel();
+    timer->Cancel();
     thread_->join();
 }
 
 TEST_F(TestTimer, CancelWaitNormalTime) {
-    sheep::net::Timer timer(*loop_);
-    timer.AsyncWait(g_longTime, [this](const std::string &errMsg) {
+    auto timer = std::make_shared<sheep::net::Timer>(*loop_);
+    timer->AsyncWait(g_longTime, [this](const std::string &errMsg) {
         if(!errMsg.empty()) {
             successed_ = true;
             loop_->Stop();
@@ -74,7 +73,7 @@ TEST_F(TestTimer, CancelWaitNormalTime) {
         loop_->Stop();
     });
     std::this_thread::sleep_for(std::chrono::milliseconds(g_normalTime));
-    timer.Cancel();
+    timer->Cancel();
     thread_->join();
 }
 
@@ -110,8 +109,8 @@ TEST_F(TestTimer, CancelNullptrWaitNormalTime) {
 }
 
 TEST_F(TestTimer, CancelTwice) {
-    sheep::net::Timer timer(*loop_);
-    timer.AsyncWait(g_longTime, [this](const std::string &errMsg) {
+    auto timer = std::make_shared<sheep::net::Timer>(*loop_);
+    timer->AsyncWait(g_longTime, [this](const std::string &errMsg) {
         if(!errMsg.empty()) {
             successed_ = true;
             loop_->Stop();
@@ -120,15 +119,15 @@ TEST_F(TestTimer, CancelTwice) {
         successed_ = false;
         loop_->Stop();
     });
-    timer.Cancel();
-    timer.Cancel();
+    timer->Cancel();
+    timer->Cancel();
     thread_->join();
 }
 
 TEST_F(TestTimer, CancelBeforeAsyncWait) {
-    sheep::net::Timer timer(*loop_);
-    timer.Cancel();
-    timer.AsyncWait(g_normalTime, [this](const std::string &errMsg) {
+    auto timer = std::make_shared<sheep::net::Timer>(*loop_);
+    timer->Cancel();
+    timer->AsyncWait(g_normalTime, [this](const std::string &errMsg) {
         if(!errMsg.empty()) {
             successed_ = false;
             loop_->Stop();
@@ -141,9 +140,9 @@ TEST_F(TestTimer, CancelBeforeAsyncWait) {
 }
 
 TEST_F(TestTimer, CancelInAsyncWait) {
-    sheep::net::Timer timer(*loop_);
-    timer.AsyncWait(g_normalTime, [this, &timer](const std::string &errMsg) {
-        timer.Cancel();
+    auto timer = std::make_shared<sheep::net::Timer>(*loop_);
+    timer->AsyncWait(g_normalTime, [this, &timer](const std::string &errMsg) {
+        timer->Cancel();
         if(!errMsg.empty()) {
             successed_ = false;
             loop_->Stop();
@@ -156,11 +155,11 @@ TEST_F(TestTimer, CancelInAsyncWait) {
 }
 
 TEST_F(TestTimer, Reuse) {
-    sheep::net::Timer timer(*loop_);
-    timer.AsyncWait(g_shortTime, [this](const std::string &errMsg) {
+    auto timer = std::make_shared<sheep::net::Timer>(*loop_);
+    timer->AsyncWait(g_shortTime, [this](const std::string &errMsg) {
     });
     std::this_thread::sleep_for(std::chrono::milliseconds(g_normalTime));
-    timer.AsyncWait(g_normalTime, [this](const std::string &errMsg) {
+    timer->AsyncWait(g_normalTime, [this](const std::string &errMsg) {
         if(!errMsg.empty()) {
             successed_ = true;
             loop_->Stop();
@@ -169,5 +168,32 @@ TEST_F(TestTimer, Reuse) {
         successed_ = false;
         loop_->Stop();
     });
+    thread_->join();
+}
+
+TEST_F(TestTimer, Threads) {
+    std::vector<std::shared_ptr<std::thread>> threads;
+    std::atomic<int> count = {0};
+    int threads_count = 10;
+    int job_nums = 10000;
+    for (int i = 0;i < threads_count;i++) {
+        auto thread = std::make_shared<std::thread>([this, &count, job_nums](){
+            for (int i = 0;i < job_nums;i++) {
+                auto timer = std::make_shared<sheep::net::Timer>(*loop_);
+                timer->AsyncWait(g_shortTime, [this, &count](const std::string &errMsg) {
+                    count++;
+                });
+            }
+        });
+        threads.push_back(thread);
+    }
+    for (int i = 0;i < threads_count;i++) {
+        threads[i]->join();
+    }
+    if (count == threads_count * job_nums) {
+        successed_ = true;
+    }
+    EXPECT_EQ(count, threads_count * job_nums);
+    loop_->Stop();
     thread_->join();
 }
