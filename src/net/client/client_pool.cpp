@@ -9,9 +9,11 @@ ClientPool::ClientPool(EventLoop &loop,
     loop_(loop),
     addr_(addr), port_(port),
     maxSize_(maxSize), 
-    exist_(std::make_shared<bool>()),
-    //TODO instead of NormalLock
     lock_(small_lock::MakeRecursiveLock()){
+}
+
+ClientPool::~ClientPool() {
+    //LOG(DEBUG) << "~ClientPool";
 }
 
 void ClientPool::Init(std::string &errMsg) {
@@ -22,68 +24,71 @@ void ClientPool::Init(std::string &errMsg) {
     }
     inited_ = true;
     for (uint64_t i = 0;i < maxSize_;i++) {
-        auto client = std::make_shared<Client>(loop_, addr_, port_);
-        std::weak_ptr<bool> weakExist = exist_;
-        std::weak_ptr<Client> weakClient = client;
-        client->SetConnectedHandler([weakExist, this, weakClient](
-        const std::string &argErrMsg) {
-            if (!argErrMsg.empty()) {
-                LOG(WARNING) << argErrMsg;
-                return;
-            }
-            auto client = weakClient.lock();
-            if (!client) {
-                LOG(WARNING) << 
-                    "set disconnect handler failed: Client has been destoryed";
-                return;
-            }
-            auto exist = weakExist.lock();
-            if (!exist) {
-                LOG(WARNING) << 
-                    "set disconnect handler failed: ClientPool has been destoryed";
-                return;
-            }
-            Insert(client);
-        });
-        client->SetDisconnectedHandler([weakExist, this, weakClient](
-        const std::string &argErrMsg){
-            //when argErrMsg != "", means err happened, should reconnect
-            if (argErrMsg.empty()) {
-                return;
-            }
-            LOG(WARNING) << argErrMsg;
-            auto client = weakClient.lock();
-            if (!client) {
-                LOG(WARNING) << 
-                    "set disconnect handler failed: Client has been destoryed";
-                return;
-            }
-            auto exist = weakExist.lock();
-            if (!exist) {
-                LOG(WARNING) << 
-                    "set disconnect handler failed: ClientPool has been destoryed";
-                return;
-            }
-            std::string errMsg;
-            initClient(errMsg, client);
-            if (!errMsg.empty()) {
-                LOG(WARNING) << 
-                    "reconnect failed: " + errMsg;
-                return;
-            }
-        });
-        initClient(errMsg, client);
+        initClient(errMsg);
         if (!errMsg.empty()) {
+            LOG(WARNING) << 
+                "connect failed: " + errMsg;
             return;
         }
     }
 }
 
-void ClientPool::initClient(std::string &errMsg,
-        std::shared_ptr<Client> &client) {
-    //earse for reconnect
+void ClientPool::initClient(std::string &errMsg) {
     small_lock::UniqueGuard guard(lock_);
-    clients_.erase(client);
+    auto client = std::make_shared<Client>(loop_, addr_, port_);
+    std::weak_ptr<ClientPool> weakThis = shared_from_this();
+    std::weak_ptr<Client> weakClient = client;
+    client->SetConnectedHandler([this, weakThis, weakClient](
+    const std::string &argErrMsg) {
+        if (!argErrMsg.empty()) {
+            LOG(WARNING) << argErrMsg;
+            return;
+        }
+        auto client = weakClient.lock();
+        if (!client) {
+            LOG(WARNING) << 
+                "connect handler failed: Client has been destoryed";
+            return;
+        }
+        auto realThis = weakThis.lock();
+        if (!realThis) {
+            LOG(WARNING) << 
+                "connect handler failed: ClientPool has been destoryed";
+            return;
+        }
+        Insert(client, "");
+    });
+    client->SetDisconnectedHandler([this, weakThis, weakClient](
+    const std::string &argErrMsg){
+        //when argErrMsg != "", means err happened, should reconnect
+        if (argErrMsg.empty()) {
+            return;
+        }
+        LOG(WARNING) << argErrMsg;
+        auto realThis = weakThis.lock();
+        if (!realThis) {
+            LOG(WARNING) << 
+                "disconnect handler failed: ClientPool has been destoryed";
+            return;
+        }
+        std::string errMsg;
+        initClient(errMsg);
+        if (!errMsg.empty()) {
+            LOG(WARNING) << 
+                "reconnect failed: " + errMsg;
+        }
+        small_lock::UniqueGuard guard(lock_);
+        auto client = weakClient.lock();
+        if (!client) {
+            LOG(WARNING) << 
+                "disconnect handler failed: Client has been destoryed";
+            return;
+        }
+        //client in pool closed by peer
+        clients_.erase(client);
+        allClients_.erase(client);
+        
+    });
     allClients_.insert(client);
     client->AsyncConnect(errMsg);
     if (!errMsg.empty()) {
@@ -102,9 +107,13 @@ std::shared_ptr<Client> ClientPool::Get() {
     return client;
 }
 
-void ClientPool::Insert(std::shared_ptr<Client> client) {
-    client->Reset();
+void ClientPool::Insert(std::shared_ptr<Client> client,
+    const std::string &errMsg) {
     small_lock::UniqueGuard guard(lock_);
+    client->Reset(errMsg);
+    if (!errMsg.empty()) {
+        return;
+    }
     clients_.insert(client);
 }
 }

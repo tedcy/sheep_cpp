@@ -10,6 +10,7 @@ Asyncer::Asyncer(EventLoop &loop) :
 }
 
 Asyncer::~Asyncer() {
+    //LOG(DEBUG) << "~Asyncer " << this;
     if (!done_ && handler_) {
         handler_("Asyncer Canceled");
     }
@@ -44,6 +45,7 @@ void Asyncer::AsyncDo(asyncerHandlerT handler) {
 }
 
 void Asyncer::Cancel() {
+    //LOG(DEBUG) << "Asyncer Cancel " << this;
     if (event_ == nullptr) {
         return;
     }

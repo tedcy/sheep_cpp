@@ -14,7 +14,7 @@ class Socket;
 //can't reuse to connect
 class Connector: public small_packages::noncopyable {
 using newConnectionHandlerT = std::function<
-    void(std::unique_ptr<Socket> &,std::shared_ptr<Event>)>;
+    void(std::unique_ptr<Socket> &,std::shared_ptr<Event>&)>;
 using connectFailedHandlerT = std::function<
     void(const std::string &errMsg)>;
 public:

@@ -19,6 +19,7 @@ using disconnectedHandlerT = std::function<void(const std::string &errMsg)>;
 public:
     Client(EventLoop &loop,
             const std::string &addr, int port);
+    ~Client();
     void AsyncConnect(std::string &errMsg);
     void SetConnectedHandler(connectedHandlerT);
     void SetDisconnectedHandler(disconnectedHandlerT);
@@ -31,10 +32,8 @@ public:
     }
 private:
     friend ClientPool;
-    void Reset() {
-        connection_->Reset();
-    }
-    void newConnectionHandler(std::unique_ptr<Socket> &, std::shared_ptr<Event>);
+    void Reset(const std::string &errMsg);
+    void newConnectionHandler(std::unique_ptr<Socket> &, std::shared_ptr<Event>&);
     EventLoop &loop_;
     const std::string addr_;
     const int port_ = 0;

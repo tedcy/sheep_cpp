@@ -33,6 +33,7 @@ public:
     void SetNoDelay(std::string &errMsg);
     void SetReuseAddr(std::string &errMsg);
     void SetNoTimewait(std::string &errMsg);
+    void SetRcvTimeout(std::string &errMsg, uint64_t ms);
 
     //get members
     int GetFd();

@@ -12,13 +12,13 @@ class Buffer: public small_packages::noncopyable{
 public:
     Buffer();
 //for user
-    void Push(char *buf, uint64_t len);
+    void Push(const char *buf, uint64_t len);
     uint64_t PopHead(char *buf, uint64_t len);
 private:
 //for tcp_connection
 friend class TcpConnection;
     void Reset();
-    void Write(char *buf, uint64_t len);
+    void Write(const char *buf, uint64_t len);
     uint64_t Read(char *buf, uint64_t len);
     uint64_t UpdateReadIndex(uint64_t len);
 

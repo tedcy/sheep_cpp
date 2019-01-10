@@ -37,7 +37,7 @@ void Etcd::GetLocalIp(std::string &ip) {
     if (!errMsg.empty()) {
         LOG(FATAL) << errMsg;
     }
-    clientPool->Insert(client);
+    clientPool->Insert(client, "");
 }
 /*createEphemeral
  * ok

@@ -81,7 +81,7 @@ void Server::newConnectionHandler(int fd) {
     std::weak_ptr<TcpConnectionSet> weakConnectionSet
         = connections_;
     connection->SetFinishHandler([weakConnectionSet, this](
-    std::string &errMsg, std::shared_ptr<TcpConnection> connection){
+    const std::string &errMsg, std::shared_ptr<TcpConnection> connection){
         auto realConnectionSet = weakConnectionSet.lock();
         if (!realConnectionSet) {
             LOG(WARNING) << "server has been destoryed";

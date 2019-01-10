@@ -41,13 +41,13 @@ private:
             errMsg = "redisFormatCommand error! len = " + std::to_string(cmdBufLen_);
             return;
         }
-        connection.WriteBuffer_.Push(cmdBuf_, cmdBufLen_);
+        connection.WriteBufferPush(cmdBuf_, cmdBufLen_);
     }
     void RespPop(std::string &errMsg, bool &finish, sheep::net::TcpConnection &connection) override{
         for (;;) {
             char tmpBuf[1024];
             uint64_t len;
-            len = connection.ReadBuffer_.PopHead(tmpBuf, 1024);
+            len = connection.ReadBufferPopHead(tmpBuf, 1024);
             if (len == 0) {
                 break;
             }

@@ -14,15 +14,15 @@ int main(){
         LOG(INFO) << "connected";
         auto &connection = client.GetTcpConnection();
         char buf[100];
-        connection.WriteBuffer_.Push(buf, 100);
-        connection.AsyncWrite([&client](std::string &errMsg) {
+        connection.WriteBufferPush(buf, 100);
+        connection.AsyncWrite([&client](const std::string &errMsg) {
             LOG(INFO) << "wrote";
             auto &connection = client.GetTcpConnection();
-            connection.AsyncRead(100, [&client](std::string &errMsg){
+            connection.AsyncRead(100, [&client](const std::string &errMsg){
                 LOG(INFO) << "read";
                 char buf[100];
                 auto &connection = client.GetTcpConnection();
-                connection.ReadBuffer_.PopHead(buf, 100);
+                connection.ReadBufferPopHead(buf, 100);
                 connection.Finish(errMsg);
             });
         });

@@ -30,20 +30,19 @@ int main(){
             }
             auto &connection = client->GetTcpConnection();
             char buf[100];
-            connection.WriteBuffer_.Push(buf, 100);
-            connection.AsyncWrite([&clientPool, client](std::string &errMsg) {
+            connection.WriteBufferPush(buf, 100);
+            connection.AsyncWrite([&clientPool, client](const std::string &errMsg) {
                 LOG(INFO) << "wrote";
                 auto &connection = client->GetTcpConnection();
-                connection.AsyncRead(100, [&clientPool, client](std::string &errMsg){
+                connection.AsyncRead(100, [&clientPool, client](const std::string &errMsg){
                     LOG(INFO) << "read";
                     char buf[100];
                     auto &connection = client->GetTcpConnection();
-                    connection.ReadBuffer_.PopHead(buf, 100);
+                    connection.ReadBufferPopHead(buf, 100);
                     //test pushback to clientPool
                     //clientPool.Insert(client);
                     //test reconnect
-                    errMsg = "shutdown";
-                    connection.Finish(errMsg);
+                    connection.Finish("shutdown");
                 });
             });
         });

@@ -68,20 +68,21 @@ protected:
                 Finish("timeout");
             });
         }
-        connection.AsyncWrite([this](std::string &errMsg){
+        connection.AsyncWrite([this](const std::string &errMsg){
             if(!errMsg.empty()) {
                 Finish(errMsg);
                 return;
             }
             auto &connection = client_->GetTcpConnection();
-            connection.AsyncReadAny([this](std::string &errMsg) {
+            connection.AsyncReadAny([this](const std::string &argErrMsg) {
                 if (timer_ != nullptr) {
                     timer_->Cancel();
                 }
-                if(!errMsg.empty()) {
-                    Finish(errMsg);
+                if(!argErrMsg.empty()) {
+                    Finish(argErrMsg);
                     return;
                 }
+                std::string errMsg;
                 auto &connection = client_->GetTcpConnection();
                 bool finish;
                 RespPop(errMsg, finish, connection);
@@ -98,20 +99,14 @@ protected:
 private:
     void Finish(const std::string &errMsg) {
         if (finished_) {
-            LOG(WARNING) << "base client finished";
+            //LOG(FATAL) << "base client finished";
             return;
         }
         finished_ = true;
         auto clientPool = clientPool_;
         auto client = client_;
         onDone_(*this, errMsg);
-        clientPool->Insert(client);
-        if (!errMsg.empty()) {
-            //when err happen, cancel connection and reconnect
-            auto &connection = client->GetTcpConnection();
-            std::string errMsg1 = errMsg;
-            connection.Finish(errMsg1); 
-        }
+        clientPool->Insert(client, errMsg);
     }
     ClientChannel &clientChannel_;
     std::shared_ptr<sheep::net::ClientPool> clientPool_;

@@ -12,12 +12,12 @@ int main(){
             LOG(FATAL) << errMsg;
         }
         LOG(INFO) << "connected";
-        connection.AsyncRead(100, [&connection](std::string &errMsg){
+        connection.AsyncRead(100, [&connection](const std::string &errMsg){
             LOG(INFO) << "readed";
             char buf[100];
-            connection.ReadBuffer_.PopHead(buf, 100);
-            connection.WriteBuffer_.Push(buf, 100);
-            connection.AsyncWrite([](std::string &errMsg) {
+            connection.ReadBufferPopHead(buf, 100);
+            connection.WriteBufferPush(buf, 100);
+            connection.AsyncWrite([](const std::string &errMsg) {
                 LOG(INFO) << "wrote";
                 //connection.Finish(errMsg);
             });

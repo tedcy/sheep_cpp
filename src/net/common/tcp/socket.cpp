@@ -173,7 +173,7 @@ void Socket::SetDelayWithFlag(std::string &errMsg, bool delay) {
     auto result = ::setsockopt(fd_, IPPROTO_TCP, TCP_NODELAY,
             &val, sizeof(val));
     if (result < 0) {
-        formatErrMsg(errMsg, "setsockopt TCP_NODELAY", result);
+        formatErrMsg(errMsg, "setsockopt TCP_NODELAY", errno);
     }
 }
 void Socket::SetReuseAddr(std::string &errMsg) {
@@ -221,6 +221,16 @@ void Socket::GetLocalIp(std::string &errMsg, std::string &ip) {
         return;
     }
     ip = addr_buffer;
+}
+
+void Socket::SetRcvTimeout(std::string &errMsg, uint64_t ms) {
+    struct timeval tv;
+    tv.tv_sec = ms / 1000;
+    tv.tv_usec = ms % 1000 * 1000;
+    auto result = setsockopt(fd_, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(tv));
+    if (result < 0) {
+        formatErrMsg(errMsg, "setsockopt SO_LINGER", errno);
+    }
 }
 
 int Socket::GetFd() {

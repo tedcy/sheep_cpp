@@ -14,7 +14,7 @@ void Buffer::Reset() {
     buffer_.swap(tmp);
 }
     
-void Buffer::Push(char *buf, uint64_t len) {
+void Buffer::Push(const char *buf, uint64_t len) {
     Write(buf, len);
 }
 uint64_t Buffer::PopHead(char *buf, uint64_t len) {
@@ -22,7 +22,7 @@ uint64_t Buffer::PopHead(char *buf, uint64_t len) {
     len = UpdateReadIndex(len);
     return len;
 }
-void Buffer::Write(char *buf, uint64_t len) {
+void Buffer::Write(const char *buf, uint64_t len) {
     checkWriteSize(len);
     buffer_.insert(buffer_.begin() + writeIndex_, 
             buf, buf + len);

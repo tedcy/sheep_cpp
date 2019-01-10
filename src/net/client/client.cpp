@@ -16,6 +16,10 @@ Client::Client(EventLoop &loop,
     lock_(small_lock::MakeRecursiveLock()){
 }
 
+Client::~Client() {
+    //LOG(DEBUG) << "~Client";
+}
+
 //any thread
 void Client::AsyncConnect(std::string &errMsg) {
     small_lock::UniqueGuard guard(lock_);
@@ -37,7 +41,7 @@ void Client::AsyncConnect(std::string &errMsg) {
         std::string errMsg;
         //safe, connector is composition by client
         connector_->SetNewConnectionHandler(
-        [this](std::unique_ptr<Socket> &socket, std::shared_ptr<Event> event){
+        [this](std::unique_ptr<Socket> &socket, std::shared_ptr<Event> &event){
             //loop thread
             newConnectionHandler(socket, event);
         });
@@ -79,14 +83,21 @@ TcpConnection& Client::GetTcpConnection() {
     return *connection_;
 }
 
+void Client::Reset(const std::string &errMsg) {
+    if (!errMsg.empty()) {
+        connection_->Finish(errMsg);
+        return;
+    }
+    connection_->Reset();
+}
+
 void Client::newConnectionHandler(std::unique_ptr<Socket> &socket, 
-        std::shared_ptr<Event> event) {
-    connection_ = std::make_shared<TcpConnection>(
-            loop_, socket, event);
+        std::shared_ptr<Event> &event) {
+    connection_ = std::make_shared<TcpConnection>(socket, event);
     std::string errMsg;
     //safe
     connection_->SetFinishHandler([this](
-    std::string &errMsg, std::shared_ptr<TcpConnection> &connection){
+    const std::string &errMsg, std::shared_ptr<TcpConnection> &connection){
         disconnectedHandler_(errMsg);
     });
     connection_->InitConnected(errMsg);

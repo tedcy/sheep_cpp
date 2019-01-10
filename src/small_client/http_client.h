@@ -43,19 +43,23 @@ private:
         }
         formarter_.SetHost(host_);
         const std::string &req = formarter_.Format();
-        connection.WriteBuffer_.Push(const_cast<char*>(req.c_str()), req.size());
+        connection.WriteBufferPush(req.c_str(), req.size());
     }
     void RespPop(std::string &errMsg, bool &finish, sheep::net::TcpConnection &connection) override{
         finish = false;
         for (;;) {
             char tmpBuf[1024];
             uint64_t len;
-            len = connection.ReadBuffer_.PopHead(tmpBuf, 1024);
+            len = connection.ReadBufferPopHead(tmpBuf, 1024);
             if (len == 0) {
                 break;
             }
             std::string tmp(tmpBuf, len);
             parser_.Feed(errMsg, finish, tmp);
+            if (!errMsg.empty()) {
+                errMsg += " with buffer: " + tmp;
+                return;
+            }
         }
     }
     std::shared_ptr<sheep::net::ClientPool> clientPool_;

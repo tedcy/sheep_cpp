@@ -15,29 +15,30 @@ class Asyncer;
 
 class TcpConnection: public small_packages::noncopyable,
     public std::enable_shared_from_this<TcpConnection>{
-using readHandlerT = std::function<void(std::string &errMsg)>;
-using writeHandlerT = std::function<void(std::string &errMsg)>;
-using finishHandlerT = std::function<void(std::string &errMsg,
+using readHandlerT = std::function<void(const std::string &errMsg)>;
+using writeHandlerT = std::function<void(const std::string &errMsg)>;
+using finishHandlerT = std::function<void(const std::string &errMsg,
         std::shared_ptr<TcpConnection>&)>;
 public:
     //for acceptor
     TcpConnection(EventLoop &loop, int fd);
     //for connector
-    TcpConnection(EventLoop &loop, 
-            std::unique_ptr<Socket> &socket,
-            std::shared_ptr<Event> event);
+    TcpConnection(std::unique_ptr<Socket> &socket,
+            std::shared_ptr<Event> &event);
     ~TcpConnection();
     void AsyncRead(uint64_t expectSize,
             readHandlerT handler);
     void AsyncReadAny(readHandlerT handler);
     void AsyncWrite(writeHandlerT handler);
     void Reset();
-    void Finish(std::string &errMsg);
+    void Finish(const std::string &errMsg);
     void GetLocalIp(std::string &errMsg, std::string &ip);
+    void WriteBufferPush(const char* buf, uint64_t len);
+    uint64_t ReadBufferPopHead(char *buf, uint64_t len);
+private:
     //FIXME: Buffer split into ReadBuffer && WriteBuffer
     Buffer ReadBuffer_;
     Buffer WriteBuffer_;
-private:
     friend class Server;
     friend class Client;
     void InitAccepted(std::string &errMsg);
@@ -56,7 +57,9 @@ private:
     uint64_t expectSize_ = 0;
     uint64_t readedSize_ = 0;
     bool anyFlag_ = false;
+    bool finished_ = false; 
     readHandlerT userReadHandler_;
+    bool writeDone_ = false;
     writeHandlerT userWriteHandler_;
     finishHandlerT finishHandler_;
 
