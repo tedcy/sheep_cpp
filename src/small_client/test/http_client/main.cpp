@@ -7,7 +7,6 @@ std::shared_ptr<small_client::HttpClient> DoReq(std::string &errMsg,
             small_http_parser::ReqFormater::MethodGET, "/", "");
     client->DoReq([](small_client::HttpClient &client, 
         const std::string &errMsg) {
-        LOG(INFO) << "DoReq Done";
         if (!errMsg.empty()) {
             LOG(ERROR) << errMsg;
             return;
@@ -25,7 +24,6 @@ std::shared_ptr<small_client::HttpClient> DoReq(std::string &errMsg,
 int main() {
     std::string errMsg;
     small_client::Looper::GetInstance()->Init();
-    //small_net::AsioNet::GetInstance().Init();
     small_client::ClientChannel channel(
             small_client::Looper::GetInstance()->GetLoop());
     channel.SetResolverType("dns");
@@ -42,5 +40,4 @@ int main() {
     }
     std::this_thread::sleep_for(std::chrono::seconds(100));
     small_client::Looper::GetInstance()->Shutdown();
-    //small_net::AsioNet::GetInstance().Shutdown();
 }

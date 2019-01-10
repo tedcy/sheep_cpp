@@ -8,7 +8,6 @@ std::shared_ptr<small_client::RedisClient> DoReq(std::string &errMsg,
     client->DoReq("GET A", 
     [](small_client::RedisClient &client, 
         const std::string &errMsg) {
-        LOG(INFO) << "DoReq Done";
         if (!errMsg.empty()) {
             LOG(ERROR) << errMsg;
             return;
@@ -40,5 +39,4 @@ int main() {
     }
     std::this_thread::sleep_for(std::chrono::seconds(100));
     small_client::Looper::GetInstance()->Shutdown();
-    //small_net::AsioNet::GetInstance().Shutdown();
 }

@@ -45,7 +45,6 @@ int main() {
     ghttpd();
     std::string errMsg;
     small_client::Looper::GetInstance()->Init();
-    //small_net::AsioNet::GetInstance().Init();
     small_client::ClientChannel channel(
             small_client::Looper::GetInstance()->GetLoop());
     channel.SetResolverType("string");
@@ -63,5 +62,4 @@ int main() {
     }
     std::this_thread::sleep_for(std::chrono::seconds(100));
     small_client::Looper::GetInstance()->Shutdown();
-    //small_net::AsioNet::GetInstance().Shutdown();
 }
