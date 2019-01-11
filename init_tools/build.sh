@@ -15,10 +15,12 @@ $cmake_path .. -DCMAKE_BUILD_TYPE=$build_type \
     -DCMAKE_TOOLCHAIN_FILE=$vcpkg_path/scripts/buildsystems/vcpkg.cmake \
     -DSHEEP_PROJECT_SOURCE_DIR=$sheep_pkg_path \
     -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-complieCommandsJsonResult=($(find . -maxdepth 1 -name compile_commands.json))
-if ((${#complieCommandsJsonResult[@]} != 0));then
-    compdb -p . list > tmp_compile_commands.json
-    mv tmp_compile_commands.json compile_commands.json
+if [[ `which compdb` != "" ]];then
+    complieCommandsJsonResult=($(find . -maxdepth 1 -name compile_commands.json))
+    if ((${#complieCommandsJsonResult[@]} != 0));then
+        compdb -p . list > tmp_compile_commands.json
+        mv tmp_compile_commands.json compile_commands.json
+    fi
 fi
 make -j8
 cd -

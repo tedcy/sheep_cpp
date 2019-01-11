@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.2)
 project(net)
 
 set(TARGET ${CMAKE_PROJECT_NAME})
@@ -38,9 +38,5 @@ add_library(${TARGET} STATIC ${LIST_SRC})
 find_package(small_packages REQUIRED)
 include_directories(${TARGET} ${small_packages_INCLUDE_DIRS})
 target_link_libraries(${TARGET} ${small_packages_LIBRARIES})
-
-find_package(log REQUIRED)
-include_directories(${TARGET} ${log_INCLUDE_DIRS})
-target_link_libraries(${TARGET} ${log_LIBRARIES})
 
 target_link_libraries(${TARGET} pthread)

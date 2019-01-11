@@ -5,7 +5,7 @@ cd ~
 rootpath=`pwd`
 cd -
 
-findpaths=($rootpath "/mnt/sda3/root")
+findpaths=($rootpath)
 
 #pkg path
 sheep_pkg_path=`pwd`
@@ -27,10 +27,13 @@ if [[ $vcpkg_path == "" ]];then
 fi
 
 #cmake path
-cmake_path=`which cmake`
+
 if [[ $cmake_path == "" ]];then
-    echo "can't found cmake, run cmake_path = xxx ./bootstrap.sh"
-    exit -1
+    cmake_path=`which cmake`
+    if [[ $cmake_path == "" ]];then
+        echo "can't found cmake, run cmake_path = xxx ./bootstrap.sh"
+        exit -1
+    fi
 fi
 
 echo "export sheep_pkg_path=\"$sheep_pkg_path\"" > init_tools/env.sh

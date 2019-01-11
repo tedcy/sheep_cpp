@@ -22,7 +22,3 @@ ENDIF (net_FOUND)
 find_package(small_packages REQUIRED)
 SET(net_INCLUDE_DIRS ${net_INCLUDE_DIRS} ${small_packages_INCLUDE_DIRS})
 SET(net_LIBRARIES ${net_LIBRARIES} ${small_packages_LIBRARIES})
-
-find_package(log REQUIRED)
-SET(net_INCLUDE_DIRS ${net_INCLUDE_DIRS} ${log_INCLUDE_DIRS})
-SET(net_LIBRARIES ${net_LIBRARIES} ${log_LIBRARIES})

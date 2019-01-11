@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.2)
 project(small_packages)
 
 set(TARGET ${CMAKE_PROJECT_NAME})
@@ -30,17 +30,6 @@ include_directories(${PROJECT_SOURCE_DIR}/small_strings)
 include_directories(${PROJECT_SOURCE_DIR}/small_ioutils)
 include_directories(${PROJECT_SOURCE_DIR}/small_packages_base)
 include_directories(${PROJECT_SOURCE_DIR}/small_block_queue)
-
-find_package(Boost REQUIRED COMPONENTS system)
-if (Boost_FOUND)
-    include_directories(${Boost_INCLUDE_DIRS})
-    link_directories(${Boost_LIBRARY_DIRS})
-    target_link_libraries(${TARGET} ${Boost_LIBRARIES})
-endif()
-
-find_package(jsoncpp CONFIG REQUIRED)
-include_directories(${TARGET} ${jsoncpp_INCLUDE_DIRS})
-target_link_libraries(${TARGET} jsoncpp_lib_static)
 
 find_package(log REQUIRED)
 include_directories(${TARGET} ${log_INCLUDE_DIRS})

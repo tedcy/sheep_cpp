@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.2)
 project(small_watcher)
 
 set(TARGET ${CMAKE_PROJECT_NAME})
@@ -37,9 +37,5 @@ target_link_libraries(${TARGET} ${small_packages_LIBRARIES})
 find_package(log REQUIRED)
 include_directories(${TARGET} ${log_INCLUDE_DIRS})
 target_link_libraries(${TARGET} ${log_LIBRARIES})
-
-find_package(jsoncpp CONFIG REQUIRED)
-include_directories(${TARGET} ${jsoncpp_INCLUDE_DIRS})
-target_link_libraries(${TARGET} jsoncpp_lib_static)
 
 target_link_libraries(${TARGET} pthread)

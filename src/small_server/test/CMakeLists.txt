@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.2)
 project(main)
 
 if (CMAKE_BUILD_TYPE)
@@ -34,20 +34,3 @@ foreach (TARGET server grpc_client)
     target_link_libraries(${TARGET} ${small_watcher_LIBRARIES})
     target_link_libraries(${TARGET} pthread)
 endforeach()
-
-#foreach (TARGET bench_redis_client)
-#    aux_source_directory(${PROJECT_SOURCE_DIR}/bench/${TARGET} ${TARGET}LIST_SRC)
-#    add_executable(${TARGET} ${${TARGET}LIST_SRC})
-#
-#    include_directories(${PROJECT_SOURCE_DIR}/bench/${TARGET})
-#
-#    find_package(small_server REQUIRED)
-#    include_directories(${TARGET} ${small_server_INCLUDE_DIRS})
-#    target_link_libraries(${TARGET} ${small_server_LIBRARIES})
-#
-#    find_package(small_pprof REQUIRED)
-#    include_directories(${TARGET} ${small_pprof_INCLUDE_DIRS})
-#    target_link_libraries(${TARGET} ${small_pprof_LIBRARIES})
-#
-#    target_link_libraries(${TARGET} pthread)
-#endforeach()

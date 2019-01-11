@@ -17,14 +17,6 @@ ELSE (small_server_FOUND)
     ENDIF (small_server_FIND_REQUIRED)
 ENDIF (small_server_FOUND)
 
-find_package(gRPC CONFIG)
-if (gRPC_FOUND)
-    SET(gRPC_LIBS gRPC::gpr gRPC::grpc gRPC::grpc++ gRPC::grpc_cronet)
-else (gRPC_FOUND)
-    SET(gRPC_LIBS libgrpc++.a libgrpc.a libprotobuf.a)
-endif(gRPC_FOUND)
-SET(small_server_LIBRARIES ${small_server_LIBRARIES} ${gRPC_LIBS})
-
 find_package(small_http_parser REQUIRED)
 SET(small_server_INCLUDE_DIRS ${small_server_INCLUDE_DIRS} ${small_http_parser_INCLUDE_DIRS})
 SET(small_server_LIBRARIES ${small_server_LIBRARIES} ${small_http_parser_LIBRARIES})
@@ -32,6 +24,10 @@ SET(small_server_LIBRARIES ${small_server_LIBRARIES} ${small_http_parser_LIBRARI
 find_package(net REQUIRED)
 SET(small_server_INCLUDE_DIRS ${small_server_INCLUDE_DIRS} ${net_INCLUDE_DIRS})
 SET(small_server_LIBRARIES ${small_server_LIBRARIES} ${net_LIBRARIES})
+
+find_package(small_grpc REQUIRED)
+SET(small_server_INCLUDE_DIRS ${small_server_INCLUDE_DIRS} ${small_grpc_INCLUDE_DIRS})
+SET(small_server_LIBRARIES ${small_server_LIBRARIES} ${small_grpc_LIBRARIES})
 
 find_package(small_hiredis REQUIRED)
 SET(small_server_INCLUDE_DIRS ${small_server_INCLUDE_DIRS} ${small_hiredis_INCLUDE_DIRS})

@@ -40,3 +40,5 @@ http-parser*
 src/extends/small_test/gmock/
 src/extends/small_test/gtest/
 src/extends/small_test/googletest-master/
+src/small_server/test/protos/test
+src/extends/small_grpc/grpc

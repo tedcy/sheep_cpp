@@ -1,4 +1,12 @@
-protoc -I. --grpc_out=../ --plugin=protoc-gen-grpc=`which grpc_cpp_plugin` helloworld.proto
-protoc -I. --cpp_out=../ helloworld.proto
-#protoc -I. --grpc_out=../cpp --plugin=protoc-gen-grpc="/mnt/sda3/root/vcpkg/packages/grpc_x64-linux/bin/grpc_cpp_plugin" company.proto
-#protoc -I. --cpp_out=../cpp company.proto
+if [[ $protoc_path == "" ]];then
+    protoc_path=`which protoc`
+fi
+if [[ $grpc_cpp_plugin_path == "" ]];then
+    grpc_cpp_plugin_path=`which grpc_cpp_plugin`
+fi
+if [[ $protoc_path == "" ]];then
+    exit -1
+fi
+protoc_path=../../../../../extends/small_grpc/build/protoc
+$protoc_path -I. --grpc_out=../ --plugin=protoc-gen-grpc=$grpc_cpp_plugin_path helloworld.proto
+$protoc_path -I. --cpp_out=../ helloworld.proto

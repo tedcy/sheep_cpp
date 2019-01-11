@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.2)
 project(main)
 
 if (CMAKE_BUILD_TYPE)
@@ -18,10 +18,9 @@ foreach (TARGET server client client_pool)
     add_executable(${TARGET} ${${TARGET}LIST_SRC})
 
     include_directories(${PROJECT_SOURCE_DIR}/${TARGET})
-
+    target_link_libraries(${TARGET} pthread)
+    
     find_package(net REQUIRED)
     include_directories(${TARGET} ${net_INCLUDE_DIRS})
     target_link_libraries(${TARGET} ${net_LIBRARIES})
-    
-    target_link_libraries(${TARGET} pthread)
 endforeach()

@@ -18,12 +18,8 @@ set(CMAKE_MODULE_PATH ${SHEEP_PROJECT_SOURCE_DIR}/cmake)
 aux_source_directory(${PROJECT_SOURCE_DIR}/ LIST_SRC)
 add_executable(${TARGET} ${LIST_SRC})
 
-find_package(small_http_parser REQUIRED)
-include_directories(${TARGET} ${small_http_parser_INCLUDE_DIRS})
-target_link_libraries(${TARGET} ${small_http_parser_LIBRARIES})
-
-find_package(log REQUIRED)
-include_directories(${TARGET} ${log_INCLUDE_DIRS})
-target_link_libraries(${TARGET} ${log_LIBRARIES})
+find_package(small_grpc REQUIRED)
+include_directories(${TARGET} ${small_grpc_INCLUDE_DIRS})
+target_link_libraries(${TARGET} ${small_grpc_LIBRARIES})
 
 target_link_libraries(${TARGET} pthread)
