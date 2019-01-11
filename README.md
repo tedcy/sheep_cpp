@@ -13,9 +13,9 @@ sheep库的[go版本](https://git.dev.tencent.com/tedcy/sheep.git)在这里
     - [3.2 small-server](#32-small-server)
         - [3.2.1 grpc-client](#321-grpc-client)
         - [3.2.2 grpc-server](#322-grpc-server)
-    - [3.2.3 http-client-in-grpc-server](#323-http-client-in-grpc-server)
-    - [3.2.4 redis-client-in-grpc-server](#324-redis-client-in-grpc-server)
-    - [3.2.5 grpc-client-in-grpc-server](#325-grpc-client-in-grpc-server)
+            - [3.2.2.1 http-client-in-grpc-server](#3221-http-client-in-grpc-server)
+            - [3.2.2.2 redis-client-in-grpc-server](#3222-redis-client-in-grpc-server)
+            - [3.2.2.3 grpc-client-in-grpc-server](#3223-grpc-client-in-grpc-server)
 - [4 TODO list](#4-todo-list)
 
 ## 1 功能
@@ -277,7 +277,7 @@ server.Register(&service);
 server.Run();
 ```
 
-### 3.2.3 http-client-in-grpc-server
+##### 3.2.2.1 http-client-in-grpc-server
 
 在grpc-server的service基础上修改
 
@@ -316,7 +316,7 @@ client->DoReq([](small_client::HttpClient &client, const std::string &errMsg) {
 });
 ```
 
-### 3.2.4 redis-client-in-grpc-server
+##### 3.2.2.2 redis-client-in-grpc-server
 
 在grpc-server的service基础上修改
 
@@ -354,7 +354,7 @@ client->DoReq("GET A",
 });
 ```
 
-### 3.2.5 grpc-client-in-grpc-server
+##### 3.2.2.3 grpc-client-in-grpc-server
 
 在grpc-server的service基础上修改
 
