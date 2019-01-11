@@ -4,8 +4,7 @@ sheep库的[go版本](https://git.dev.tencent.com/tedcy/sheep.git)在这里
 
 和go版本相比目前没有包含治理功能
 
-* TOC
-{:toc}
+__TOC__
 
 ## 1 功能
 * grpc的回调风格封装（原始风格烧脑且不好用，原始风格说明文档TODO）
@@ -381,6 +380,6 @@ client->DoReq([](GrpcServiceClientTest &client, const std::string &errMsg) {
 ```
 
 ## 4 TODO list
-1 简化安装过程（去除vcpkg依赖）
-2 取消部分类的单例
-3 取消grpc限制service的接口名称为Handler的限制
+* 简化安装过程（去除vcpkg依赖）
+* 取消部分类的单例
+* 取消grpc限制service的接口名称为Handler的限制
