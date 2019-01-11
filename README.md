@@ -4,7 +4,19 @@ sheep库的[go版本](https://git.dev.tencent.com/tedcy/sheep.git)在这里
 
 和go版本相比目前没有包含治理功能
 
-__TOC__
+- [1 功能](#1-)
+- [2 安装](#2-)
+- [3 使用](#3-)
+    - [3.1 small-client](#31-small-client)
+        - [3.1.1 http-client的创建使用:](#311-http-client)
+        - [3.1.2 redis-client的配置使用](#312-redis-client)
+    - [3.2 small-server](#32-small-server)
+        - [3.2.1 grpc-client](#321-grpc-client)
+        - [3.2.2 grpc-server](#322-grpc-server)
+    - [3.2.3 http-client-in-grpc-server](#323-http-client-in-grpc-server)
+    - [3.2.4 redis-client-in-grpc-server](#324-redis-client-in-grpc-server)
+    - [3.2.5 grpc-client-in-grpc-server](#325-grpc-client-in-grpc-server)
+- [4 TODO list](#4-todo-list)
 
 ## 1 功能
 * grpc的回调风格封装（原始风格烧脑且不好用，原始风格说明文档TODO）
