@@ -12,19 +12,19 @@
 #include <grpc++/security/server_credentials.h>
 
 namespace small_server{
-class GrpcCoreCtxI {
+class GrpcEventI {
 public:
-    virtual ~GrpcCoreCtxI() = default;
+    virtual ~GrpcEventI() = default;
     virtual void Proceed(bool ok) = 0;
 };
-class GrpcCoreCtx {
+class GrpcEvent {
 public:
-    explicit GrpcCoreCtx(std::shared_ptr<GrpcCoreCtxI> ctx) :
+    explicit GrpcEvent(std::shared_ptr<GrpcEventI> event) :
         traceId_(TraceInstance::Get()->GetTraceId()),
-        ctx_(ctx) {
+        event_(event) {
     }
     void Proceed(bool ok) {
-        ctx_->Proceed(ok);
+        event_->Proceed(ok);
     }
     void Clean() {
         delete this;
@@ -35,7 +35,7 @@ public:
 private:
     std::string traceId_;
     //composition
-    std::shared_ptr<GrpcCoreCtxI> ctx_;
+    std::shared_ptr<GrpcEventI> event_;
 };
 class GrpcLooper: public small_packages::noncopyable{
 public:
@@ -78,7 +78,7 @@ public:
                     bool ok;
                     while(1) {
                         cq_->Next(&tag, &ok);
-                        static_cast<GrpcCoreCtx*>(tag)->Proceed(ok);
+                        static_cast<GrpcEvent*>(tag)->Proceed(ok);
                     }
                 }
             ));

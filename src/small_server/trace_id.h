@@ -1,7 +1,8 @@
 #pragma once
 #include <atomic>
 #include <string>
-class TraceInstance{
+#include "small_packages.h"
+class TraceInstance: public small_packages::noncopyable{
 public:
     static TraceInstance* Get() {
         static TraceInstance instance;
@@ -14,6 +15,4 @@ public:
 private:
     std::atomic<uint64_t> traceId_ = {0};
     TraceInstance() = default;
-    TraceInstance(const TraceInstance&) = default;
-    TraceInstance& operator=(const TraceInstance&) = default;
 };

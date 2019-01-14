@@ -8,10 +8,10 @@
 
 namespace small_server{
 template<typename StubManager>
-class GrpcClientCore: public small_packages::noncopyable {
+class GrpcClientChannel: public small_packages::noncopyable {
 public:
-    static GrpcClientCore* GetInstance() {
-        static GrpcClientCore instance_;
+    static GrpcClientChannel* GetInstance() {
+        static GrpcClientChannel instance_;
         return &instance_;
     }
     void SetLbPolicyType(const std::string &LbPolicyType) {
@@ -28,7 +28,7 @@ public:
             std::shared_ptr<typename StubManager::Stub> stub;
             auto exist = weakPtr.lock();
             if(!exist) {
-                LOG(WARNING) << "SheepNetClientCore destoryed";
+                LOG(WARNING) << "GrpcClientChannel destoryed";
                 return stub;
             }
             stub = StubManager::NewStub(
@@ -49,7 +49,7 @@ public:
         return clientManager_.GetClientPool(ok, addr);
     }
 private:
-    GrpcClientCore() {
+    GrpcClientChannel() {
     }
     std::shared_ptr<bool> exist_ = std::make_shared<bool>();
     small_client::ClientManager<typename StubManager::Stub> clientManager_;

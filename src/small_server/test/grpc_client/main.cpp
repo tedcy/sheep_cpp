@@ -8,7 +8,7 @@
 void Init(std::string &errMsg) {
     small_client::Looper::GetInstance()->Init();
     small_watcher::WatcherResolverFactory::GetInstance()->Init();
-    small_server::GrpcClientCore<helloworld::Greeter>::
+    small_server::GrpcClientChannel<helloworld::Greeter>::
         GetInstance()->Init(errMsg, {"172.16.187.149"}, 2379, "/test");
 }
 

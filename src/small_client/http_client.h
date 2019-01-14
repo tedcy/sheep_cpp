@@ -73,7 +73,7 @@ private:
     small_http_parser::RespParser parser_;
 };
 
-template<typename ServiceCtxT>
+template<typename ServiceEventT>
 class HttpClientWithService: public HttpClient{
 public:
     HttpClientWithService(ClientChannel &core, const std::string &method,
@@ -84,25 +84,25 @@ public:
         //FIXME: auto is invliad, wtf need this line???
         std::function<void(HttpClientWithService&, const std::string&)> realOnDone;
         realOnDone = [this, onDone](HttpClientWithService&, const std::string &errMsg) {
-            auto realCtx = serviceCtx_.lock();
-            if (!realCtx) {
+            auto realEvent = serviceEvent_.lock();
+            if (!realEvent) {
                 return;
             }
-            auto lock = realCtx->GetLock();
+            auto lock = realEvent->GetLock();
             small_lock::UniqueGuard uniqueLock (lock);
             onDone(*this, errMsg);
         };
         this->doReq<HttpClientWithService>(realOnDone);
     }
-    std::weak_ptr<ServiceCtxT> GetServiceCtx() {
-        return serviceCtx_;
+    std::weak_ptr<ServiceEventT> GetServiceEvent() {
+        return serviceEvent_;
     }
 private:
-    friend ServiceCtxT;
-    void SetServiceCtx(std::shared_ptr<ServiceCtxT> serviceCtx) {
-        serviceCtx_ = serviceCtx;
+    friend ServiceEventT;
+    void SetServiceEvent(std::shared_ptr<ServiceEventT> serviceEvent) {
+        serviceEvent_ = serviceEvent;
     }
     //association
-    std::weak_ptr<ServiceCtxT> serviceCtx_;
+    std::weak_ptr<ServiceEventT> serviceEvent_;
 };
 }

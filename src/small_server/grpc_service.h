@@ -23,14 +23,14 @@ public:
     grpc::Service* GetAsyncService() override {
         return service_.get();
     }
-    std::shared_ptr<GrpcServiceCtxI> CreateCtx(
-            GrpcCoreCtx *ctx) override {
+    std::shared_ptr<GrpcServiceEventI> CreateEvent(
+            GrpcEvent *event) override {
         if (!onMessageFunc_) {
             LOG(FATAL) << "OnMessage doesn't set";
             return nullptr;
         }
-        return std::make_shared<GrpcServiceCtx>(
-                service_, cq_, ctx, onMessageFunc_);
+        return std::make_shared<GrpcServiceEvent>(
+                service_, cq_, event, onMessageFunc_);
     }
     void SetCompletionQueue(
             std::shared_ptr<grpc::ServerCompletionQueue> cq) override {
@@ -40,35 +40,31 @@ private:
     std::shared_ptr<AsyncServiceT> service_;
     std::shared_ptr<grpc::ServerCompletionQueue> cq_;
 public:
-class GrpcServiceCtx;
+class GrpcServiceEvent;
 using OnMessageFunc = 
-    std::function<void(GrpcServiceCtx &ctx, std::string &errMsg)>;
+    std::function<void(GrpcServiceEvent &event, std::string &errMsg)>;
     void SetOnMessage(const OnMessageFunc &func) {
         onMessageFunc_ = func;
     }
     OnMessageFunc onMessageFunc_;
-class GrpcServiceCtx: public GrpcServiceCtxI, 
-    public std::enable_shared_from_this<GrpcServiceCtx> {
+class GrpcServiceEvent: public GrpcServiceEventI, 
+    public std::enable_shared_from_this<GrpcServiceEvent>,
+    public small_packages::noncopyable {
 public:
-    GrpcServiceCtx(std::shared_ptr<AsyncServiceT> service, 
+    GrpcServiceEvent(std::shared_ptr<AsyncServiceT> service, 
             std::shared_ptr<grpc::ServerCompletionQueue> cq, 
-            GrpcCoreCtx *coreCtx,
+            GrpcEvent *looperEvent,
             const OnMessageFunc &func): 
         service_(service), 
-        cq_(cq), ctx_(), responder_(&ctx_), status_(PROCESS),
-        coreCtx_(coreCtx),
+        cq_(cq), event_(), responder_(&event_), status_(PROCESS),
+        looperEvent_(looperEvent),
         lock_(small_lock::MakeRecursiveLock()),
         onMessageFunc_(func) ,
         task_(std::make_shared<Task>()){
         LOG(DEBUG) << "CREATE " << GetTraceId();
-        service_->RequestHandler(&ctx_, 
-                &req_, &responder_, cq_.get(), cq_.get(), coreCtx_);
+        service_->RequestHandler(&event_, 
+                &req_, &responder_, cq_.get(), cq_.get(), looperEvent_);
     }
-    GrpcServiceCtx(const GrpcServiceCtx&) = delete;
-    GrpcServiceCtx& operator=(const GrpcServiceCtx&) = delete;
-    //~GrpcServiceCtx() {
-    //    LOG(DEBUG) << "~GrpcServiceCtx";
-    //}
     void Init() override {
         myself_ = this->shared_from_this();
     }
@@ -88,7 +84,7 @@ public:
         }
         case FINISH: {
             LOG(DEBUG) << "FINISH " << GetTraceId();
-            coreCtx_->Clean();
+            looperEvent_->Clean();
             myself_ = nullptr;
             break;
         }
@@ -99,7 +95,7 @@ public:
     void Finish() {
         auto status = grpc::Status::OK;
         status_ = FINISH;
-        responder_.Finish(resp_, status, coreCtx_);
+        responder_.Finish(resp_, status, looperEvent_);
     }
     std::shared_ptr<small_lock::LockI> GetLock() {
         return lock_;
@@ -108,27 +104,27 @@ public:
         return task_; 
     }
     std::string GetTraceId() {
-        return coreCtx_->GetTraceId();
+        return looperEvent_->GetTraceId();
     }
-    std::shared_ptr<small_client::HttpClientWithService<GrpcServiceCtx>> GetHttpClient(
+    std::shared_ptr<small_client::HttpClientWithService<GrpcServiceEvent>> GetHttpClient(
             small_client::ClientChannel &channel,
             const std::string &method,
             const std::string &target,const std::string &req) {
-        auto httpClient = std::make_shared<small_client::HttpClientWithService<GrpcServiceCtx>>(
+        auto httpClient = std::make_shared<small_client::HttpClientWithService<GrpcServiceEvent>>(
                 channel, method, target, req);
-        httpClient->SetServiceCtx(myself_);
+        httpClient->SetServiceEvent(myself_);
         return httpClient;
     }
     template <typename ClientReqT, typename ClientRespT,
              typename ClientStub>
     std::shared_ptr<GrpcClientWithService<
-    ClientReqT, ClientRespT, ClientStub, GrpcServiceCtx>> 
+    ClientReqT, ClientRespT, ClientStub, GrpcServiceEvent>> 
         GetGrpcClient() {
         auto grpcClient = 
             std::make_shared<GrpcClientWithService<ClientReqT, ClientRespT,
-            ClientStub, GrpcServiceCtx>>();
+            ClientStub, GrpcServiceEvent>>();
         grpcClient->Init();
-        grpcClient->SetServiceCtx(myself_);
+        grpcClient->SetServiceEvent(myself_);
         return grpcClient;
     }
     ReqT req_;
@@ -136,7 +132,7 @@ public:
 private:
     std::shared_ptr<AsyncServiceT> service_;
     std::shared_ptr<grpc::ServerCompletionQueue> cq_;
-    grpc::ServerContext ctx_;
+    grpc::ServerContext event_;
     grpc::ServerAsyncResponseWriter<RespT> responder_;
     enum Status {
         PROCESS, 
@@ -144,10 +140,10 @@ private:
     };
     Status status_;
     OnMessageFunc onMessageFunc_;
-    GrpcCoreCtx *coreCtx_ = nullptr;
+    GrpcEvent *looperEvent_ = nullptr;
     //composition
     std::shared_ptr<small_lock::LockI> lock_;
-    std::shared_ptr<GrpcServiceCtx> myself_;
+    std::shared_ptr<GrpcServiceEvent> myself_;
     std::shared_ptr<Task> task_;
 };
 };

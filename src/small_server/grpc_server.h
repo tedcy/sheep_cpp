@@ -1,5 +1,5 @@
 #pragma once
-#include "grpc_core.h"
+#include "grpc_looper.h"
 #include <grpc/grpc.h>
 #include <grpc++/server.h>
 #include <grpc++/server_builder.h>
@@ -11,10 +11,10 @@
 #include <atomic>
 
 namespace small_server{
-class GrpcServerCtx;
-class GrpcServiceCtxI {
+class GrpcServerEvent;
+class GrpcServiceEventI {
 public:
-    virtual ~GrpcServiceCtxI() = default;
+    virtual ~GrpcServiceEventI() = default;
     virtual void Init() = 0;
     virtual void Proceed(bool ok) = 0;
 };
@@ -23,44 +23,44 @@ public:
     virtual ~GrpcServiceI() = default;
     virtual std::string Name() = 0;
     virtual grpc::Service* GetAsyncService() = 0;
-    virtual std::shared_ptr<GrpcServiceCtxI> 
-        CreateCtx(GrpcCoreCtx *serverCtx) = 0;
+    virtual std::shared_ptr<GrpcServiceEventI> 
+        CreateEvent(GrpcEvent *event) = 0;
     virtual void SetCompletionQueue(
             std::shared_ptr<grpc::ServerCompletionQueue> cq) = 0;
 };
 //dispatch events to service call data
-class GrpcServerCtx :public GrpcCoreCtxI{
+class GrpcServerEvent :public GrpcEventI{
 public:
-    explicit GrpcServerCtx(GrpcServiceI *service):
+    explicit GrpcServerEvent(GrpcServiceI *service):
         status_(PROCESS), service_(service) {
     }
-    void Init(GrpcCoreCtx *ctx) {
-        ctx_ = ctx;
-        serviceCtx_ = service_->CreateCtx(ctx_);
-        serviceCtx_->Init();
+    void Init(GrpcEvent *event) {
+        event_ = event;
+        serviceEvent_ = service_->CreateEvent(event_);
+        serviceEvent_->Init();
     }
     void Proceed(bool ok) override {
         switch (status_){
         case PROCESS: {
             status_ = PROCESSING;
-            auto serverCtx = std::make_shared<GrpcServerCtx>(service_);
-            auto coreCtx = new GrpcCoreCtx(serverCtx);
-            serverCtx->Init(coreCtx);
-            serviceCtx_->Proceed(ok);
+            auto serverEvent = std::make_shared<GrpcServerEvent>(service_);
+            auto looperEvent = new GrpcEvent(serverEvent);
+            serverEvent->Init(looperEvent);
+            serviceEvent_->Proceed(ok);
             break;
         }
         case PROCESSING: {
-            serviceCtx_->Proceed(ok);
+            serviceEvent_->Proceed(ok);
             break;
         }}
     }
 private:
-    GrpcCoreCtx *ctx_ = nullptr;
+    GrpcEvent *event_ = nullptr;
     enum Status{PROCESS, PROCESSING};
     Status status_;
     GrpcServiceI *service_ = nullptr;
     //composition
-    std::shared_ptr<GrpcServiceCtxI> serviceCtx_;
+    std::shared_ptr<GrpcServiceEventI> serviceEvent_;
 };
 class GrpcServer{
 public:
@@ -84,10 +84,10 @@ public:
         for (auto &servicePair: services_) {
             servicePair.second->SetCompletionQueue(
                 GrpcLooper::GetInstance()->GetServerCompletionQueue());
-            auto serverCtx = std::make_shared<GrpcServerCtx>(
+            auto serverEvent = std::make_shared<GrpcServerEvent>(
                         servicePair.second);
-            auto coreCtx = new GrpcCoreCtx(serverCtx);
-            serverCtx->Init(coreCtx);
+            auto looperEvent = new GrpcEvent(serverEvent);
+            serverEvent->Init(looperEvent);
         }
         GrpcLooper::GetInstance()->Run();
         GrpcLooper::GetInstance()->Wait();

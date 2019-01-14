@@ -8,10 +8,10 @@ struct TestTask;
 using GrpcServiceWithTest = small_server::GrpcService<
     helloworld::HelloRequest, helloworld::HelloReply,
     helloworld::Greeter::AsyncService, TestTask>;
-using GrpcServiceWithTestCtx = GrpcServiceWithTest::GrpcServiceCtx;
+using GrpcServiceWithTestEvent = GrpcServiceWithTest::GrpcServiceEvent;
 using GrpcServiceClientTest = 
     small_server::GrpcClientWithService<helloworld::HelloRequest,
-        helloworld::HelloReply, helloworld::Greeter, GrpcServiceWithTestCtx>;
+        helloworld::HelloReply, helloworld::Greeter, GrpcServiceWithTestEvent>;
 struct TestTask {
     TestTask() = default;
     TestTask(const TestTask&) = delete;
@@ -21,27 +21,27 @@ struct TestTask {
 class TestService: public GrpcServiceWithTest{
 public:
     void Init() {
-        auto onMessage = [this](GrpcServiceWithTestCtx &ctx,
+        auto onMessage = [this](GrpcServiceWithTestEvent &event,
             std::string &errMsg) {
-            auto name = ctx.req_.name();
+            auto name = event.req_.name();
             if (name == "proxy") {
-                auto client = ctx.GetGrpcClient<helloworld::HelloRequest,
+                auto client = event.GetGrpcClient<helloworld::HelloRequest,
                     helloworld::HelloReply, helloworld::Greeter>();
-                ctx.GetTask()->client = client;
+                event.GetTask()->client = client;
                 client->req_.set_name("server");
                 client->DoReq([](GrpcServiceClientTest &client, const std::string &errMsg) {
-                        auto serviceCtx = client.GetServiceCtx().lock();
-                        if (!serviceCtx) {
+                        auto serviceEvent = client.GetServiceEvent().lock();
+                        if (!serviceEvent) {
                             return;
                         }
-                        serviceCtx->resp_.set_message(client.resp_.message());
-                        serviceCtx->Finish();
+                        serviceEvent->resp_.set_message(client.resp_.message());
+                        serviceEvent->Finish();
                     });
                 return;
             }else {
-                auto task = ctx.GetTask();
-                ctx.resp_.set_message("from server");
-                ctx.Finish();
+                auto task = event.GetTask();
+                event.resp_.set_message("from server");
+                event.Finish();
                 return;
             }
         };

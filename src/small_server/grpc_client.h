@@ -2,23 +2,22 @@
 #include <functional>
 #include <string>
 #include <grpcpp/grpcpp.h>
+#include "small_packages.h"
 
-#include "grpc_core.h"
-#include "grpc_client_core.h"
+#include "grpc_looper.h"
+#include "grpc_client_channel.h"
 
 namespace small_server{
 template <typename ReqT, typename RespT, typename Stub>
-class GrpcClient: public GrpcCoreCtxI, 
-    public std::enable_shared_from_this<GrpcClient<ReqT, RespT, Stub>>{
+class GrpcClient: public GrpcEventI, 
+    public std::enable_shared_from_this<GrpcClient<ReqT, RespT, Stub>>,
+    public small_packages::noncopyable{
 public:
     std::string GetTraceId() {
-        return ctx_->GetTraceId();
+        return event_->GetTraceId();
     }
-    GrpcClient() = default;
-    GrpcClient(const GrpcClient&) = delete;
-    GrpcClient& operator=(const GrpcClient&) = delete;
     void Init() {
-        ctx_ = new GrpcCoreCtx(this->shared_from_this());
+        event_ = new GrpcEvent(this->shared_from_this());
         LOG(DEBUG) << "CREATE " << GetTraceId();
     }
     void Proceed(bool ok) {
@@ -28,7 +27,7 @@ public:
             errMsg = "Grpc Client failed";
         }
         onDone_(*this, errMsg);
-        ctx_->Clean();
+        event_->Clean();
     }
     ReqT req_;
     RespT resp_;
@@ -44,7 +43,7 @@ protected:
         };
 
         bool ok;
-        auto stub = GrpcClientCore<Stub>::GetInstance()->GetClientPool(ok);
+        auto stub = GrpcClientChannel<Stub>::GetInstance()->GetClientPool(ok);
         if (!ok) {
             onDone_(*this, "stub is nullptr");
             return;
@@ -53,32 +52,32 @@ protected:
         responseReader_ = stub->PrepareAsyncHandler(
             &grpcContext_, req_, cq);
         responseReader_->StartCall();
-        responseReader_->Finish(&resp_, &status_, ctx_);
+        responseReader_->Finish(&resp_, &status_, event_);
     }
 private:
     grpc::Status status_;
-    GrpcCoreCtx *ctx_ = nullptr;
+    GrpcEvent *event_ = nullptr;
     std::function<void(GrpcClient&, const std::string &errMsg)> onDone_;
     //composition
     std::unique_ptr<grpc::ClientAsyncResponseReader<RespT>>
         responseReader_;
     grpc::ClientContext grpcContext_;
 };
-template <typename ReqT, typename RespT, typename Stub, typename ServiceCtxT>
+template <typename ReqT, typename RespT, typename Stub, typename ServiceEventT>
 class GrpcClientWithService: public GrpcClient<ReqT, RespT, Stub>{
 public:
     void DoReq(std::function<void(GrpcClientWithService&, const std::string&)> onDone) {
         this->template doReq<GrpcClientWithService>(onDone);
     }
-    std::weak_ptr<ServiceCtxT> GetServiceCtx() {
-        return serviceCtx_;
+    std::weak_ptr<ServiceEventT> GetServiceEvent() {
+        return serviceEvent_;
     }
 private:
-    friend ServiceCtxT;
-    void SetServiceCtx(std::shared_ptr<ServiceCtxT> serviceCtx) {
-        serviceCtx_ = serviceCtx;
+    friend ServiceEventT;
+    void SetServiceEvent(std::shared_ptr<ServiceEventT> serviceEvent) {
+        serviceEvent_ = serviceEvent;
     }
     //association
-    std::weak_ptr<ServiceCtxT> serviceCtx_;
+    std::weak_ptr<ServiceEventT> serviceEvent_;
 };
 }//namespace small_server
