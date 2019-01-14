@@ -1,5 +1,6 @@
 #pragma once
 #include "log.h"
+#include "small_packages.h"
 #include "trace_id.h"
 #include <string>
 #include <memory>
@@ -36,18 +37,15 @@ private:
     //composition
     std::shared_ptr<GrpcCoreCtxI> ctx_;
 };
-class GrpcCore{
+class GrpcLooper: public small_packages::noncopyable{
 public:
-    static GrpcCore* GetInstance() {
-        static GrpcCore instance;
+    static GrpcLooper* GetInstance() {
+        static GrpcLooper instance;
         return &instance;
     }
-    GrpcCore() = default;
-    GrpcCore(const GrpcCore&) = delete;
-    GrpcCore& operator=(const GrpcCore&) = delete;
     void Init(grpc::ServerBuilder &builder) {
         if (scq_) {
-            LOG(FATAL) << "GrpcCore has inited";
+            LOG(FATAL) << "GrpcLooper has inited";
             return;
         }
         scq_ = builder.AddCompletionQueue();
@@ -55,7 +53,7 @@ public:
     }
     void Init() {
         if (cq_) {
-            LOG(FATAL) << "GrpcCore has inited";
+            LOG(FATAL) << "GrpcLooper has inited";
             return;
         }
         cq_ = std::make_shared<grpc::CompletionQueue>();
@@ -70,7 +68,7 @@ public:
     }
     void Run() {
         if (!cq_) {
-            LOG(FATAL) << "GrpcCore is not inited";
+            LOG(FATAL) << "GrpcLooper is not inited";
             return;
         }
         for (auto i = 0;i < 1;i++) {

@@ -49,7 +49,7 @@ protected:
             onDone_(*this, "stub is nullptr");
             return;
         }
-        auto cq = GrpcCore::GetInstance()->GetCompletionQueue().get();
+        auto cq = GrpcLooper::GetInstance()->GetCompletionQueue().get();
         responseReader_ = stub->PrepareAsyncHandler(
             &grpcContext_, req_, cq);
         responseReader_->StartCall();

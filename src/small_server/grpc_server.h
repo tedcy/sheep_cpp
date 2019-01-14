@@ -77,20 +77,20 @@ public:
         services_.insert({service->Name(), service});
     }
     void Run() {
-        GrpcCore::GetInstance()->Init(builder_);
+        GrpcLooper::GetInstance()->Init(builder_);
         auto server_ = builder_.BuildAndStart();
         LOG(INFO) << "GrpcServer listening on " << addr_;
 
         for (auto &servicePair: services_) {
             servicePair.second->SetCompletionQueue(
-                GrpcCore::GetInstance()->GetServerCompletionQueue());
+                GrpcLooper::GetInstance()->GetServerCompletionQueue());
             auto serverCtx = std::make_shared<GrpcServerCtx>(
                         servicePair.second);
             auto coreCtx = new GrpcCoreCtx(serverCtx);
             serverCtx->Init(coreCtx);
         }
-        GrpcCore::GetInstance()->Run();
-        GrpcCore::GetInstance()->Wait();
+        GrpcLooper::GetInstance()->Run();
+        GrpcLooper::GetInstance()->Wait();
         server_->Wait();
     }
 private:

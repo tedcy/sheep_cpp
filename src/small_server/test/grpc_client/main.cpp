@@ -25,8 +25,8 @@ void DoReq(std::string &errMsg) {
 }
 
 int main() {
-    small_server::GrpcCore::GetInstance()->Init();
-    small_server::GrpcCore::GetInstance()->Run();
+    small_server::GrpcLooper::GetInstance()->Init();
+    small_server::GrpcLooper::GetInstance()->Run();
     std::string errMsg;
     Init(errMsg);
     if (!errMsg.empty()) {
@@ -38,5 +38,5 @@ int main() {
         LOG(FATAL) << errMsg;
     }
     LOG(INFO) << "ok";
-    small_server::GrpcCore::GetInstance()->Wait();
+    small_server::GrpcLooper::GetInstance()->Wait();
 }
