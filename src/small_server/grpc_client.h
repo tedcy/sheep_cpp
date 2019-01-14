@@ -13,6 +13,9 @@ class GrpcClient: public GrpcEventI,
     public std::enable_shared_from_this<GrpcClient<ReqT, RespT, Stub>>,
     public small_packages::noncopyable{
 public:
+    GrpcClient(GrpcClientChannel<Stub> &channel) :
+        channel_(channel) {
+    }
     std::string GetTraceId() {
         return event_->GetTraceId();
     }
@@ -43,7 +46,7 @@ protected:
         };
 
         bool ok;
-        auto stub = GrpcClientChannel<Stub>::GetInstance()->GetClientPool(ok);
+        auto stub = channel_.GetClientPool(ok);
         if (!ok) {
             onDone_(*this, "stub is nullptr");
             return;
@@ -56,6 +59,7 @@ protected:
     }
 private:
     grpc::Status status_;
+    GrpcClientChannel<Stub> &channel_;
     GrpcEvent *event_ = nullptr;
     std::function<void(GrpcClient&, const std::string &errMsg)> onDone_;
     //composition
@@ -66,6 +70,9 @@ private:
 template <typename ReqT, typename RespT, typename Stub, typename ServiceEventT>
 class GrpcClientWithService: public GrpcClient<ReqT, RespT, Stub>{
 public:
+    GrpcClientWithService(GrpcClientChannel<Stub> &channel) :
+        GrpcClient<ReqT, RespT, Stub>(channel){
+    }
     void DoReq(std::function<void(GrpcClientWithService&, const std::string&)> onDone) {
         this->template doReq<GrpcClientWithService>(onDone);
     }

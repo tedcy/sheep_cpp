@@ -11,9 +11,9 @@ class HttpClient : public BaseClient{
 public:
 using HttpClientOnDone = 
     std::function<void(HttpClient& c, const std::string &errMsg)>;
-    HttpClient(ClientChannel &core, const std::string method,
+    HttpClient(ClientChannel &channel, const std::string method,
             const std::string &target, const std::string &body) :
-        BaseClient(core) ,
+        BaseClient(channel) ,
         formarter_(method, target, body){
     }
     void SetHeaders(const small_http_parser::Map &map) {
@@ -76,9 +76,9 @@ private:
 template<typename ServiceEventT>
 class HttpClientWithService: public HttpClient{
 public:
-    HttpClientWithService(ClientChannel &core, const std::string &method,
+    HttpClientWithService(ClientChannel &channel, const std::string &method,
             const std::string &target,const std::string &body) :
-        HttpClient(core, method, target, body) {
+        HttpClient(channel, method, target, body) {
     }
     void DoReq(std::function<void(HttpClientWithService&, const std::string&)> onDone) {
         //FIXME: auto is invliad, wtf need this line???

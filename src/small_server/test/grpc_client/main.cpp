@@ -4,18 +4,19 @@
 #include "helloworld.grpc.pb.h"
 #include "helloworld.pb.h"
 #include "log.h"
+    
+small_server::GrpcClientChannel<helloworld::Greeter> channel;
 
 void Init(std::string &errMsg) {
     small_client::Looper::GetInstance()->Init();
     small_watcher::WatcherResolverFactory::GetInstance()->Init();
-    small_server::GrpcClientChannel<helloworld::Greeter>::
-        GetInstance()->Init(errMsg, {"172.16.187.149"}, 2379, "/test");
+    channel.Init(errMsg, {"172.16.187.149"}, 2379, "/test");
 }
 
 void DoReq(std::string &errMsg) {
     using GrpcClientTest = small_server::GrpcClient<helloworld::HelloRequest, 
         helloworld::HelloReply, helloworld::Greeter>;
-    auto client = std::make_shared<GrpcClientTest>();
+    auto client = std::make_shared<GrpcClientTest>(channel);
     client->Init();
     client->req_.set_name("proxy");
     client->DoReq([](GrpcClientTest &client, 
@@ -26,7 +27,6 @@ void DoReq(std::string &errMsg) {
 
 int main() {
     small_server::GrpcLooper::GetInstance()->Init();
-    small_server::GrpcLooper::GetInstance()->Run();
     std::string errMsg;
     Init(errMsg);
     if (!errMsg.empty()) {
@@ -38,5 +38,4 @@ int main() {
         LOG(FATAL) << errMsg;
     }
     LOG(INFO) << "ok";
-    small_server::GrpcLooper::GetInstance()->Wait();
 }

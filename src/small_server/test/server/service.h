@@ -2,6 +2,8 @@
 #include "helloworld.grpc.pb.h"
 #include "helloworld.pb.h"
 
+extern small_server::GrpcClientChannel<helloworld::Greeter> channel;
+
 namespace test_service {
 class TestService;
 struct TestTask;
@@ -26,7 +28,7 @@ public:
             auto name = event.req_.name();
             if (name == "proxy") {
                 auto client = event.GetGrpcClient<helloworld::HelloRequest,
-                    helloworld::HelloReply, helloworld::Greeter>();
+                    helloworld::HelloReply, helloworld::Greeter>(channel);
                 event.GetTask()->client = client;
                 client->req_.set_name("server");
                 client->DoReq([](GrpcServiceClientTest &client, const std::string &errMsg) {

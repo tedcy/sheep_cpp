@@ -1,6 +1,6 @@
 sheep库是一个基于grpc的c++服务化框架
 
-sheep库的[go版本](https://git.dev.tencent.com/tedcy/sheep.git)在这里
+sheep库的[go版本](https://github.com/tedcy/sheep)在这里
 
 和go版本相比目前没有包含治理功能
 
@@ -8,14 +8,14 @@ sheep库的[go版本](https://git.dev.tencent.com/tedcy/sheep.git)在这里
 - [2 安装](#2-)
 - [3 使用](#3-)
     - [3.1 small-client](#31-small-client)
-        - [3.1.1 http-client的创建使用:](#311-http-client)
-        - [3.1.2 redis-client的配置使用](#312-redis-client)
+        - [3.1.1 http-client:](#311-http-client)
+        - [3.1.2 redis-client](#312-redis-client)
     - [3.2 small-server](#32-small-server)
         - [3.2.1 grpc-client](#321-grpc-client)
         - [3.2.2 grpc-server](#322-grpc-server)
-            - [3.2.2.1 http-client-in-grpc-server](#3221-http-client-in-grpc-server)
-            - [3.2.2.2 redis-client-in-grpc-server](#3222-redis-client-in-grpc-server)
-            - [3.2.2.3 grpc-client-in-grpc-server](#3223-grpc-client-in-grpc-server)
+        - [3.2.3 client-in-grpc-server](#323-client-in-grpc-server)
+        - [3.2.4 服务端在etcd上添加临时节点](#324-etcd)
+        - [3.2.5 客户端使用etcd服务发现](#325-etcd)
 - [4 TODO list](#4-todo-list)
 
 ## 1 功能
@@ -24,8 +24,22 @@ sheep库的[go版本](https://git.dev.tencent.com/tedcy/sheep.git)在这里
 * 异步grpc客户端
 * 异步http客户端
 * 异步redis客户端
+* 依赖etcd的服务化管理
 
 **注意：目前proto文件需要约定接口名称**
+
+可复用基础库
+* small_http_parser http解析库，依赖http-parser
+* small_test        单元测试库，依赖gtest，纯下载安装脚本
+* small_hiredis     redis客户端，依赖hiredis，纯下载安装脚本
+* small_grpc        grpc库的下载安装脚本
+* small_packages    包含一些常用的string,lock,time,block_queue等封装
+
+extends扩展库
+* log               对glog的封装，解决部分情况打印日志的core问题
+* small_config      解析配置，对toml库的封装
+* small_watcher     异步etcd客户端实现
+* small_pprof       性能测试debug封装，依赖gperf
 
 ## 2 安装
 
@@ -33,7 +47,7 @@ sheep库的[go版本](https://git.dev.tencent.com/tedcy/sheep.git)在这里
 git clone https://github.com/Microsoft/vcpkg.git
 cd vcpkg
 ./bootstrap-vcpkg.sh
-./vcpkg install glog jsoncpp tinytoml rapidjson
+./vcpkg install glog tinytoml rapidjson
 cd -
 
 git clone https://github.com/tedcy/sheep_cpp
@@ -46,12 +60,23 @@ vcpkg_path=xxx ./bootstrap.sh
 ### 3.1 small-client
 
 small-client是一个异步客户端的基础库，包含了异步的http和redis客户端。  
-分为配置部分和使用部分：使用独立的客户端需要了解配置部分。  
-而在服务端上调用异步客户端，对其配置过程进行了封装，只需要关心使用部分即可。  
 
-#### 3.1.1 http-client的创建使用:
+用户需要操作的类有三个，Looper，ClientChannel，Client    
+* Looper  
+事件循环的抽象，目前暂时都是单例    
+* ClientChannel  
+客户端连接池的抽象，small\_client的是ClientChannel以及下面small\_server的是GrpcClientChannel  
+都需要传入Looper参数。  
+所有的Client都会从ClientChannel中拿出连接对象进行通信  
+和服务端相关的配置参数都需要在这里设定  
+* Client  
+各种客户端small\_client::HttpClient, small\_client::RedisClient，以及下面small\_server的GrpcClient。  
+都至少需要传入ClientChannel参数  
+和本次通信相关的配置参数都需要在这里设定  
 
-配置部分:
+#### 3.1.1 http-client:
+
+Looper,ClientChannel部分:
 
 ```
 //先初始化事件循环单例
@@ -75,12 +100,10 @@ channel.SetMaxSize(1);
 //端口
 //路径，用于专门的服务发现组件路径，例如etcd和zookeeper
 channel.Init(errMsg, {"www.baidu.com"}, 80, "");
-if (!errMsg.empty()) {
-    LOG(FATAL) << errMsg;
-}
+//判断errMsg
 ```
 
-使用部分：
+Client部分：
 
 ```
 //使用channel创建一个http_client
@@ -93,34 +116,28 @@ auto client = std::make_shared<small_client::HttpClient>(channel,
             small_http_parser::ReqFormater::MethodGET, "/", "");
 
 //SetHeaders,SetQueryString,SetHost分别是可选项来填入http协议各项
-
 //SetTimeoutMs可选项来添加超时时间
-
 client->DoReq([](small_client::HttpClient &client, const std::string &errMsg) {
-    
-    //失败
-    if (!errMsg.empty()) {
-        LOG(ERROR) << errMsg;
-        return;
-    }
+    //判断errMsg
     
     //成功，获取header
     auto headers = client.GetRespHeader();
     for (auto &header: headers.kvs_) {
         LOG(INFO) << header.first << ":" << header.second;
     }
+
     //获取body
     auto resp = client.GetRespStr();
     LOG(INFO) << resp;
 })
 ```
 
-#### 3.1.2 redis-client的配置使用
+#### 3.1.2 redis-client
 
-配置部分和http-client相同
-
-使用部分：
 ```
+//Looper,ClientChannel部分同http-redis
+//...
+
 //使用channel创建一个redis-client
 auto client = std::make_shared<small_client::RedisClient>(channel);
 
@@ -129,21 +146,7 @@ auto client = std::make_shared<small_client::RedisClient>(channel);
 //"GET A"是具体的redis命令
 client->DoReq("GET A", 
     [](small_client::RedisClient &client, const std::string &errMsg) {
-    
-    //失败
-    if (!errMsg.empty()) {
-        LOG(ERROR) << errMsg;
-        return;
-    }
-    
-    //成功，获取结果
-    bool ok;
-    auto resp = client.GetResp(ok);
-    if (!ok) {
-        LOG(WARNING) << "not exist";
-        return;
-    }
-    LOG(INFO) << resp;
+    //...
 });
 ```
 
@@ -178,30 +181,24 @@ message Test {
 
 #### 3.2.1 grpc-client
 
-配置部分:
+Looper,ClientChannel部分:
 
 ```
 //初始化grpc事件循环单例
-small_server::GrpcCore::GetInstance()->Init();
-small_server::GrpcCore::GetInstance()->Run();
+small_server::GrpcLooper::GetInstance()->Init();
 
-//初始化Greeter的grpc Channel单例
-small_server::GrpcClientCore<helloworld::Greeter>::GetInstance()->SetResolverType("string");
-small_server::GrpcClientCore<helloworld::Greeter>::GetInstance()->Init(errMsg, {"127.0.0.1"}, 8888, "");
-
-//使用部分代码:
-...
-
-//等待结束
-small_server::GrpcCore::GetInstance()->Wait();
+//初始化Greeter的grpc Channel
+small_server::GrpcClientChannel<helloworld::Greeter> channel;
+channel.SetResolverType("string");
+channel.Init(errMsg, {"127.0.0.1"}, 8888, "");
 ```
 
-使用部分：
+Client部分：
 ```
 创建GrpcClient分别需要传入Request,Response以及Service部分的名称
 using GrpcClientTest = small_server::GrpcClient<helloworld::HelloRequest,
         helloworld::HelloReply, helloworld::Greeter>;
-auto client = std::make_shared<GrpcClientTest>();
+auto client = std::make_shared<GrpcClientTest>(channel);
 client->Init();
 client->req_.set_name("proxy");
 client->DoReq([](GrpcClientTest &client, const std::string &errMsg) {
@@ -214,7 +211,7 @@ client->DoReq([](GrpcClientTest &client, const std::string &errMsg) {
 有service和server概念，service指服务，server指服务器  
 每个server单独一个listen，多路复用不同的service  
 
-定义service
+service部分
 ```
 //前置声明service和task
 class TestService;
@@ -226,7 +223,7 @@ using GrpcServiceWithTest = small_server::GrpcService<
     helloworld::Greeter::AsyncService, TestTask>;
 
 //声明service上下文信息
-using GrpcServiceWithTestCtx = GrpcServiceWithTest::GrpcServiceCtx;
+using GrpcServiceWithTestEvent = GrpcServiceWithTest::GrpcServiceEvent;
 
 //task定义
 struct TestTask {
@@ -237,19 +234,20 @@ class TestService: public GrpcServiceWithTest{
 public:
     //设置回调
     void Init() {
-        auto onMessage = [this](GrpcServiceWithTestCtx &ctx,
+        auto onMessage = [this](GrpcServiceWithTestEvent &event,
             std::string &errMsg) {
-            //获取上下文中的req信息
-            auto name = ctx.req_.name();
+            //判断errMsg
+            //获取service事件中的req信息
+            auto name = event.req_.name();
 
-            //获取上下文的task信息
-            auto task = ctx.GetTask();
+            //获取service事件的task信息
+            auto task = event.GetTask();
 
             //设置返回值
-            ctx.resp_.set_message("from server");
+            event.resp_.set_message("from server");
 
             //结束请求
-            ctx.Finish();
+            event.Finish();
             return;
         };
         SetOnMessage(onMessage);
@@ -260,7 +258,7 @@ public:
 };
 ```
 
-使用service
+server部分
 ```
 //创建server并且初始化
 small_server::GrpcServer server("127.0.0.1:8888");
@@ -277,119 +275,70 @@ server.Register(&service);
 server.Run();
 ```
 
-##### 3.2.2.1 http-client-in-grpc-server
+#### 3.2.3 client-in-grpc-server
 
-在grpc-server的service基础上修改
+在service上转发请求到下一个服务端  
+在grpc-server的service基础上修改  
+相对上面的各个独立client，Looper部分不需要设置，ClientChannel部分相同  
 
-配置过程加上
-
-```
-small_client::ClientChannel channel(small_client::Looper::GetInstance()->GetLoop());
-channel.SetResolverType("dns");
-channel.SetMaxSize(1);
-channel.Init(errMsg, {"www.baidu.com"}, 80, "");
-if (!errMsg.empty()) {
-    LOG(FATAL) << errMsg;
-}
-```
-
-使用过程加上
+Client部分
 ```
 struct TestTask {
     std::shared_ptr<small_client::HttpClient> client;
 };
-client = ctx.GetHttpClient(channel,
+client = event.GetHttpClient(channel,
             "GET", "/", "");
 client->DoReq([](small_client::HttpClient &client, const std::string &errMsg) {
     
     //客户端的异步回调中获取到service的上下文信息
-    auto serviceCtx = client.GetServiceCtx().lock();
-    if (!serviceCtx) {
+    auto serviceEvent = client.GetServiceEvent().lock();
+    if (!serviceEvent) {
         return;
     }
     
     //service返回结果
-    serviceCtx->resp_.set_message(client.GetRespStr());
+    serviceEvent->resp_.set_message(client.GetRespStr());
     
     //service关闭
-    serviceCtx->Finish();
+    serviceEvent->Finish();
 });
 ```
 
-##### 3.2.2.2 redis-client-in-grpc-server
+直接从service获取的event部分GetHttpClient，GetRedisClient，GetGrpcClient即可  
+返回对应的智能指针，用法和独立客户端相同  
 
-在grpc-server的service基础上修改
-
-配置过程和http-client-in-grpc-server相同
-
-使用过程类似
-```
-struct TestTask {
-    std::shared_ptr<small_client::RedisClient> client;
-};
-client = ctx.GetHttpClient(channel,
-            "GET", "/", "");
-client->DoReq("GET A",
-    [](small_client::RedisClient &client, const std::string &errMsg) {
-    
-    //客户端的异步回调中获取到service的上下文信息
-    auto serviceCtx = client.GetServiceCtx().lock();
-    if (!serviceCtx) {
-        return;
-    }
-    
-    //成功，获取结果
-    bool ok;
-    auto resp = client.GetResp(ok);
-    if (!ok) {
-        LOG(WARNING) << "not exist";
-        serviceCtx->Finish();
-        return;
-    }
-    //service返回结果
-    serviceCtx->resp_.set_message(resp);
-    
-    //service关闭
-    serviceCtx->Finish();
-});
-```
-
-##### 3.2.2.3 grpc-client-in-grpc-server
-
-在grpc-server的service基础上修改
-
-配置过程加上
+#### 3.2.4 服务端在etcd上添加临时节点
 
 ```
-small_server::GrpcClientCore<helloworld::Greeter>::GetInstance()->SetResolverType("string");
-small_server::GrpcClientCore<helloworld::Greeter>::GetInstance()->Init(errMsg, {"127.0.0.1"}, 8888, "");
+//初始化Looper
+small_client::Looper::GetInstance()->Init();
+
+//创建watcher
+auto watcher = small_watcher::MakeWatcher({"172.16.187.149"}, 2379);
+watcher->Init(errMsg);
+
+//判断errMsg
+std::string ip;
+watcher->GetLocalIp(ip);
+watcher->CreateEphemeral("/test/" + ip + ":8888", "");
 ```
 
-使用过程加上
-```
-//task需要保存从service获取的智能指针
-struct TestTask {
-    std::shared_ptr<GrpcServiceClientTest> client;
-};
+#### 3.2.5 客户端使用etcd服务发现
 
-//service onMessage回调
-client = ctx.GetGrpcClient<helloworld::HelloRequest,
-                    helloworld::HelloReply, helloworld::Greeter>();
-client->DoReq([](GrpcServiceClientTest &client, const std::string &errMsg) {
-    
-    //客户端的异步回调中获取到service的上下文信息
-    auto serviceCtx = client.GetServiceCtx().lock();
-    if (!serviceCtx) {
-        return;
-    }
-    
-    //service返回结果
-    serviceCtx->resp_.set_message(client.resp_.message());
-    
-    //service关闭
-    serviceCtx->Finish();
-});
 ```
+//初始化Looper
+small_client::Looper::GetInstance()->Init();
+
+//将Watcher Resolver注入到Resolver管理器中
+small_watcher::WatcherResolverFactory::GetInstance()->Init();
+
+//channel不SetResolver时默认是watcher
+channel.Init(errMsg, {"172.16.187.149"}, 2379, "/test");
+if(!errMsg.empty()) {
+    LOG(FATAL) << errMsg;
+}
+```
+
 
 ## 4 TODO list
 * 简化安装过程（去除vcpkg依赖）

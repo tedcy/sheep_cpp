@@ -8,8 +8,8 @@ namespace small_client{
 class Looper: public small_packages::noncopyable{
 public:
     static Looper* GetInstance() {
-        static Looper redisCore;
-        return &redisCore;
+        static Looper instance;
+        return &instance;
     }
     ~Looper() {
         Shutdown();

@@ -119,10 +119,10 @@ public:
              typename ClientStub>
     std::shared_ptr<GrpcClientWithService<
     ClientReqT, ClientRespT, ClientStub, GrpcServiceEvent>> 
-        GetGrpcClient() {
+        GetGrpcClient(GrpcClientChannel<ClientStub> &channel) {
         auto grpcClient = 
             std::make_shared<GrpcClientWithService<ClientReqT, ClientRespT,
-            ClientStub, GrpcServiceEvent>>();
+            ClientStub, GrpcServiceEvent>>(channel);
         grpcClient->Init();
         grpcClient->SetServiceEvent(myself_);
         return grpcClient;

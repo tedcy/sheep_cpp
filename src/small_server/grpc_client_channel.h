@@ -10,9 +10,7 @@ namespace small_server{
 template<typename StubManager>
 class GrpcClientChannel: public small_packages::noncopyable {
 public:
-    static GrpcClientChannel* GetInstance() {
-        static GrpcClientChannel instance_;
-        return &instance_;
+    GrpcClientChannel() {
     }
     void SetLbPolicyType(const std::string &LbPolicyType) {
         lbPolicyType_ = LbPolicyType;
@@ -49,8 +47,6 @@ public:
         return clientManager_.GetClientPool(ok, addr);
     }
 private:
-    GrpcClientChannel() {
-    }
     std::shared_ptr<bool> exist_ = std::make_shared<bool>();
     small_client::ClientManager<typename StubManager::Stub> clientManager_;
     std::unique_ptr<small_client::Balancer> balancer_;

@@ -10,8 +10,8 @@ class BaseClient: public small_packages::noncopyable{
 public:
 using BaseClientOnDone = 
     std::function<void(BaseClient& c, const std::string &errMsg)>;
-    BaseClient(ClientChannel &core) :
-        clientChannel_(core){
+    BaseClient(ClientChannel &channel) :
+        clientChannel_(channel){
     }
     virtual ~BaseClient() {
         //LOG(DEBUG) << "~BaseClient";

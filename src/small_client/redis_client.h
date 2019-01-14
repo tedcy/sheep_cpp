@@ -11,8 +11,8 @@ class RedisClient : public BaseClient{
 public:
 using RedisClientOnDone = 
     std::function<void(RedisClient& c, const std::string &errMsg)>;
-    RedisClient(ClientChannel &core) :
-        BaseClient(core) ,
+    RedisClient(ClientChannel &channel) :
+        BaseClient(channel) ,
         reader_(redisReaderCreate()){
     }
     void DoReq(const std::string &command, RedisClientOnDone onDone) {

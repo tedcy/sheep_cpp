@@ -5,6 +5,7 @@
 #include <string>
 #include <memory>
 #include <thread>
+#include <atomic>
 #include <grpc/grpc.h>
 #include <grpc++/server.h>
 #include <grpc++/server_builder.h>
@@ -43,6 +44,9 @@ public:
         static GrpcLooper instance;
         return &instance;
     }
+    ~GrpcLooper() {
+        Shutdown();
+    }
     void Init(grpc::ServerBuilder &builder) {
         if (scq_) {
             LOG(FATAL) << "GrpcLooper has inited";
@@ -50,6 +54,7 @@ public:
         }
         scq_ = builder.AddCompletionQueue();
         cq_ = scq_;
+        run();
     }
     void Init() {
         if (cq_) {
@@ -57,6 +62,7 @@ public:
             return;
         }
         cq_ = std::make_shared<grpc::CompletionQueue>();
+        run();
     }
     std::shared_ptr<grpc::CompletionQueue> 
         GetCompletionQueue() {
@@ -66,32 +72,27 @@ public:
         GetServerCompletionQueue() {
         return scq_;
     }
-    void Run() {
-        if (!cq_) {
-            LOG(FATAL) << "GrpcLooper is not inited";
-            return;
-        }
-        for (auto i = 0;i < 1;i++) {
-            vs_.push_back(std::thread(
-                [this]() {
-                    void *tag;
-                    bool ok;
-                    while(1) {
-                        cq_->Next(&tag, &ok);
-                        static_cast<GrpcEvent*>(tag)->Proceed(ok);
-                    }
-                }
-            ));
-        }
-    }
-    void Wait() {
-        for (auto &v : vs_) {
-            v.join();
+    void Shutdown() {
+        if (thread_ != nullptr) {
+            stop_ = true;
+            thread_->join();
         }
     }
 private:
+    void run() {
+        thread_ = std::unique_ptr<std::thread>(
+        new std::thread([this]() {
+            void *tag;
+            bool ok;
+            while(!stop_) {
+                cq_->Next(&tag, &ok);
+                static_cast<GrpcEvent*>(tag)->Proceed(ok);
+            }
+        }));
+    }
+    std::atomic_bool stop_ = {false};
     std::shared_ptr<grpc::CompletionQueue> cq_;
     std::shared_ptr<grpc::ServerCompletionQueue> scq_;
-    std::vector<std::thread> vs_;
+    std::unique_ptr<std::thread> thread_;
 };
 }//namespace small_server

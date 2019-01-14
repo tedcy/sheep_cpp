@@ -89,8 +89,6 @@ public:
             auto looperEvent = new GrpcEvent(serverEvent);
             serverEvent->Init(looperEvent);
         }
-        GrpcLooper::GetInstance()->Run();
-        GrpcLooper::GetInstance()->Wait();
         server_->Wait();
     }
 private:
