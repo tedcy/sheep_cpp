@@ -29,17 +29,28 @@ sheep库的[go版本](https://github.com/tedcy/sheep)在这里
 **注意：目前proto文件需要约定接口名称**
 
 可复用基础库
-* small_http_parser http解析库，依赖http-parser
-* small_test        单元测试库，依赖gtest，纯下载安装脚本
-* small_hiredis     redis客户端，依赖hiredis，纯下载安装脚本
-* small_grpc        grpc库的下载安装脚本
-* small_packages    包含一些常用的string,lock,time,block_queue等封装
+* sheep::net  
+基于epoll的异步网络库，用作grpc服务以外的网络实现   
+* small_http_parser  
+http解析库，依赖http-parser  
+* small_test  
+单元测试库，依赖gtest，纯下载安装脚本  
+* small_hiredis  
+redis客户端，依赖hiredis，纯下载安装脚本  
+* small_grpc  
+grpc库的下载安装脚本  
+* small_packages  
+包含一些常用的string,lock,time,block_queue等封装  
 
 extends扩展库
-* log               对glog的封装，解决部分情况打印日志的core问题
-* small_config      解析配置，对toml库的封装
-* small_watcher     异步etcd客户端实现
-* small_pprof       性能测试debug封装，依赖gperf
+* log  
+对glog的封装，解决部分情况打印日志的core问题  
+* small_config  
+解析配置，对toml库的封装  
+* small_watcher  
+异步etcd客户端实现  
+* small_pprof  
+性能测试debug封装，依赖gperf  
 
 ## 2 安装
 
