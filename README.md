@@ -69,6 +69,29 @@ cd sheep_cpp
 vcpkg_path=xxx ./bootstrap.sh
 ```
 
+sheep使用cmake管理依赖关系，使用sheep的项目在CMakeLists.txt中加入以下
+
+```
+set(CMAKE_MODULE_PATH ${SHEEP_PROJECT_SOURCE_DIR}/cmake)
+
+find_package(small_flow REQUIRED)
+include_directories(${TARGET} ${small_flow_INCLUDE_DIRS})
+target_link_libraries(${TARGET} ${small_flow_LIBRARIES})
+
+find_package(small_watcher REQUIRED)
+include_directories(${TARGET} ${small_watcher_INCLUDE_DIRS})
+target_link_libraries(${TARGET} ${small_watcher_LIBRARIES})
+
+find_package(small_config REQUIRED)
+include_directories(${TARGET} ${small_config_INCLUDE_DIRS})
+target_link_libraries(${TARGET} ${small_config_LIBRARIES})
+```
+
+```
+然后cmake指定SHEEP_PROJECT_SOURCE_DIR为sheep_cpp git clone的路径
+cmake -DSHEEP_PROJECT_SOURCE_DIR=xxx
+```
+
 ## 3 使用
 
 ### 3.1 small-client
