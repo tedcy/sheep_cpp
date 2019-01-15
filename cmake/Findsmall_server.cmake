@@ -17,24 +17,12 @@ ELSE (small_server_FOUND)
     ENDIF (small_server_FIND_REQUIRED)
 ENDIF (small_server_FOUND)
 
-find_package(small_http_parser REQUIRED)
-SET(small_server_INCLUDE_DIRS ${small_server_INCLUDE_DIRS} ${small_http_parser_INCLUDE_DIRS})
-SET(small_server_LIBRARIES ${small_server_LIBRARIES} ${small_http_parser_LIBRARIES})
-
-find_package(net REQUIRED)
-SET(small_server_INCLUDE_DIRS ${small_server_INCLUDE_DIRS} ${net_INCLUDE_DIRS})
-SET(small_server_LIBRARIES ${small_server_LIBRARIES} ${net_LIBRARIES})
+find_package(small_client REQUIRED)
+SET(small_server_INCLUDE_DIRS ${small_server_INCLUDE_DIRS} ${small_client_INCLUDE_DIRS})
+SET(small_server_LIBRARIES ${small_server_LIBRARIES} ${small_client_LIBRARIES})
 
 find_package(small_grpc REQUIRED)
 SET(small_server_INCLUDE_DIRS ${small_server_INCLUDE_DIRS} ${small_grpc_INCLUDE_DIRS})
 SET(small_server_LIBRARIES ${small_server_LIBRARIES} ${small_grpc_LIBRARIES})
-
-find_package(small_hiredis REQUIRED)
-SET(small_server_INCLUDE_DIRS ${small_server_INCLUDE_DIRS} ${small_hiredis_INCLUDE_DIRS})
-SET(small_server_LIBRARIES ${small_server_LIBRARIES} ${small_hiredis_LIBRARIES})
-
-find_package(log REQUIRED)
-SET(small_server_INCLUDE_DIRS ${small_server_INCLUDE_DIRS} ${log_INCLUDE_DIRS})
-SET(small_server_LIBRARIES ${small_server_LIBRARIES} ${log_LIBRARIES})
 
 SET(small_server_LIBRARIES ${small_server_LIBRARIES} libz.a)

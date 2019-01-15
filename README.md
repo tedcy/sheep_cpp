@@ -8,7 +8,7 @@ sheep库的[go版本](https://github.com/tedcy/sheep)在这里
 - [2 安装](#2-)
 - [3 使用](#3-)
     - [3.1 small-client](#31-small-client)
-        - [3.1.1 http-client:](#311-http-client)
+        - [3.1.1 http-client](#311-http-client)
         - [3.1.2 redis-client](#312-redis-client)
     - [3.2 small-server](#32-small-server)
         - [3.2.1 grpc-client](#321-grpc-client)
@@ -45,13 +45,15 @@ grpc库的下载安装脚本
 
 extends扩展库
 * log  
-对glog的封装，解决部分情况打印日志的core问题  
+对glog的封装，解决glog打印日志core问题  
 * small_config  
 解析配置，对toml库的封装  
 * small_watcher  
 异步etcd客户端实现  
 * small_pprof  
 性能测试debug封装，依赖gperf  
+* small_flow  
+责任链模式下对small\_server的封装，适合单个复杂逻辑的处理  
 
 ## 2 安装
 
@@ -86,7 +88,7 @@ small-client是一个异步客户端的基础库，包含了异步的http和redi
 都至少需要传入ClientChannel参数  
 和本次通信相关的配置参数都需要在这里设定  
 
-#### 3.1.1 http-client:
+#### 3.1.1 http-client
 
 Looper,ClientChannel部分:
 
@@ -355,8 +357,11 @@ channel.Init(errMsg, {"172.16.187.149"}, 2379, "/test");
 ## 4 参考例子
 
 [http\_client](https://github.com/tedcy/sheep_cpp/blob/master/src/small_client/test/http_client/main.cpp)
+
 [redis\_client](https://github.com/tedcy/sheep_cpp/blob/master/src/small_client/test/redis_client/main.cpp)
-[grpc\_client\ with\ etcd](https://github.com/tedcy/sheep_cpp/blob/master/src/small_server/test/grpc_client/main.cpp)
+
+[grpc\_client\_with\_etcd](https://github.com/tedcy/sheep_cpp/blob/master/src/small_server/test/grpc_client/main.cpp)
+
 [grpc\_server\_with\_etcd](https://github.com/tedcy/sheep_cpp/blob/master/src/small_server/test/server/main.cpp)
 
 ## 5 TODO list

@@ -20,6 +20,7 @@ small_pkgs_arr=(${small_pkgs_arr[@]} "$sheep_pkg_path/src/net")
 small_pkgs_arr=(${small_pkgs_arr[@]} "$sheep_pkg_path/src/small_client")
 small_pkgs_arr=(${small_pkgs_arr[@]} "$sheep_pkg_path/src/extends/small_watcher")
 small_pkgs_arr=(${small_pkgs_arr[@]} "$sheep_pkg_path/src/small_server")
+small_pkgs_arr=(${small_pkgs_arr[@]} "$sheep_pkg_path/src/extends/small_flow")
 
 if [[ $clean == "clean" ]]; then
     for v in ${small_pkgs_arr[@]};do
@@ -39,6 +40,10 @@ if [[ $clean == "clean" ]]; then
         export cmakeFound=($(find . -maxdepth 1 -name CMakeLists.txt))
         if ((${#cmakeFound[@]} != 0));then
             $sheep_pkg_path/init_tools/build.sh
+        fi
+        export buildFound=($(find build -maxdepth 1 -name build))
+        if ((${#buildFound[@]} == 0));then
+            mkdir build
         fi
         echo "----------$v building end------------------"
         echo "-------------------------------------------"

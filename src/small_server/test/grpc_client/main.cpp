@@ -10,6 +10,7 @@ small_server::GrpcClientChannel<helloworld::Greeter> channel;
 void Init(std::string &errMsg) {
     small_client::Looper::GetInstance()->Init();
     small_watcher::WatcherResolverFactory::GetInstance()->Init();
+    channel.SetResolverType("watcher");
     channel.Init(errMsg, {"172.16.187.149"}, 2379, "/test");
 }
 
@@ -38,4 +39,5 @@ int main() {
         LOG(FATAL) << errMsg;
     }
     LOG(INFO) << "ok";
+    std::this_thread::sleep_for(std::chrono::seconds(100));
 }
