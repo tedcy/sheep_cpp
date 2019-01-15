@@ -37,6 +37,8 @@ if [[ $cmake_path == "" ]];then
 fi
 
 echo "export sheep_pkg_path=\"$sheep_pkg_path\"" > init_tools/env.sh
+echo "export protoc_path=\"$sheep_pkg_path/src/extends/small_grpc/grpc/bins/opt/protobuf/protoc\"" >> init_tools/env.sh
+echo "export grpc_cpp_plugin_path=\"$sheep_pkg_path/src/extends/small_grpc/grpc/bins/opt/grpc_cpp_plugin\"" >> init_tools/env.sh
 echo "export vcpkg_path=\"$vcpkg_path\"" >> init_tools/env.sh
 echo "export cmake_path=\"$cmake_path\"" >> init_tools/env.sh
 if [[ $1 == "debug" ]];then
