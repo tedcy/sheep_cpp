@@ -51,6 +51,6 @@ private:
     small_client::ClientManager<typename StubManager::Stub> clientManager_;
     std::unique_ptr<small_client::Balancer> balancer_;
     std::string lbPolicyType_ = "random";
-    std::string resolverType_ = "watcher";
+    std::string resolverType_ = "string";
 };
 }

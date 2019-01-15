@@ -27,6 +27,7 @@ int main() {
 
     //Client part
     small_watcher::WatcherResolverFactory::GetInstance()->Init();
+    channel.SetResolverType("watcher");
     channel.Init(errMsg, {"172.16.187.149"}, 2379, "/test");
     if(!errMsg.empty()) {
         LOG(FATAL) << errMsg;

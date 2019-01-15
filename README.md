@@ -16,7 +16,8 @@ sheep库的[go版本](https://github.com/tedcy/sheep)在这里
         - [3.2.3 client-in-grpc-server](#323-client-in-grpc-server)
         - [3.2.4 服务端在etcd上添加临时节点](#324-etcd)
         - [3.2.5 客户端使用etcd服务发现](#325-etcd)
-- [4 TODO list](#4-todo-list)
+- [4 参考例子](#4-)
+- [5 TODO list](#5-todo-list)
 
 ## 1 功能
 * grpc的回调风格封装（原始风格烧脑且不好用，原始风格说明文档TODO）
@@ -74,7 +75,7 @@ small-client是一个异步客户端的基础库，包含了异步的http和redi
 
 用户需要操作的类有三个，Looper，ClientChannel，Client    
 * Looper  
-事件循环的抽象，目前暂时都是单例    
+事件循环的抽象，由于grpc库的限制，目前暂时都是单例    
 * ClientChannel  
 客户端连接池的抽象，small\_client的是ClientChannel以及下面small\_server的是GrpcClientChannel  
 都需要传入Looper参数。  
@@ -343,15 +344,22 @@ small_client::Looper::GetInstance()->Init();
 //将Watcher Resolver注入到Resolver管理器中
 small_watcher::WatcherResolverFactory::GetInstance()->Init();
 
-//channel不SetResolver时默认是watcher
+//创建任意一个channel，略
+
+//设置resolver类型为"watcher"
+channel.SetResolverType("watcher");
 channel.Init(errMsg, {"172.16.187.149"}, 2379, "/test");
-if(!errMsg.empty()) {
-    LOG(FATAL) << errMsg;
-}
+//检查错误
 ```
 
+## 4 参考例子
 
-## 4 TODO list
+[http\_client](https://github.com/tedcy/sheep_cpp/blob/master/src/small_client/test/http_client/main.cpp)
+[redis\_client](https://github.com/tedcy/sheep_cpp/blob/master/src/small_client/test/redis_client/main.cpp)
+[grpc\_client\ with\ etcd](https://github.com/tedcy/sheep_cpp/blob/master/src/small_server/test/grpc_client/main.cpp)
+[grpc\_server\_with\_etcd](https://github.com/tedcy/sheep_cpp/blob/master/src/small_server/test/server/main.cpp)
+
+## 5 TODO list
 * 简化安装过程（去除vcpkg依赖）
 * 取消部分类的单例
 * 取消grpc限制service的接口名称为Handler的限制
