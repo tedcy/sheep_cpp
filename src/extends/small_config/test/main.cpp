@@ -9,12 +9,12 @@ int main() {
         LOG(FATAL) << errMsg;
     }
     std::string Addr;
-    uint32_t Port;
-    Addr = config->GetString("Addr", errMsg);
+    uint64_t Port;
+    config->Get(errMsg, "Addr", Addr);
     if (errMsg != "") {
         LOG(FATAL) << errMsg;
     }
-    Port = config->GetInt("Port", errMsg);
+    config->Get(errMsg, "Port", Port);
     if (errMsg != "") {
         LOG(FATAL) << errMsg;
     }

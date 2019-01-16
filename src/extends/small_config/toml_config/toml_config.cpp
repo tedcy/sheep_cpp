@@ -17,30 +17,32 @@ void TomlConfig::Load(const std::string &name,
     }
     data_ = pr.value;
 }
-uint64_t TomlConfig::GetInt(const std::string &key, std::string &errMsg) {
+void TomlConfig::Get(std::string &errMsg, const std::string &key, uint64_t &value) {
     auto v = data_.find(key);
     if (v) {
         if (v->is<int>()) {
-            return v->as<int>();
+            value = v->as<int>();
+            return;
         }else {
             errMsg = "key "+ key + " value is string";
         }
     }else {
         errMsg = "key "+ key + " load failed";
     }
-    return 0;
+    return;
 }
-std::string TomlConfig::GetString(const std::string &key, std::string &errMsg) {
+void TomlConfig::Get(std::string &errMsg, const std::string &key, std::string &value) {
     auto v = data_.find(key);
     if (v) {
         if (v->is<std::string>()) {
-            return v->as<std::string>();
+            value = v->as<std::string>();
+            return;
         }else {
             errMsg = "key "+ key + " value is int";
         }
     }else {
         errMsg = "key "+ key + " load failed";
     }
-    return "";
+    return;
 }
 }
