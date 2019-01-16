@@ -1,6 +1,6 @@
 #pragma once
 
-#include "small_config.h"
+#include "small_config_interface.h"
 #include <map>
 
 #include "toml/toml.h"

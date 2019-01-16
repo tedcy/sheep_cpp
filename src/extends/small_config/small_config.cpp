@@ -1,4 +1,4 @@
-#include "small_config_factory.h"
+#include "small_config.h"
 #include "toml_config.h"
 
 namespace small_config{

@@ -1,4 +1,4 @@
-#include "small_config_factory.h"
+#include "small_config.h"
 #include "log.h"
 
 int main() {
