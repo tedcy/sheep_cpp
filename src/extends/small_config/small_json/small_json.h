@@ -22,14 +22,27 @@ public:
     }
     template <typename T>
     void Encode(const char* name, T &element) {
-        auto nowObj = nowObjs_.top();
-        nowObj->AddMember(rapidjson::StringRef(name), element, allocator_);
+        EncodeImp(name, element, std::is_base_of<JsonEncodeElementI, T>());
     }
     void GetResult(std::string &out) {
         document_.Accept(*writer_);
         out = strbuf_.GetString();
     }
 private:
+    template <typename T> 
+    inline void EncodeImp(const char* name, T& element, std::true_type) {
+        auto nowObj = nowObjs_.top();
+        rapidjson::Value t_obj(rapidjson::kObjectType);
+        nowObjs_.push(&t_obj);
+        element.Accept(*this);
+        nowObjs_.pop();
+        nowObj->AddMember(rapidjson::StringRef(name), t_obj, allocator_);
+    }
+    template <typename T> 
+    inline void EncodeImp(const char* name, T& element, std::false_type) {
+        auto nowObj = nowObjs_.top();
+        nowObj->AddMember(rapidjson::StringRef(name), element, allocator_);
+    }
     rapidjson::Document::AllocatorType      allocator_;
     std::stack<rapidjson::Value*>           nowObjs_;
 
@@ -58,15 +71,7 @@ inline void JsonEncodeVisitor::Encode(const char* name, std::string& element) {
     nowObj->AddMember(rapidjson::StringRef(name),
         rapidjson::StringRef(element.c_str()), allocator_);
 }
-template <> 
-inline void JsonEncodeVisitor::Encode(const char* name, JsonEncodeElementI& element) {
-    auto nowObj = nowObjs_.top();
-    rapidjson::Value t_obj(rapidjson::kObjectType);
-    nowObjs_.push(&t_obj);
-    element.Accept(*this);
-    nowObjs_.pop();
-    nowObj->AddMember(rapidjson::StringRef(name), t_obj, allocator_);
-}
+
 class JsonDecodeVisitor;
 using JsonDecodeElementI = DecodeElementI<JsonDecodeVisitor>;
 class JsonDecodeVisitor {
@@ -83,6 +88,24 @@ public:
     
     template <typename T>
     void Decode(const char* name, T& element) {
+        DecodeImp(name, element, std::is_base_of<JsonDecodeElementI, T>());
+    }
+private:
+    template <typename T> 
+    inline void DecodeImp(const char* name, T& element, std::true_type) {
+        auto nowObj = nowObjs_.top();
+        if(name && nowObj->IsObject() && nowObj->HasMember(name)){
+            if(!(*nowObj)[name].IsObject())
+                throw std::string("json wrong fomat object: ") + name;
+            nowObjs_.push(&((*nowObj)[name]));
+            element.Accept(*this);
+            nowObjs_.pop();
+        }else{
+            throw std::string("json has not a member of ") + name;
+        }
+    }
+    template <typename T> 
+    inline void DecodeImp(const char* name, T& element, std::false_type) {
         auto nowObj = nowObjs_.top();
         if(name && nowObj->IsObject() && nowObj->HasMember(name)){
             if ((*nowObj)[name].Is<T>()) {
@@ -93,7 +116,6 @@ public:
         }else
             throw std::string("json has not a member of ") + name;
     }
-private:
     std::string                             in_;
     rapidjson::Document::AllocatorType      allocator_;
     std::stack<rapidjson::Value*>           nowObjs_;
@@ -128,19 +150,6 @@ inline void JsonDecodeVisitor::Decode(const char* name, std::string& element) {
             throw std::string(name) + " is not a string";
     }else
         throw std::string("json has not a member of ") + name;
-}
-template <> 
-inline void JsonDecodeVisitor::Decode(const char* name, JsonDecodeElementI& element) {
-    auto nowObj = nowObjs_.top();
-    if(name && nowObj->IsObject() && nowObj->HasMember(name)){
-        if(!(*nowObj)[name].IsObject())
-            throw std::string("json wrong fomat object: ") + name;
-        nowObjs_.push(&((*nowObj)[name]));
-        element.Accept(*this);
-        nowObjs_.pop();
-    }else{
-        throw std::string("json has not a member of ") + name;
-    }
 }
 }
 }

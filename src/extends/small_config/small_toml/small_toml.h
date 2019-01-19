@@ -19,8 +19,7 @@ public:
     }
     template <typename T>
     void Encode(const char* name, T &element) {
-        auto nowObj = nowObjs_.top();
-        nowObj->setChild(name, element);
+        EncodeImp(name, element, std::is_base_of<TomlEncodeElementI, T>());
     }
     void GetResult(std::string &out) {
         std::stringstream ss;
@@ -28,6 +27,20 @@ public:
         out = ss.str();
     }
 private:
+    template <typename T>
+    inline void EncodeImp(const char* name, T &element, std::true_type) {
+        auto nowObj = nowObjs_.top();
+        toml::Value obj;
+        nowObjs_.push(&obj);
+        element.Accept(*this);
+        nowObjs_.pop();
+        nowObj->setChild(name, obj);
+    }
+    template <typename T>
+    inline void EncodeImp(const char* name, T &element, std::false_type) {
+        auto nowObj = nowObjs_.top();
+        nowObj->setChild(name, element);
+    }
     toml::Value rootObj_;
     std::stack<toml::Value*> nowObjs_;
 };
@@ -46,15 +59,6 @@ template <>
 inline void TomlEncodeVisitor::Encode(const char* name, uint64_t &element) {
     int64_t element1 = element;
     Encode(name, element1);
-}
-template <>
-inline void TomlEncodeVisitor::Encode(const char* name, TomlEncodeElementI& element) {
-    auto nowObj = nowObjs_.top();
-    toml::Value obj;
-    nowObjs_.push(&obj);
-    element.Accept(*this);
-    nowObjs_.pop();
-    nowObj->setChild(name, obj);
 }
 
 class TomlDecodeVisitor;
@@ -76,6 +80,21 @@ public:
     }
     template <typename T>
     void Decode(const char* name, T &element) {
+        DecodeImp(name, element, std::is_base_of<TomlDecodeElementI, T>());
+    }
+private:
+    template<typename T>
+    inline void DecodeImp(const char* name, T& element, std::true_type) {
+        auto nowObj = nowObjs_.top();
+        auto v = nowObj->find(name);
+        if (v) {
+            nowObjs_.push(v);
+            element.Accept(*this);
+            nowObjs_.pop();
+        }
+    }
+    template<typename T>
+    inline void DecodeImp(const char* name, T& element, std::false_type) {
         auto nowObj = nowObjs_.top();
         auto v = nowObj->find(name);
         if (v) {
@@ -84,7 +103,6 @@ public:
             }
         }
     }
-private:
     std::stringstream ss_;
     std::unique_ptr<toml::ParseResult> result_;
     const toml::Value *rootObj_;
@@ -107,16 +125,6 @@ inline void TomlDecodeVisitor::Decode(const char* name, uint64_t &element) {
     int64_t element1 = element;
     Decode(name, element1);
     element = element1;
-}
-template <>
-inline void TomlDecodeVisitor::Decode(const char* name, TomlDecodeElementI& element) {
-    auto nowObj = nowObjs_.top();
-    auto v = nowObj->find(name);
-    if (v) {
-        nowObjs_.push(v);
-        element.Accept(*this);
-        nowObjs_.pop();
-    }
 }
 }
 }
