@@ -4,11 +4,29 @@
 #include <map>
 
 namespace small_config{
-class ConfigI{
+/*
+class VisitorI{
 public:
-    virtual ~ConfigI() = default;
-    virtual void Load(const std::string &name, std::string &errMsg) = 0;
-    virtual void Get(std::string &errMsg, const std::string &key, std::string &value) = 0;
-    virtual void Get(std::string &errMsg, const std::string &key, uint64_t &value) = 0;
+    void Encode(const char* name, ElementI& element);
+    void Encode(const char* name, uint64_t element);
+    void Encode(const char* name, int64_t element);
+    void Encode(const char* name, uint32_t element);
+    void Encode(const char* name, int32_t element);
+    void Encode(const char* name, bool element);
+    void Encode(const char* name, std::vector<T> &element);
+};*/
+namespace internal{
+template<typename Visitor>
+class EncodeElementI{
+public:
+    virtual ~EncodeElementI() = default;
+    virtual void Accept(Visitor &v) = 0;
 };
+template<typename Visitor>
+class DecodeElementI{
+public:
+    virtual ~DecodeElementI() = default;
+    virtual void Accept(Visitor &v) = 0;
+};
+}
 }
