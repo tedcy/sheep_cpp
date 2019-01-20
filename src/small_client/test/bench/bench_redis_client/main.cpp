@@ -29,7 +29,8 @@ void DoReq(std::string &errMsg, small_client::ClientChannel &channel,
             return;
         }
         bool ok;
-        auto resp = client.GetResp(ok);
+        std::string resp;
+        client.GetResp(ok, resp);
         if (!ok) {
             LOG(WARNING) << "not exist";
             clients.erase(clientPtr);

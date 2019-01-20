@@ -5,7 +5,7 @@ std::shared_ptr<small_client::RedisClient> DoReq(std::string &errMsg,
         small_client::ClientChannel &channel) {
     auto client = std::make_shared<small_client::RedisClient>(channel);
     client->SetTimeoutMs(1);
-    client->DoReq("GET A", 
+    client->DoReq("HGETALL test", 
     [](small_client::RedisClient &client, 
         const std::string &errMsg) {
         if (!errMsg.empty()) {
@@ -13,12 +13,15 @@ std::shared_ptr<small_client::RedisClient> DoReq(std::string &errMsg,
             return;
         }
         bool ok;
-        auto resp = client.GetResp(ok);
+        std::vector<std::string> resps;
+        client.GetResp(ok, resps);
         if (!ok) {
             LOG(WARNING) << "not exist";
             return;
         }
-        LOG(INFO) << resp;
+        for (auto &resp: resps) {
+            LOG(INFO) << resp;
+        }
     });
     return client;
 }

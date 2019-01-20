@@ -30,9 +30,21 @@ using RedisClientOnDone =
             freeReplyObject(reply_);
         }
     }
-    std::string GetResp(bool &ok) {
-        ok = ok_;
-        return value_;
+    void GetResp(bool &ok, std::string &resp) {
+        if (respType_ != REDIS_REPLY_STRING) {
+            ok = false;
+            return;
+        }
+        ok = true;
+        resp = value_;
+    }
+    void GetResp(bool &ok, std::vector<std::string> &resp) {
+        if (respType_ != REDIS_REPLY_ARRAY) {
+            ok = false;
+            return;
+        }
+        ok = true;
+        resp = arrayValues_;
     }
 private:
     void ReqPush(std::string &errMsg, sheep::net::TcpConnection &connection) override {
@@ -70,11 +82,19 @@ private:
             errMsg = "redisReply return REDIS_REPLY_ERROR";
             return;
         }
+        respType_ = r->type;
         if (r->type == REDIS_REPLY_NIL) {
-            ok_ = false;
             return;
         }
-        value_.append(r->str, r->len);
+        switch (r->type) {
+        case REDIS_REPLY_ARRAY:
+            for (int i = 0;i < r->elements;i++) {
+                arrayValues_.push_back(r->element[i]->str);
+            }
+            break;
+        default:
+            value_.append(r->str, r->len);
+        }
     }
     //req
     std::string command_;
@@ -84,7 +104,8 @@ private:
     redisReader *reader_ = nullptr;
     void *reply_ = nullptr;
     std::string value_;
-    bool ok_ = true;
+    std::vector<std::string> arrayValues_;
+    int respType_ = 0;
 
     std::shared_ptr<sheep::net::ClientPool> clientPool_;
     std::shared_ptr<sheep::net::Client> client_;
