@@ -115,6 +115,13 @@ public:
         httpClient->SetServiceEvent(myself_);
         return httpClient;
     }
+    std::shared_ptr<small_client::RedisClientWithService<GrpcServiceEvent>> GetRedisClient(
+            small_client::ClientChannel &channel) {
+        auto redisClient = std::make_shared<small_client::RedisClientWithService<GrpcServiceEvent>>(
+                channel);
+        redisClient->SetServiceEvent(myself_);
+        return redisClient;
+    }
     template <typename ClientReqT, typename ClientRespT,
              typename ClientStub>
     std::shared_ptr<GrpcClientWithService<

@@ -97,7 +97,9 @@ private:
         }
     }
     //req
+protected:
     std::string command_;
+private:
     char *cmdBuf_ = nullptr;
     int64_t cmdBufLen_ = 0;
     //resp
@@ -110,5 +112,38 @@ private:
     std::shared_ptr<sheep::net::ClientPool> clientPool_;
     std::shared_ptr<sheep::net::Client> client_;
     RedisClientOnDone onDone_;
+};
+template<typename ServiceEventT>
+class RedisClientWithService: public RedisClient{
+public:
+    RedisClientWithService(ClientChannel &channel):
+        RedisClient(channel) {
+    }
+    void DoReq(const std::string &command, 
+            std::function<void(RedisClientWithService&, const std::string&)> onDone) {
+        command_ = command;
+        //FIXME: auto is invliad, wtf need this line???
+        std::function<void(RedisClientWithService&, const std::string&)> realOnDone;
+        realOnDone = [this, onDone](RedisClientWithService&, const std::string &errMsg) {
+            auto realEvent = serviceEvent_.lock();
+            if (!realEvent) {
+                return;
+            }
+            auto lock = realEvent->GetLock();
+            small_lock::UniqueGuard uniqueLock (lock);
+            onDone(*this, errMsg);
+        };
+        this->doReq<RedisClientWithService>(realOnDone);
+    }
+    std::weak_ptr<ServiceEventT> GetServiceEvent() {
+        return serviceEvent_;
+    }
+private:
+    friend ServiceEventT;
+    void SetServiceEvent(std::shared_ptr<ServiceEventT> serviceEvent) {
+        serviceEvent_ = serviceEvent;
+    }
+    //association
+    std::weak_ptr<ServiceEventT> serviceEvent_;
 };
 }
