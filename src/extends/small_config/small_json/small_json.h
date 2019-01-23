@@ -100,8 +100,6 @@ private:
             nowObjs_.push(&((*nowObj)[name]));
             element.Accept(*this);
             nowObjs_.pop();
-        }else{
-            throw std::string("json has not a member of ") + name;
         }
     }
     template <typename T> 
@@ -113,8 +111,7 @@ private:
             }
             else
                 throw std::string(name) + " is invalid";
-        }else
-            throw std::string("json has not a member of ") + name;
+        }
     }
     std::string                             in_;
     rapidjson::Document::AllocatorType      allocator_;
@@ -148,8 +145,7 @@ inline void JsonDecodeVisitor::Decode(const char* name, std::string& element) {
         }
         else
             throw std::string(name) + " is not a string";
-    }else
-        throw std::string("json has not a member of ") + name;
+    }
 }
 }
 }
