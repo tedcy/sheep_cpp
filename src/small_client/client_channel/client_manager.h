@@ -52,21 +52,17 @@ using MakeClientHandlerT =
     }
     void AddrPort2addrAndPort(bool &ok, const std::string &addrPort, std::string &addr, int &port) {
         auto list = small_strings::split(addrPort, ':');
-        if (!list) {
-            ok = false;
-            return;
-        }
-        if (list->empty()) {
+        if (list.empty()) {
             ok = false;
             return;
         }
         port = -1;
-        port = std::stoi(*list->rbegin());
+        port = std::stoi(*list.rbegin());
         if (port == -1) {
             ok = false;
         }
         ok = true;
-        addr = *list->begin();
+        addr = *list.begin();
     }
 private:
     void addAddr(std::string &errMsg, const std::string &addrPort) {
