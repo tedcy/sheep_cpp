@@ -30,16 +30,45 @@ using RedisClientOnDone =
             freeReplyObject(reply_);
         }
     }
-    void GetResp(bool &ok, std::string &resp) {
+    void GetResp(std::string &error, bool &ok, int64_t &resp) {
+        if (respType_ == REDIS_REPLY_NIL) {
+            ok = false;
+            return;
+        }
+        if (respType_ != REDIS_REPLY_INTEGER && respType_ != REDIS_REPLY_STRING) {
+            error = "invalid resp type";
+            ok = false;
+            return;
+        }
+        ok = true;
+        try{
+            resp = std::stoll(value_);
+        }catch (std::exception e) {
+            error = e.what();
+            ok = false;
+            return;
+        }
+    }
+    void GetResp(std::string &error, bool &ok, std::string &resp) {
+        if (respType_ == REDIS_REPLY_NIL) {
+            ok = false;
+            return;
+        }
         if (respType_ != REDIS_REPLY_STRING) {
+            error = "invalid resp type";
             ok = false;
             return;
         }
         ok = true;
         resp = value_;
     }
-    void GetResp(bool &ok, std::vector<std::string> &resp) {
+    void GetResp(std::string &error, bool &ok, std::vector<std::string> &resp) {
+        if (respType_ == REDIS_REPLY_NIL) {
+            ok = false;
+            return;
+        }
         if (respType_ != REDIS_REPLY_ARRAY) {
+            error = "invalid resp type";
             ok = false;
             return;
         }
@@ -82,6 +111,7 @@ private:
             errMsg = "redisReply return REDIS_REPLY_ERROR";
             return;
         }
+        LOG(INFO) << r->type;
         respType_ = r->type;
         if (r->type == REDIS_REPLY_NIL) {
             return;
