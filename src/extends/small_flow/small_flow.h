@@ -27,6 +27,12 @@ public:
     virtual void Trace(void *req,
             void *resp) {};
 };
+template <typename ServiceEventT, typename T, typename Visitor>
+class PloyVisitable :public Ploy<ServiceEventT> {
+    void Trace(void *req, void *resp) override {
+        Visitor::Visit(static_cast<T&>(*this), req, resp);
+    }
+};
 template <typename ServiceEventT>
 class FlowService {
 public:
