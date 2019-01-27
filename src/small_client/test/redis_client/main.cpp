@@ -14,7 +14,8 @@ std::shared_ptr<small_client::RedisClient> DoReq(std::string &errMsg,
         }
         bool ok;
         std::vector<std::string> resps;
-        client.GetResp(ok, resps);
+        std::string errMsg1;
+        client.GetResp(errMsg1, ok, resps);
         if (!ok) {
             LOG(WARNING) << "not exist";
             return;

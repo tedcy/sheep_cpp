@@ -17,7 +17,7 @@ inline std::list<std::string>
         if (finish) {
             break;
         }
-        resultS.emplace_back(temp);
+        resultS.push_back(std::move(temp));
     }
     return resultS;
 }

@@ -36,7 +36,7 @@ void test_lock() {
 void test_strings() {
     std::string str{"1,2,3,4,5,6"};
     auto ss = small_strings::split(str, ',');
-    for(auto &s: *ss) {
+    for(auto &s: ss) {
         LOG(INFO) << s;
     }
 }

@@ -69,8 +69,7 @@ public:
         myself_ = this->shared_from_this();
     }
     void Proceed(bool ok) override{
-        auto lock = lock_;
-        small_lock::UniqueGuard uniqueLock (lock);
+        small_lock::UniqueGuard uniqueLock (lock_);
         switch (status_) {
         case PROCESS: {
             LOG(DEBUG) << "PROCESS " << GetTraceId();
