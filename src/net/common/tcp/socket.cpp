@@ -74,6 +74,8 @@ void Socket::Listen(std::string &errMsg) {
 }
 void Socket::Connect(std::string &errMsg,
         const std::string &addr, int port) {
+    addr_ = addr;
+    port_ = port;
     sockaddr_in saddr;
     initSaddr(&saddr, addr, port);
     auto result = ::connect(fd_, (struct sockaddr *)&saddr,
@@ -94,10 +96,16 @@ void Socket::CheckConnect(std::string &errMsg) {
     auto result = getsockopt(fd_, SOL_SOCKET, SO_ERROR,
             &error, &len);
     if (result < 0 || error) {
-        if (result == 0) {
+        if (error) {
             result = error;
         }
-        formatErrMsg(errMsg, "setsockopt SO_ERROR", result);
+        if (!addr_.empty()) {
+            formatErrMsg(errMsg, 
+                    addr_ + ":" + std::to_string(port_) + 
+                    " connected", result);
+            return;
+        }
+        formatErrMsg(errMsg, "getsockopt SO_ERROR", result);
         return;
     }
     return;

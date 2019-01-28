@@ -48,6 +48,10 @@ private:
     static const int BackLog_ = 522;
 
     int fd_;
+private:
+    //error information
+    std::string addr_;
+    int port_;
 };
 }
 }
