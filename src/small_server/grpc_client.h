@@ -74,7 +74,17 @@ public:
         GrpcClient<ReqT, RespT, Stub>(channel){
     }
     void DoReq(std::function<void(GrpcClientWithService&, const std::string&)> onDone) {
-        this->template doReq<GrpcClientWithService>(onDone);
+        std::function<void(GrpcClientWithService&, const std::string&)> realOnDone;
+        realOnDone = [this, onDone](GrpcClientWithService&, const std::string &errMsg) {
+            auto realEvent = serviceEvent_.lock();
+            if (!realEvent) {
+                return;
+            }
+            auto lock = realEvent->GetLock();
+            small_lock::UniqueGuard uniqueLock (lock);
+            onDone(*this, errMsg);
+        };
+        this->template doReq<GrpcClientWithService>(realOnDone);
     }
     std::weak_ptr<ServiceEventT> GetServiceEvent() {
         return serviceEvent_;
