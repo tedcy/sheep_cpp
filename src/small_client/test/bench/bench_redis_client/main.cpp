@@ -2,7 +2,7 @@
 #include "log.h"
 #include "small_client.h"
 #include "small_packages.h"
-#include "small_pprof.h"
+//#include "small_pprof.h"
 
 void DoReq(std::string &errMsg, small_client::ClientChannel &channel,
         std::set<std::shared_ptr<small_client::RedisClient>> &clients,
@@ -44,7 +44,7 @@ void DoReq(std::string &errMsg, small_client::ClientChannel &channel,
 }
 
 int main() {
-    ghttpd();
+    //ghttpd();
     std::string errMsg;
     small_client::Looper::GetInstance()->Init();
     small_client::ClientChannel channel(

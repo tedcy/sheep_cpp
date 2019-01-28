@@ -1,7 +1,7 @@
 set -e
 
 #test if build.sh runned
-path=`find . -name libgmock.a`
+path=`find build -maxdepth 1 -name libgmock.a`
 if [[ $path != "" ]];then
     exit 0
 fi
