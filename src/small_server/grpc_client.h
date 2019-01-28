@@ -19,10 +19,6 @@ public:
     std::string GetTraceId() {
         return event_->GetTraceId();
     }
-    void Init() {
-        event_ = new GrpcEvent(this->shared_from_this());
-        LOG(DEBUG) << "CREATE " << GetTraceId();
-    }
     void Proceed(bool ok) {
         LOG(DEBUG) << "FINISH " << GetTraceId();
         std::string errMsg;
@@ -51,6 +47,8 @@ protected:
             onDone_(*this, "stub is nullptr");
             return;
         }
+        event_ = new GrpcEvent(this->shared_from_this());
+        LOG(DEBUG) << "CREATE " << GetTraceId();
         auto cq = GrpcLooper::GetInstance()->GetCompletionQueue().get();
         responseReader_ = stub->PrepareAsyncHandler(
             &grpcContext_, req_, cq);

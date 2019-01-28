@@ -18,7 +18,6 @@ void DoReq(std::string &errMsg) {
     using GrpcClientTest = small_server::GrpcClient<helloworld::HelloRequest, 
         helloworld::HelloReply, helloworld::Greeter>;
     auto client = std::make_shared<GrpcClientTest>(channel);
-    client->Init();
     client->req_.set_name("proxy");
     client->DoReq([](GrpcClientTest &client, 
     const std::string &errMsg) {

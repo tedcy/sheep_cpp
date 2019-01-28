@@ -129,7 +129,6 @@ public:
         auto grpcClient = 
             std::make_shared<GrpcClientWithService<ClientReqT, ClientRespT,
             ClientStub, GrpcServiceEvent>>(channel);
-        grpcClient->Init();
         grpcClient->SetServiceEvent(myself_);
         return grpcClient;
     }
