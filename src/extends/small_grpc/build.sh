@@ -1,7 +1,7 @@
 set -e
 
 #test if build.sh runned
-path=`find . -name libprotobuf.a`
+path=`find build -maxdepth 1 -name libprotobuf.a`
 if [[ $path != "" ]];then
     exit 0
 fi
@@ -11,6 +11,7 @@ path=`find . -name grpc`
 if [[ $path == "" ]];then
     git clone https://github.com/grpc/grpc
     cd grpc
+    git checkout v1.17.2
     git submodule update --init
     make -j8
     cd -
