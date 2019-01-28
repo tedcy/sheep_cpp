@@ -61,10 +61,14 @@ inline char *url_decode(const char *str) {
 //TODO can be more effective
 inline std::string UrlEncode(const std::string &str) {
     char *c = c_version::url_encode(str.c_str());
-    return std::string(c, std::strlen(c));
+    std::string s(c, std::strlen(c));
+    free(c);
+    return s;
 }
 inline std::string UrlDecode(const std::string &str) {
     char *c = c_version::url_decode(str.c_str());
-    return std::string(c, std::strlen(c));
+    std::string s(c, std::strlen(c));
+    free(c);
+    return s;
 }
 }
