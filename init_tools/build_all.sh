@@ -33,6 +33,10 @@ if [[ $clean == "clean" ]]; then
     for v in ${small_pkgs_arr[@]};do
         echo "----------$v building start----------------"
         cd $v
+        export buildFound=($(find build -maxdepth 1 -name build))
+        if ((${#buildFound[@]} == 0));then
+            mkdir build
+        fi
         export buildshFound=($(find . -maxdepth 1 -name build.sh))
         if ((${#buildshFound[@]} != 0));then
             ./build.sh
@@ -40,10 +44,6 @@ if [[ $clean == "clean" ]]; then
         export cmakeFound=($(find . -maxdepth 1 -name CMakeLists.txt))
         if ((${#cmakeFound[@]} != 0));then
             $sheep_pkg_path/init_tools/build.sh
-        fi
-        export buildFound=($(find build -maxdepth 1 -name build))
-        if ((${#buildFound[@]} == 0));then
-            mkdir build
         fi
         echo "----------$v building end------------------"
         echo "-------------------------------------------"
