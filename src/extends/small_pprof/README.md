@@ -11,9 +11,8 @@ https://blog.csdn.net/cica0cica/article/details/76919381
 ```
 cpu: 
 pprof ./main http://localhost:9999/pprof/profile
-heap:
+heap growth(alloc most, not means memory growth):
 pprof ./main http://localhost:9999/pprof/growth
+heap status(run program with env TCMALLOC_SAMPLE_PARAMETER=524288 first)
+pprof ./main http://localhost:9999/pprof/heap
 ```
-
-## TODO List
-heap profile run as cpu profile
