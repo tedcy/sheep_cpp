@@ -88,11 +88,11 @@ void TimerPoller::removeEvent(Event *event) {
     if (mapIter == events_.end()) {
         return;
     }
+    eventSet_.erase(id);
     auto map = mapIter->second;
     //map has one element, delete map
     if (map->size() == 1) {
         events_.erase(timeFd);
-        eventSet_.erase(id);
         return;
     }
     //delete element in map
