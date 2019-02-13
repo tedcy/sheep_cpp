@@ -34,7 +34,10 @@ CMakeFiles
 build
 env.sh
 
+gperftools-2.7*
+libunwind-1.3.1*
 gperftools-httpd*
+FlameGraph*
 hiredis*
 http-parser*
 src/extends/small_test/gmock/

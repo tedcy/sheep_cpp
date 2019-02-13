@@ -1,2 +1,4 @@
 #pragma once
-#include "gperftools-httpd.h"
+extern "C" {
+#include "gperftools-httpd/gperftools-httpd.h"
+}
