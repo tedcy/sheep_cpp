@@ -2,7 +2,7 @@
 [c++性能分析gperftools总结](http://weakyon.com/2018/08/16/summarize-of-gperftools.html)
 
 ## 参考资料
-https://gperftools.github.io/gperftools/pprof\_remote\_servers.html
+https://gperftools.github.io/gperftools/pprof_remote_servers.html
 
 https://blog.csdn.net/jhzhou/article/details/7245992
 
