@@ -16,7 +16,7 @@ Etcd::~Etcd() {
 void Etcd::Init(std::string &errMsg) {
     channel_ = std::make_shared<small_client::ClientChannel>(
             small_client::Looper::GetInstance()->GetLoop());
-    channel_->SetResolverType("string");
+    channel_->SetResolverType("dns");
     channel_->SetMaxSize(10);
     channel_->Init(errMsg, ips_, port_, "");
     std::this_thread::sleep_for(std::chrono::seconds(1));
