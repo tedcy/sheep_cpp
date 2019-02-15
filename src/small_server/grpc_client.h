@@ -30,6 +30,11 @@ public:
     }
     ReqT req_;
     RespT resp_;
+    void SetTimeoutMs(uint64_t ms) {
+        std::chrono::system_clock::time_point deadline =
+                std::chrono::system_clock::now() + std::chrono::milliseconds(ms);
+        grpcContext_.set_deadline(deadline);
+    }
     void DoReq(std::function<void(GrpcClient&, const std::string&)> onDone) {
         doReq<GrpcClient>(onDone);
     }
