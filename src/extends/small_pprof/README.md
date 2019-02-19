@@ -43,3 +43,25 @@ install:
 usage:
 pprof_helper.sh ./main http://localhost:9999/pprof/profile
 ```
+
+## TODO
+
+* there is hung bug when use libunwind by built(now libunwind installed by apt-get)
+
+here is a document could fix the problem:
+
+https://github.com/gperftools/gperftools/blob/master/INSTALL
+
+if installed libunwind, add this in CMakeLists.txt
+
+```
+TARGET_LINK_LIBRARIES(${TARGET} -Wl,--eh-frame-hdr)
+```
+
+or if not that, 
+
+```
+#in gperftools install
+./configure --enable-frame-pointers
+#add -fno-omit-frame-pointer in CmakeLists.txt
+```
