@@ -90,7 +90,6 @@ private:
         return value;
     }
     rapidjson::Value createJsonValue(JsonEncodeElementI &element) {
-        auto nowObj = nowObjs_.top();
         rapidjson::Value t_obj(rapidjson::kObjectType);
         nowObjs_.push(&t_obj);
         element.Accept(*this);
