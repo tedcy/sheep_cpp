@@ -6,6 +6,8 @@ if [[ $path != "" ]];then
     exit 0
 fi
 
+yum install -y glibc-static
+
 path=""
 path=`find . -name grpc`
 if [[ $path == "" ]];then
