@@ -8,28 +8,28 @@ mkdir -pv build
 
 #build unwind
 #FIXME: build by source code lead to hang program, I can't fix it
-#path=`find ./build -name libunwind-x86_64.a`
-#if [[ $path == "" ]];then
-#    path=`find . -name libunwind-1.3.1.tar.gz`
-#    if [[ $path == "" ]];then
-#        wget https://github.com/libunwind/libunwind/releases/download/v1.3.1/libunwind-1.3.1.tar.gz
-#    fi
-#    rm -rf libunwind-1.3.1
-#    tar xvf libunwind-1.3.1.tar.gz
-#    cd libunwind-1.3.1
-#    autoreconf -i
-#    ./configure
-#    cp /usr/bin/libtool ./libtool
-#    make -j8
-#    cp src/.libs/libunwind-x86_64.a ../build
-#    cd -
+path=`find ./build -name libunwind-x86_64.a`
+if [[ $path == "" ]];then
+    path=`find . -name libunwind-1.3.1.tar.gz`
+    if [[ $path == "" ]];then
+        wget https://github.com/libunwind/libunwind/releases/download/v1.3.1/libunwind-1.3.1.tar.gz
+    fi
+    rm -rf libunwind-1.3.1
+    tar xvf libunwind-1.3.1.tar.gz
+    cd libunwind-1.3.1
+    autoreconf -i
+    ./configure
+    cp /usr/bin/libtool ./libtool
+    make -j8
+    cp src/.libs/libunwind-x86_64.a ../build
+    cd -
+fi
+#if [[ $sys == "Ubuntu" ]];then
+#    apt-get install -y liblzma-dev libunwind8-dev
 #fi
-if [[ $sys == "Ubuntu" ]];then
-    apt-get install -y liblzma-dev libunwind8-dev
-fi
-if [[ $sys == "Red Hat" ]];then
-    yum install -y lzma-dev libunwind
-fi
+#if [[ $sys == "Red Hat" ]];then
+#    yum install -y lzma-dev libunwind
+#fi
 
 #build google-perftools
 path=`find ./build -name libtcmalloc_and_profiler.a`
