@@ -2,11 +2,33 @@
 [c++性能分析gperftools总结](http://weakyon.com/2018/08/16/summarize-of-gperftools.html)
 
 ## 参考资料
+
 https://gperftools.github.io/gperftools/pprof_remote_servers.html
 
 https://blog.csdn.net/jhzhou/article/details/7245992
 
 https://blog.csdn.net/cica0cica/article/details/76919381
+
+[INSTALL document to fix hung bug of libunwind](https://github.com/gperftools/gperftools/blob/master/INSTALL)
+
+## build
+
+if installed libunwind(default)
+
+add this in CMakeLists.txt
+
+```
+TARGET_LINK_LIBRARIES(${TARGET} -Wl,--eh-frame-hdr)
+```
+
+or if not that(deprecated), 
+
+```
+#in gperftools install
+./configure --enable-frame-pointers
+```
+
+then add -fno-omit-frame-pointer in CmakeLists.txt
 
 ## usage
 
@@ -42,26 +64,4 @@ install:
 
 usage:
 pprof_helper.sh ./main http://localhost:9999/pprof/profile
-```
-
-## TODO
-
-* there is hung bug when use libunwind by built(now libunwind installed by apt-get)
-
-here is a document could fix the problem:
-
-https://github.com/gperftools/gperftools/blob/master/INSTALL
-
-if installed libunwind, add this in CMakeLists.txt
-
-```
-TARGET_LINK_LIBRARIES(${TARGET} -Wl,--eh-frame-hdr)
-```
-
-or if not that, 
-
-```
-#in gperftools install
-./configure --enable-frame-pointers
-#add -fno-omit-frame-pointer in CmakeLists.txt
 ```

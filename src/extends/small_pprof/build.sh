@@ -1,13 +1,9 @@
 set -e
 set -x
 
-ifMac=`uname -a|grep -o Mac|head -n 1`
-sys=`cat /proc/version|grep -o "Ubuntu\|Red Hat"|head -n 1`
-
 mkdir -pv build
 
 #build unwind
-#FIXME: build by source code lead to hang program, I can't fix it
 path=`find ./build -name libunwind-x86_64.a`
 if [[ $path == "" ]];then
     path=`find . -name libunwind-1.3.1.tar.gz`
@@ -24,12 +20,6 @@ if [[ $path == "" ]];then
     cp src/.libs/libunwind-x86_64.a ../build
     cd -
 fi
-#if [[ $sys == "Ubuntu" ]];then
-#    apt-get install -y liblzma-dev libunwind8-dev
-#fi
-#if [[ $sys == "Red Hat" ]];then
-#    yum install -y lzma-dev libunwind
-#fi
 
 #build google-perftools
 path=`find ./build -name libtcmalloc_and_profiler.a`
