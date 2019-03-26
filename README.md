@@ -20,7 +20,7 @@ sheep库的[go版本](https://github.com/tedcy/sheep)在这里
 - [5 TODO list](#5-todo-list)
 
 ## 1 功能
-* grpc的回调风格封装（原始风格烧脑且不好用，原始风格说明文档TODO）
+* grpc的回调风格封装（原始风格烧脑且不好用，原始风格[见我的博客的grpc使用部分](http://weakyon.com/2018/06/29/grpc-cpp.html)）
 * 同一个grpc-server上多个grpc-service
 * 异步grpc客户端
 * 异步http客户端
@@ -47,13 +47,15 @@ extends扩展库
 * log  
 对glog的封装，解决glog打印日志core问题  
 * small_config  
-解析配置，对toml库的封装  
+序列化库，对json和toml的封装,支持原生类型T，vector<T>类型，暂时不支持map<T,T>类型
 * small_watcher  
 异步etcd客户端实现  
 * small_pprof  
 性能测试debug封装，依赖gperf  
 * small_flow  
 责任链模式下对small\_server的封装，适合单个复杂逻辑的处理  
+
+**所有库的example都在small_xxx/test目录中**
 
 ## 2 安装
 
