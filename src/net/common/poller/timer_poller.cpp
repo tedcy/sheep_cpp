@@ -41,7 +41,6 @@ std::vector<std::weak_ptr<Event>> TimerPoller::Poll(std::string &errMsg) {
     for (auto &weakEvent: tmpEvents) {
         auto event = weakEvent.lock();
         if(!event) {
-            LOG(WARNING) << "timer event has been destoryed";
             continue;
         }
         event->SetReadAble();
@@ -84,11 +83,17 @@ void TimerPoller::updateEvent(std::shared_ptr<Event> event) {
 void TimerPoller::removeEvent(Event *event) {
     auto timeFd = event->GetFd();
     auto id = event->GetId();
-    auto mapIter = events_.find(timeFd);
-    if (mapIter == events_.end()) {
+    auto eventSetIter = eventSet_.find(id);
+    if (eventSetIter == eventSet_.end()) {
         return;
     }
     eventSet_.erase(id);
+
+    auto mapIter = events_.find(timeFd);
+    if (mapIter == events_.end()) {
+        LOG(FATAL) << "can't reach";
+        return;
+    }
     auto map = mapIter->second;
     //map has one element, delete map
     if (map->size() == 1) {
