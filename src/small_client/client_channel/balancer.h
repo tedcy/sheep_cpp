@@ -1,5 +1,5 @@
 #pragma once
-#include "small_packages.h"
+#include "extends/small_packages/small_packages.h"
 #include "lb_policy/lb_policy.h"
 #include "resolver/resolver.h"
 namespace small_client{

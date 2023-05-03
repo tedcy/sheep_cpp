@@ -1,7 +1,7 @@
 #pragma once
 #include "resolver_interface.h"
-#include "small_packages.h"
-#include "log.h"
+#include "extends/small_packages/small_packages.h"
+#include "log/log.h"
 
 #include <arpa/inet.h>
 #include <netdb.h>

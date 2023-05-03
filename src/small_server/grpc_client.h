@@ -2,7 +2,7 @@
 #include <functional>
 #include <string>
 #include <grpcpp/grpcpp.h>
-#include "small_packages.h"
+#include "extends/small_packages/small_packages.h"
 
 #include "grpc_looper.h"
 #include "grpc_client_channel.h"

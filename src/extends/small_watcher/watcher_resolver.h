@@ -1,7 +1,7 @@
 #pragma once
-#include "small_client.h"
+#include "small_client/small_client.h"
 #include "make_watcher.h"
-#include "log.h"
+#include "log/log.h"
 namespace small_watcher{
 class WatcherResolver: public small_client::resolver::ResolverI{
 public:

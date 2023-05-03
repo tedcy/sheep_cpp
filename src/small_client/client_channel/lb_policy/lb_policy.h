@@ -1,7 +1,7 @@
 #pragma once
 #include "lb_policy_interface.h"
 #include "random_lb_policy.h"
-#include "small_packages.h"
+#include "extends/small_packages/small_packages.h"
 #include <string>
 #include <map>
 namespace small_client{

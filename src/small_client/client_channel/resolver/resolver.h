@@ -2,10 +2,10 @@
 #include "resolver_interface.h"
 #include "string_resolver.h"
 #include "dns_resolver.h"
-#include "small_packages.h"
+#include "extends/small_packages/small_packages.h"
 #include <string>
 #include <map>
-#include "log.h"
+#include "log/log.h"
 namespace small_client{
 namespace resolver{
 class ResolverManager: public small_packages::noncopyable{

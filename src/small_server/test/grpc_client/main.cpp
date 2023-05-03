@@ -1,9 +1,9 @@
-#include "small_server.h"
-#include "small_client.h"
-#include "small_watcher.h"
+#include "small_server/small_server.h"
+#include "small_client/small_client.h"
+#include "extends/small_watcher/small_watcher.h"
 #include "helloworld.grpc.pb.h"
 #include "helloworld.pb.h"
-#include "log.h"
+#include "log/log.h"
     
 small_server::GrpcClientChannel<helloworld::Greeter> channel;
 

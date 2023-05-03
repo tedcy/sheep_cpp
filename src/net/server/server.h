@@ -1,8 +1,8 @@
 #pragma once
-#include "event_loop.h"
-#include "tcp_connection.h"
+#include "net/common/event_loop.h"
+#include "net/common/tcp/tcp_connection.h"
 #include <functional>
-#include "small_packages.h"
+#include "extends/small_packages/small_packages.h"
 #include <set>
 
 namespace sheep{

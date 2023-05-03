@@ -1,7 +1,7 @@
 #pragma once
 #include <atomic>
 #include <string>
-#include "small_packages.h"
+#include "extends/small_packages/small_packages.h"
 class TraceInstance: public small_packages::noncopyable{
 public:
     static TraceInstance* Get() {

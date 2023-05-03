@@ -5,12 +5,12 @@
 #include <grpc++/server_context.h>
 #include <grpc++/security/server_credentials.h>
 #include "grpc_server.h"
-#include "small_packages.h"
+#include "extends/small_packages/small_packages.h"
 #include <atomic>
 
-#include "log.h"
-#include "small_client.h"
-#include "grpc_client.h"
+#include "log/log.h"
+#include "small_client/small_client.h"
+#include "small_server/grpc_client.h"
 
 namespace small_server{
 template<typename ReqT, typename RespT, 

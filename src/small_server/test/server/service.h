@@ -1,4 +1,4 @@
-#include "small_server.h"
+#include "small_server/small_server.h"
 #include "helloworld.grpc.pb.h"
 #include "helloworld.pb.h"
 

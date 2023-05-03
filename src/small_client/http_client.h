@@ -1,11 +1,11 @@
 #pragma once
 #include <functional>
 #include <string>
-#include "net.h"
-#include "small_packages.h"
-#include "log.h"
+#include "net/net.h"
+#include "extends/small_packages/small_packages.h"
+#include "log/log.h"
 #include "base_client.h"
-#include "small_http_parser.h"
+#include "extends/small_http_parser/small_http_parser.h"
 namespace small_client{
 class HttpClient : public BaseClient{
 public:

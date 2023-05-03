@@ -1,6 +1,6 @@
 #pragma once
-#include "log.h"
-#include "small_packages.h"
+#include "log/log.h"
+#include "extends/small_packages/small_packages.h"
 #include "trace_id.h"
 #include <string>
 #include <memory>

@@ -1,7 +1,7 @@
 #pragma once
-#include "log.h"
-#include "net.h"
-#include "small_packages.h"
+#include "log/log.h"
+#include "net/net.h"
+#include "extends/small_packages/small_packages.h"
 #include <thread>
 namespace small_client{
 //thread unsafe

@@ -1,6 +1,6 @@
 #include "service.h"
-#include "small_watcher.h"
-#include "log.h"
+#include "extends/small_watcher/small_watcher.h"
+#include "log/log.h"
     
 small_server::GrpcClientChannel<helloworld::Greeter> channel;
 

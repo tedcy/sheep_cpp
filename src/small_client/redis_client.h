@@ -1,11 +1,11 @@
 #pragma once
 #include <functional>
 #include <string>
-#include "net.h"
-#include "small_hiredis.h"
-#include "small_packages.h"
-#include "log.h"
-#include "base_client.h"
+#include "net/net.h"
+#include "extends/small_hiredis/small_hiredis.h"
+#include "extends/small_packages/small_packages.h"
+#include "log/log.h"
+#include "small_client/base_client.h"
 namespace small_client{
 class RedisClient : public BaseClient{
 public:

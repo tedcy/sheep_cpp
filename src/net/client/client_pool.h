@@ -1,9 +1,9 @@
 #pragma once
 #include "client.h"
-#include "event_loop.h"
+#include "net/common/event_loop.h"
 #include <set>
 #include <memory>
-#include "small_packages.h"
+#include "extends/small_packages/small_packages.h"
 
 namespace sheep{
 namespace net{

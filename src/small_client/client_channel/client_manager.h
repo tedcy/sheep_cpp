@@ -1,8 +1,8 @@
 #pragma once
-#include "small_packages.h"
+#include "extends/small_packages/small_packages.h"
 #include <map>
 #include "balancer.h"
-#include "log.h"
+#include "log/log.h"
 
 namespace small_client{
 template <typename ClientPoolT>

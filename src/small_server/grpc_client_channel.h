@@ -1,8 +1,8 @@
 #pragma once
-#include "log.h"
-#include "small_packages.h"
-#include "client_channel/balancer.h"
-#include "client_channel/client_manager.h"
+#include "log/log.h"
+#include "extends/small_packages/small_packages.h"
+#include "small_client/client_channel/balancer.h"
+#include "small_client/client_channel/client_manager.h"
 
 #include <grpcpp/grpcpp.h>
 

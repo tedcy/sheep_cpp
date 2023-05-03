@@ -5,7 +5,7 @@
 #include <list>
 #include <thread>
 #include <atomic>
-#include "small_packages_base/small_packages_base.h"
+#include "extends/small_packages/small_packages_base/small_packages_base.h"
 namespace small_block_queue{
 //not thread_safe
 class BlockQueue : small_packages::noncopyable{

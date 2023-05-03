@@ -3,8 +3,8 @@
 #include <functional>
 #include <string>
 #include <memory>
-#include "event_loop.h"
-#include "small_packages.h"
+#include "net/common/event_loop.h"
+#include "net/common/tcp/tcp_connection.h"
 
 namespace sheep{
 namespace net{
