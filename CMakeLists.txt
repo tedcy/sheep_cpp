@@ -44,6 +44,7 @@ include(${CMAKE_SOURCE_DIR}/thirdparty/gflags.cmake)
 include(${CMAKE_SOURCE_DIR}/thirdparty/glog.cmake)
 include(${CMAKE_SOURCE_DIR}/thirdparty/grpc.cmake)
 include(${CMAKE_SOURCE_DIR}/thirdparty/tinytoml.cmake)
+include(${CMAKE_SOURCE_DIR}/thirdparty/libunwind.cmake)
 
 add_library(${PROJECT_NAME} STATIC ${SOURCE_FILES})
 
@@ -76,12 +77,9 @@ function(combine_archives output_archive list_of_input_archives dependencies)
 endfunction(combine_archives)
 
 list(APPEND FINAL_PATHS ${CMAKE_BINARY_DIR}/lib${PROJECT_NAME}.a)
-foreach (lib ${THIRDPARTY_LIBS})
-    list(APPEND FINAL_PATHS ${CMAKE_BINARY_DIR}/${lib})
-endforeach()
+list(APPEND FINAL_PATHS ${THIRDPARTY_LIBS})
 list(APPEND FINAL_PATHS ${SYS_THIRDPARTY_LIBS})
 combine_archives(${FINAL_OUTPUT} "${FINAL_PATHS}" ${PROJECT_NAME})
-#add_custom_target(MERGED_LIB ALL DEPENDS ${FINAL_OUTPUT})
 #不能install targets，因为custom_target不会产生实际文件
 install(FILES ${CMAKE_BINARY_DIR}/lib${FINAL_OUTPUT}.a DESTINATION "lib") 
 
@@ -94,6 +92,7 @@ add_dependencies(${PROJECT_NAME}
     gflags_external_project
     glog_external_project
     grpc_external_project
+    libunwind_external_project
 )
 
 #add Dirs include

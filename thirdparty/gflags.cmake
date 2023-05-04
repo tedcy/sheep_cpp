@@ -14,5 +14,5 @@ ExternalProject_Add(gflags_external_project
                 )
 include_directories(BEFORE SYSTEM ${GFLAGS_INCLUDE_DIR})
 link_directories(${GFLAGS_LIB_DIR})
-list(APPEND THIRDPARTY_LIBS thirdparty/gflags/lib/libgflags.a)
+list(APPEND THIRDPARTY_LIBS ${GFLAGS_LIB_DIR}/libgflags.a)
 install(DIRECTORY ${GFLAGS_INCLUDE_DIR} DESTINATION ${CMAKE_INSTALL_PREFIX})

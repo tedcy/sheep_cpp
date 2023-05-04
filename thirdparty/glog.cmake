@@ -16,5 +16,5 @@ ExternalProject_Add(glog_external_project
     )
 include_directories(BEFORE SYSTEM ${GLOG_INCLUDE_DIR})
 link_directories(${GLOG_LIB_DIR})
-list(APPEND THIRDPARTY_LIBS thirdparty/glog/lib/libglog.a)
+list(APPEND THIRDPARTY_LIBS ${GLOG_LIB_DIR}/libglog.a)
 install(DIRECTORY ${GLOG_INCLUDE_DIR} DESTINATION ${CMAKE_INSTALL_PREFIX})
