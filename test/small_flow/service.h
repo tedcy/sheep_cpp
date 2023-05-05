@@ -1,7 +1,7 @@
 #pragma once
 #include "small_server.h"
-#include "small_flow/protos/helloworld.grpc.pb.h"
-#include "small_flow/protos/helloworld.pb.h"
+#include "helloworld.grpc.pb.h"
+#include "helloworld.pb.h"
 #include "small_packages.h"
 #include "small_flow.h"
 

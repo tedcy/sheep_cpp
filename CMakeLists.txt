@@ -87,8 +87,6 @@ foreach(Dir ${Dirs})
     endforeach()
 endforeach()
 
-install(TARGETS ${PROJECT_NAME} ARCHIVE DESTINATION "lib")
-
 #install headers
 if (EXISTS ${HeadFilesCachePath}) 
     file(READ ${HeadFilesCachePath} HEADER_FILES)

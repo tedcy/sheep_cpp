@@ -4,17 +4,17 @@
 #include "helloworld.grpc.pb.h"
 #include "helloworld.pb.h"
 #include "log/log.h"
-    
-small_server::GrpcClientChannel<helloworld::Greeter> channel;
 
-void Init(std::string &errMsg) {
+static small_server::GrpcClientChannel<helloworld::Greeter> channel;
+
+static void Init(std::string &errMsg) {
     small_client::Looper::GetInstance()->Init();
     small_watcher::WatcherResolverFactory::GetInstance()->Init();
     channel.SetResolverType("watcher");
     channel.Init(errMsg, {"172.16.187.149"}, 2379, "/test");
 }
 
-void DoReq(std::string &errMsg) {
+static void DoReq(std::string &errMsg) {
     using GrpcClientTest = small_server::GrpcClient<helloworld::HelloRequest, 
         helloworld::HelloReply, helloworld::Greeter>;
     auto client = std::make_shared<GrpcClientTest>(channel);
@@ -25,7 +25,7 @@ void DoReq(std::string &errMsg) {
     });
 }
 
-int main() {
+static void testMain() {
     small_server::GrpcLooper::GetInstance()->Init();
     std::string errMsg;
     Init(errMsg);

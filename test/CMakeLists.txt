@@ -7,19 +7,26 @@ set(SheepLibs ${FINAL_OUTPUT} pthread dl gtest gmock)
 list(APPEND GenProtoPaths ${CMAKE_SOURCE_DIR}/test/small_server/protos)
 list(APPEND GenProtoPaths ${CMAKE_SOURCE_DIR}/test/small_flow/protos)
 foreach(GenProtoPath ${GenProtoPaths})
-    add_custom_command(
-        OUTPUT gen_proto_${GenProtoPath}
-        COMMAND ${CMAKE_BINARY_DIR}/thirdparty/grpc/bin/protoc -I${GenProtoPath}/proto
-                --grpc_out=${GenProtoPath}
-                --plugin=protoc-gen-grpc=${CMAKE_BINARY_DIR}/thirdparty/grpc/bin/grpc_cpp_plugin
-                ${GenProtoPath}/proto/helloworld.proto
-        COMMENT "gen proto ${GenProtoPath}"
-        DEPENDS final_target
-    )
-    string(REPLACE "/" "_" TestTarget ${GenProtoPath})
-    set(TestTarget ${TestTarget}_target) 
-    add_custom_target(${TestTarget} DEPENDS gen_proto_${GenProtoPath})
-    list(APPEND GenProtoTargets ${TestTarget})
+    set(GRPC_OUTPUT_FILE "${GenProtoPath}/helloworld.grpc.pb.cc")
+    set(PROTO_OUTPUT_FILE "${GenProtoPath}/helloworld.pb.cc")
+    if(NOT EXISTS ${GRPC_OUTPUT_FILE} OR NOT EXISTS ${PROTO_OUTPUT_FILE})
+        add_custom_command(
+            OUTPUT gen_proto_${GenProtoPath}
+            COMMAND ${CMAKE_BINARY_DIR}/thirdparty/protobuf/bin/protoc -I${GenProtoPath}
+                    --grpc_out=${GenProtoPath}
+                    --plugin=protoc-gen-grpc=${CMAKE_BINARY_DIR}/thirdparty/grpc/bin/grpc_cpp_plugin
+                    ${GenProtoPath}/helloworld.proto
+            COMMAND ${CMAKE_BINARY_DIR}/thirdparty/protobuf/bin/protoc -I${GenProtoPath}
+                    --cpp_out=${GenProtoPath}
+                    ${GenProtoPath}/helloworld.proto
+            COMMENT "gen proto ${GenProtoPath}"
+            DEPENDS final_target
+        )
+        string(REPLACE "/" "_" TestTarget ${GenProtoPath})
+        set(TestTarget ${TestTarget}_target) 
+        add_custom_target(${TestTarget} DEPENDS gen_proto_${GenProtoPath})
+        list(APPEND GenProtoTargets ${TestTarget})
+    endif()
 endforeach()
 
 list(APPEND TestTargetsPath log)
@@ -29,7 +36,7 @@ list(APPEND TestTargetsPath net/common)
 list(APPEND TestTargetsPath net/go_cpp/client)
 list(APPEND TestTargetsPath net/go_cpp/client_pool)
 list(APPEND TestTargetsPath net/go_cpp/server)
-list(APPEND TestTargetsPath small_server/grpc_client)
+list(APPEND TestTargetsPath small_server/client)
 list(APPEND TestTargetsPath small_server/server)
 list(APPEND TestTargetsPath small_client/bench/bench_redis_client)
 list(APPEND TestTargetsPath small_client/http_client)
@@ -45,7 +52,12 @@ list(APPEND TestTargetsPath small_pprof)
 foreach(TestTargetPath ${TestTargetsPath})
     string(REPLACE "/" "_" TestTarget ${TestTargetPath})
     set(TestTarget ${TestTarget}_target) 
-    add_executable(${TestTarget} ${TestTargetPath}/main.cpp)
+    set(TEMP_LIST_SRC "")
+    aux_source_directory(${TestTargetPath}/../protos TEMP_LIST_SRC)
+    aux_source_directory(${TestTargetPath}/protos TEMP_LIST_SRC)
+    add_executable(${TestTarget} ${TestTargetPath}/main.cpp ${TEMP_LIST_SRC})
+    target_include_directories(${TestTarget} PRIVATE ${TestTargetPath}/../protos)
+    target_include_directories(${TestTarget} PRIVATE ${TestTargetPath}/protos)
     target_include_directories(${TestTarget} PRIVATE ${TestTargetPath})
     add_dependencies(${TestTarget} final_target ${GenProtoTargets})
     target_include_directories(${TestTarget} PRIVATE ${BasePath})
@@ -60,3 +72,5 @@ foreach(TestTargetPath ${TestTargetsPath})
     endforeach()
     target_link_libraries(${TestTarget} ${SheepLibs})
 endforeach()
+
+execute_process(COMMAND chmod -R +x ${CMAKE_INSTALL_PREFIX}/bin)

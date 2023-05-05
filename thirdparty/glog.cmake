@@ -13,7 +13,7 @@ ExternalProject_Add(glog_external_project
                 -DCMAKE_INSTALL_PREFIX:PATH=${GLOG_INSTALL_DIR}
                 -DBUILD_SHARED_LIBS=${BUILD_SHARED_LIBS}
     DEPENDS     gflags_external_project
-    )
+)
 include_directories(BEFORE SYSTEM ${GLOG_INCLUDE_DIR})
 link_directories(${GLOG_LIB_DIR})
 list(APPEND THIRDPARTY_LIBS ${GLOG_LIB_DIR}/libglog.a)
