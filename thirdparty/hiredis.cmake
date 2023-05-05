@@ -12,4 +12,5 @@ ExternalProject_Add(hiredis_external_project
                 )
 include_directories(BEFORE SYSTEM ${HIREDIS_INCLUDE_DIR})
 link_directories(${HIREDIS_LIB_DIR})
+list(APPEND THIRDPARTY_LIBS ${HIREDIS_LIB_DIR}/libhiredis.a)
 install(DIRECTORY ${HIREDIS_INCLUDE_DIR} DESTINATION ${CMAKE_INSTALL_PREFIX})

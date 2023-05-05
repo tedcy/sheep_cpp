@@ -22,3 +22,15 @@
 [submodule "thirdparty/http-parser"]
 	path = thirdparty/http-parser
 	url = https://github.com/nodejs/http-parser
+[submodule "thirdparty/googletest"]
+	path = thirdparty/googletest
+	url = https://github.com/google/googletest
+[submodule "thirdparty/gperftools"]
+	path = thirdparty/gperftools
+	url = https://github.com/gperftools/gperftools
+[submodule "thirdparty/gperftools-httpd"]
+	path = thirdparty/gperftools-httpd
+	url = https://github.com/awesomeleo/gperftools-httpd
+[submodule "thirdparty/FlameGraph"]
+	path = thirdparty/FlameGraph
+	url = https://github.com/brendangregg/FlameGraph

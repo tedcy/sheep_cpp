@@ -16,11 +16,11 @@ foreach (TARGET server grpc_client)
     link_directories(${SHEEP_INSTALL_DIR}/lib)
 
     aux_source_directory(${PROJECT_SOURCE_DIR}/${TARGET} ${TARGET}LIST_SRC)
-    aux_source_directory(${PROJECT_SOURCE_DIR}/protos/test ${TARGET}LIST_SRC)
+    aux_source_directory(${PROJECT_SOURCE_DIR}/protos ${TARGET}LIST_SRC)
     add_executable(${TARGET} ${${TARGET}LIST_SRC})
     
     target_link_libraries(${TARGET} sheep_cpp pthread dl)
 
-    include_directories(${PROJECT_SOURCE_DIR}/protos/test)
+    include_directories(${PROJECT_SOURCE_DIR}/protos)
     include_directories(${PROJECT_SOURCE_DIR}/${TARGET})
 endforeach()

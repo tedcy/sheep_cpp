@@ -5,8 +5,8 @@
 #include "log.h"
 
 int main() {
-    EventLoop loop;
-    Acceptor acceptor(loop, "127.0.0.1", 8888);
+    sheep::net::EventLoop loop;
+    sheep::net::Acceptor acceptor(loop, "127.0.0.1", 8888);
     
     std::string errMsg;
     acceptor.SetNewConnectionHandler([&loop](int fd){
