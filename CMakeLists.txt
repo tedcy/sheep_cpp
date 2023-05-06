@@ -74,6 +74,7 @@ add_dependencies(${PROJECT_NAME}
     googletest_external_project
     gperftools_external_project
     gperftools-httpd_external_project
+    protobuf_external_project
 )
 
 #add Dirs include
