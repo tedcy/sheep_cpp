@@ -3,6 +3,7 @@ include(ExternalProject)
 set(GPERFTOOLS_INSTALL_DIR ${CMAKE_BINARY_DIR}/thirdparty/gperftools)
 set(GPERFTOOLS_INCLUDE_DIR ${GPERFTOOLS_INSTALL_DIR}/include)
 set(GPERFTOOLS_LIB_DIR ${GPERFTOOLS_INSTALL_DIR}/lib)
+set(GPERFTOOLS_BIN_DIR ${GPERFTOOLS_INSTALL_DIR}/bin)
 ExternalProject_Add(gperftools_external_project
     SOURCE_DIR ${CMAKE_SOURCE_DIR}/thirdparty/gperftools/
     PREFIX ${GPERFTOOLS_INSTALL_DIR}
@@ -22,3 +23,5 @@ include_directories(BEFORE SYSTEM ${GPERFTOOLS_INCLUDE_DIR})
 link_directories(${GPERFTOOLS_LIB_DIR})
 list(APPEND THIRDPARTY_LIBS ${GPERFTOOLS_LIB_DIR}/libtcmalloc_and_profiler.a)
 install(DIRECTORY ${GPERFTOOLS_INCLUDE_DIR} DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(DIRECTORY ${GPERFTOOLS_BIN_DIR} DESTINATION ${CMAKE_INSTALL_PREFIX})
+install(FILES ${CMAKE_SOURCE_DIR}/thirdparty/FlameGraph/flamegraph.pl DESTINATION "bin")
