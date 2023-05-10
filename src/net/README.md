@@ -14,7 +14,7 @@ TCP的封装Buffer,Socket,Event
 ```mermaid
 graph LR;
 note[虚线是关联关系<br>实线是组合关系]
-subgraph EventLoop
+subgraph EventLoopGraph
 EpollEvent-.->EventLoop
 EpollPoller-->EventLoop
 TimerEvent-.->EventLoop
