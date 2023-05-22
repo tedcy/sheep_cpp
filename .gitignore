@@ -40,3 +40,5 @@ src/extends/small_test/googletest-master/
 src/extends/small_grpc/grpc
 *pb.cc
 *pb.h
+compile_commands.json
+.cache

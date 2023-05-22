@@ -30,6 +30,7 @@ foreach(GenProtoPath ${GenProtoPaths})
 endforeach()
 
 list(APPEND TestTargetsPath log)
+list(APPEND TestTargetsPath context)
 list(APPEND TestTargetsPath net/client)
 list(APPEND TestTargetsPath net/server)
 list(APPEND TestTargetsPath net/common)
