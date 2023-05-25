@@ -3,6 +3,7 @@
 #include "log.h"
 #include "timer_poller.h"
 #include "asyncer.h"
+#include "util.h"
 
 namespace sheep{
 namespace net{

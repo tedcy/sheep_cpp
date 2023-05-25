@@ -12,6 +12,9 @@
 # error "platform not supported"
 #endif
 
+//jump to nfc, save current context to ofc
+//ofc can be not make_fcontext return value
+//nfc must be make_fcontext return value or jump_fcontext ofc
 extern "C" intptr_t jump_fcontext( fcontext_t * ofc, fcontext_t const* nfc, intptr_t vp, bool preserve_fpu = true);
 extern "C" fcontext_t * make_fcontext( void * sp, std::size_t size, void (* fn)( intptr_t) );
 

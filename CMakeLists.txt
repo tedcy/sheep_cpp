@@ -4,6 +4,7 @@ project(sheep_cpp_core)
 set(FINAL_OUTPUT "sheep_cpp")
 
 enable_language(C ASM)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall")
 
 include(${CMAKE_SOURCE_DIR}/cmake/utils.cmake)
 
@@ -21,6 +22,7 @@ list(APPEND Dirs ${BasePath}/net)
 list(APPEND Dirs ${BasePath}/log)
 list(APPEND Dirs ${BasePath}/extends)
 list(APPEND Dirs ${BasePath}/coroutine)
+list(APPEND Dirs ${BasePath}/util)
 
 #get all source files
 if (EXISTS ${SourceFilesCachePath})

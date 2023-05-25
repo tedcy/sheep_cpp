@@ -7,12 +7,12 @@
 extern "C" 
 {
 
-struct stack_t
+struct fc_stack_t
 {
-    void    *   sp;
+    void* sp;
     std::size_t size;
 
-    stack_t()
+    fc_stack_t()
     : sp(0)
     , size(0)
     {}
@@ -20,7 +20,7 @@ struct stack_t
 
 struct fp_t
 {
-    uint32_t     fc_freg[2];
+    uint32_t fc_freg[2];
 
     fp_t()
     : fc_freg()
@@ -29,9 +29,9 @@ struct fp_t
 
 struct fcontext_t
 {
-    uint64_t     fc_greg[8];
-    stack_t      fc_stack;
-    fp_t         fc_fp;
+    uint64_t fc_greg[8];
+    fc_stack_t fc_stack;
+    fp_t fc_fp;
 
     fcontext_t()
     : fc_greg()
