@@ -4,7 +4,17 @@ project(sheep_cpp_core)
 set(FINAL_OUTPUT "sheep_cpp")
 
 enable_language(C ASM)
+
+#如果希望ASAN打开后可以core，那么需要使用ASAN_OPTIONS="disable_coredump=0:unmap_shadow_on_exit=1:abort_on_error=1"来启动
+option(ENABLE_ADDRESS_SANITIZER "address sanitizer" OFF)
+
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g -Wall")
+if (ENABLE_ADDRESS_SANITIZER)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fsanitize-address-use-after-scope -fno-omit-frame-pointer -fsanitize=address -fsanitize-recover=all")
+    add_definitions(-DADDRESS_SANITIZER=1)
+endif()
+
+message("  ENALBE_ADDRESS_SANITIZER: ${ENABLE_ADDRESS_SANITIZER}")
 
 include(${CMAKE_SOURCE_DIR}/cmake/utils.cmake)
 
