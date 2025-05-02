@@ -35,7 +35,6 @@ public:
     void WriteBufferPush(const char* buf, uint64_t len);
     uint64_t ReadBufferPopHead(char *buf, uint64_t len);
 private:
-    //FIXME: Buffer split into ReadBuffer && WriteBuffer
     Buffer ReadBuffer_;
     Buffer WriteBuffer_;
     friend class Server;

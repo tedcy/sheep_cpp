@@ -1,6 +1,8 @@
 #include "net.h"
 #include "log.h"
 
+using namespace std;
+
 int main(){
     std::string errMsg;
     
@@ -13,6 +15,11 @@ int main(){
         }
         LOG(INFO) << "connected";
         connection.AsyncRead(100, [&connection](const std::string &errMsg){
+            if (!errMsg.empty()) {
+                LOG(ERROR) << errMsg << endl;
+                connection.Finish(errMsg);
+                return;
+            }
             LOG(INFO) << "readed";
             char buf[100];
             connection.ReadBufferPopHead(buf, 100);

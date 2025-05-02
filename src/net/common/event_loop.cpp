@@ -30,9 +30,13 @@ void EventLoop::loop() {
     std::string stid = oss.str();
     g_tid = std::stoull(stid);
     for (;!stop_;) {
-        for (auto &pollerPair: pollers_) {
-            doPoller(pollerPair.second); 
-        }
+        runOnce();
+    }
+}
+
+void EventLoop::runOnce() {
+    for (auto &pollerPair: pollers_) {
+        doPoller(pollerPair.second); 
     }
 }
 

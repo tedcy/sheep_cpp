@@ -1,6 +1,8 @@
 #include "net.h"
 #include "log.h"
 
+using namespace std;
+
 int main(){
     std::string errMsg;
     
@@ -32,11 +34,11 @@ int main(){
         if(!argErrMsg.empty()) {
             LOG(ERROR) << argErrMsg;
         }
-        std::string errMsg;
-        client.AsyncConnect(errMsg);
-        if (!errMsg.empty()) {
-            LOG(ERROR) << errMsg;
-        }
+        //std::string errMsg;
+        //client.AsyncConnect(errMsg);
+        //if (!errMsg.empty()) {
+        //    LOG(ERROR) << errMsg;
+        //}
         //loop.Stop();
     });
     client.AsyncConnect(errMsg);

@@ -6,6 +6,8 @@
 #include "asyncer.h"
 #include "small_packages.h"
 
+using namespace std;
+
 namespace sheep{
 namespace net{
 TcpConnection::TcpConnection(EventLoop &loop, int fd) :
@@ -22,7 +24,7 @@ TcpConnection::TcpConnection(std::unique_ptr<Socket> &socket,
 }
 
 TcpConnection::~TcpConnection() {
-    //LOG(DEBUG) << "~TcpConnection";
+    LOG(DEBUG) << "~TcpConnection";
 }
 
 void TcpConnection::Reset() {

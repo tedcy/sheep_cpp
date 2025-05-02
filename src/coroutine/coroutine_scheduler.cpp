@@ -8,12 +8,14 @@
 #include "intrusive_list.h"
 #include <queue>
 #include "util.h"
-#include <iostream>
 
 using namespace std;
 
 class CoroutineScheduler::CoroutineSchedulerImp {
 public:
+    void stop() {
+        isRunning_ = false;
+    }
     ~CoroutineSchedulerImp() {
         delete [] coros_;
     }
@@ -27,8 +29,15 @@ public:
         IntrusiveListInit(&resumeListHead_);
         IntrusiveListInit(&yieldListHead_);
     }
+    CoroutineSchedulerImp(sheep::net::EventLoop &loop, int coroNum = 10240)
+        : CoroutineSchedulerImp(coroNum) {
+        loop_ = &loop;
+    }
     void run() {
-        while(1) {
+        while(true) {
+            if (loop_) {
+                loop_->runOnce();
+            }
             wakeUpSleep();
 
             auto resumeList = IntrusiveListGetAllNodes(&resumeListHead_);
@@ -38,6 +47,11 @@ public:
             auto yieldList = IntrusiveListGetAllNodes(&yieldListHead_);
             for (auto &coro : yieldList) {
                 CoroutineInfo::switchTo(coro);
+            }
+            if (resumeList.empty() && yieldList.empty()) {
+                if (!isRunning_) {
+                    break;
+                }
             }
         }
     }
@@ -81,6 +95,10 @@ public:
         sleepQueue_.push(make_pair(UnixTimeMilliSecond() + ms, CoroutineScheduler::currentCoro()));
         suspend();
     }
+
+    sheep::net::EventLoop& getLoop() {
+        return *loop_;
+    }
 private:
     void wakeUpSleep() {
         vector<CoroutineInfo *> sleepList;
@@ -118,15 +136,23 @@ private:
     using sleepInfo = pair<int64_t, CoroutineInfo*>;
     priority_queue<sleepInfo, vector<sleepInfo>, std::greater<sleepInfo>>
         sleepQueue_;
+    sheep::net::EventLoop *loop_ = nullptr;
+    atomic<bool> isRunning_ = {true};
 };
 
-CoroutineScheduler::CoroutineScheduler() : pimpl_(new CoroutineSchedulerImp) {
-}
+CoroutineScheduler::CoroutineScheduler() : pimpl_(new CoroutineSchedulerImp) {}
+CoroutineScheduler::CoroutineScheduler(sheep::net::EventLoop &loop)
+    : pimpl_(new CoroutineSchedulerImp(loop)) {}
 CoroutineScheduler::~CoroutineScheduler() = default;
 
 void CoroutineScheduler::run() {
     CoroutineScheduler::currentCoroScheduler() = this;
     pimpl_->run();
+}
+
+void CoroutineScheduler::stop() {
+    pimpl_->stop();
+    t_.join();
 }
 
 bool CoroutineScheduler::addCoroutine(const std::function<void()> &func) {
@@ -147,4 +173,8 @@ void CoroutineScheduler::resume(CoroutineInfo *coro) {
 
 void CoroutineScheduler::sleep(int ms) {
     pimpl_->sleep(ms);
+}
+
+sheep::net::EventLoop& CoroutineScheduler::getLoop() {
+    return pimpl_->getLoop();
 }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "coroutine_info.h"
+#include "common/event_loop.h"
 #include <memory>
 #include <thread>
 #include <functional>
@@ -8,6 +9,7 @@
 class CoroutineScheduler {
 public:
     CoroutineScheduler();
+    explicit CoroutineScheduler(sheep::net::EventLoop& loop);
     ~CoroutineScheduler();
     
     static CoroutineInfo*& currentCoro() {
@@ -27,9 +29,7 @@ public:
         t_ = std::move(t);
     }
 
-    void stop() {
-        t_.join();
-    }
+    void stop();
 
     bool addCoroutine(const std::function<void()>& func);
 
@@ -40,6 +40,8 @@ public:
     void resume(CoroutineInfo *coro);
 
     void sleep(int ms);
+
+    sheep::net::EventLoop& getLoop();
 
 private:
     void run();

@@ -9,10 +9,10 @@
 namespace sheep{
 namespace net{
 Server::Server(EventLoop &loop,
-       const std::string &addr, int fd) :
+       const std::string &addr, int port) :
     loop_(loop),
     lock_(small_lock::MakeLock()),
-    acceptor_(std::make_shared<Acceptor>(loop_, addr, fd)),
+    acceptor_(std::make_shared<Acceptor>(loop_, addr, port)),
     connections_(std::make_shared<TcpConnectionSet>()){
 }
 
@@ -33,7 +33,7 @@ void Server::Serve(std::string &errMsg) {
     asyncer_->AsyncDo([this](const std::string &argErrMsg){
         small_lock::UniqueGuard guard(lock_);
         if (!argErrMsg.empty()) {
-            disconnectedHandler(argErrMsg);
+            disconnectedHandler_(argErrMsg);
             return;
         }
         std::string errMsg;
@@ -43,7 +43,7 @@ void Server::Serve(std::string &errMsg) {
         });
         acceptor_->Listen(errMsg);
         if (!errMsg.empty()) {
-            disconnectedHandler(errMsg);
+            disconnectedHandler_(errMsg);
             return;
         }
     });
@@ -67,14 +67,6 @@ void Server::SetDisconnectedHandler(disconnectedHandlerT handler) {
     disconnectedHandler_ = handler;
 }
     
-void Server::connectedHandler(const std::string &errMsg, TcpConnection &connection) {
-    connectedHandler_(errMsg, connection);
-}
-
-void Server::disconnectedHandler(const std::string &errMsg) {
-    disconnectedHandler_(errMsg);
-}
-
 void Server::newConnectionHandler(int fd) {
     auto connection = std::make_shared<TcpConnection>(loop_, fd);
     std::string errMsg;
@@ -88,7 +80,7 @@ void Server::newConnectionHandler(int fd) {
             return;
         }
         connections_->erase(connection);
-        disconnectedHandler(errMsg);
+        disconnectedHandler_(errMsg);
     });
     connection->InitAccepted(errMsg);
     //avoid handler change errMsg
@@ -96,7 +88,7 @@ void Server::newConnectionHandler(int fd) {
         connectedHandler_(errMsg, *connection);
         return;
     }
-    connectedHandler(errMsg, *connection);
+    connectedHandler_(errMsg, *connection);
     connections_->insert(connection);
 }
 }

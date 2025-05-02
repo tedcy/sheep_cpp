@@ -16,13 +16,11 @@ using connectedHandlerT = std::function<void(const std::string &errMsg,
 using disconnectedHandlerT = std::function<void(const std::string &errMsg)>;
 public:
     Server(EventLoop &loop, 
-            const std::string &addr, int fd);
+            const std::string &addr, int port);
     void Serve(std::string &errMsg);
     void SetConnectedHandler(connectedHandlerT);
     void SetDisconnectedHandler(disconnectedHandlerT);
 private:
-    void connectedHandler(const std::string &errMsg, TcpConnection &connection);
-    void disconnectedHandler(const std::string &errMsg);
     void newConnectionHandler(int fd);
     EventLoop &loop_;
 
