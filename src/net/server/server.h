@@ -12,7 +12,7 @@ class Asyncer;
 
 class Server: public small_packages::noncopyable{
 using connectedHandlerT = std::function<void(const std::string &errMsg,
-        TcpConnection&)>;
+        std::shared_ptr<TcpConnection>)>;
 using disconnectedHandlerT = std::function<void(const std::string &errMsg)>;
 public:
     Server(EventLoop &loop, 

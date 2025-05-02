@@ -85,10 +85,10 @@ void Server::newConnectionHandler(int fd) {
     connection->InitAccepted(errMsg);
     //avoid handler change errMsg
     if (errMsg != "") {
-        connectedHandler_(errMsg, *connection);
-        return;
+    connectedHandler_(errMsg, connection);
+    return;
     }
-    connectedHandler_(errMsg, *connection);
+    connectedHandler_(errMsg, connection);
     connections_->insert(connection);
 }
 }

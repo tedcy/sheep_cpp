@@ -77,6 +77,7 @@ TEST_F(TestCoroutine, TestCoClient) {
     
     scheduler.start();
     scheduler.addCoroutine([this]() {
+        shared_ptr<int> defer(nullptr, [this](int *) { setDone(); });
         string errMsg;
         sheep::net::CoClient client("127.0.0.1", 8888);
         auto connection = client.Connect(errMsg);
@@ -99,7 +100,6 @@ TEST_F(TestCoroutine, TestCoClient) {
         }
         LOG(INFO) << "read" << endl;
         connection.Finish();
-        setDone();
     });
     waitDone();
     scheduler.stop();
@@ -113,7 +113,9 @@ TEST_F(TestCoroutine, TestCoServer) {
 
     sheep::net::CoServer server(
         scheduler, "127.0.0.1", 8888,
-        [this](const std::string &errMsg, sheep::net::CoTcpConnection &connection) {
+        [this](const std::string &errMsg,
+               std::shared_ptr<sheep::net::CoTcpConnection> connection) {
+            shared_ptr<int> defer(nullptr, [this](int *) { setDone(); });
             if (!errMsg.empty()) {
                 LOG(ERROR) << errMsg << endl;
                 return;
@@ -122,30 +124,28 @@ TEST_F(TestCoroutine, TestCoServer) {
             {
                 string errMsg;
                 char buf[100];
-                connection.Read(errMsg, buf, 100);
+                connection->Read(errMsg, buf, 100);
                 if (!errMsg.empty()) {
                     LOG(ERROR) << errMsg << endl;
-                    connection.Finish();
+                    connection->Finish();
                     return;
                 }
                 LOG(INFO) << "read" << endl;
-                connection.Write(errMsg, buf, 100);
+                connection->Write(errMsg, buf, 100);
                 if (!errMsg.empty()) {
                     LOG(ERROR) << errMsg << endl;
-                    connection.Finish();
+                    connection->Finish();
                     return;
                 }
                 LOG(INFO) << "wrote" << endl;
-                connection.Read(errMsg, buf, 1);
+                connection->Read(errMsg, buf, 1);
                 if (!errMsg.empty()) {
                     LOG(ERROR) << errMsg << endl;
-                    connection.Finish();
+                    connection->Finish();
                     return;
                 }
             }
-            setDone();
-        }
-    );
+        });
     string errMsg;
     server.Serve(errMsg);
     if (!errMsg.empty()) {

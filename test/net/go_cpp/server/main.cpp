@@ -9,24 +9,24 @@ int main(){
     sheep::net::EventLoop loop;
 
     sheep::net::Server server(loop, "127.0.0.1", 8888);
-    server.SetConnectedHandler([](const std::string &errMsg, sheep::net::TcpConnection &connection) {
+    server.SetConnectedHandler([](const std::string &errMsg, std::shared_ptr<sheep::net::TcpConnection> connection) {
         if(!errMsg.empty()) {
             LOG(FATAL) << errMsg;
         }
         LOG(INFO) << "connected";
-        connection.AsyncRead(100, [&connection](const std::string &errMsg){
+        connection->AsyncRead(100, [connection](const std::string &errMsg){
             if (!errMsg.empty()) {
                 LOG(ERROR) << errMsg << endl;
-                connection.Finish(errMsg);
+                connection->Finish(errMsg);
                 return;
             }
             LOG(INFO) << "readed";
             char buf[100];
-            connection.ReadBufferPopHead(buf, 100);
-            connection.WriteBufferPush(buf, 100);
-            connection.AsyncWrite([](const std::string &errMsg) {
+            connection->ReadBufferPopHead(buf, 100);
+            connection->WriteBufferPush(buf, 100);
+            connection->AsyncWrite([](const std::string &errMsg) {
                 LOG(INFO) << "wrote";
-                //connection.Finish(errMsg);
+                //connection->Finish(errMsg);
             });
         });
     });

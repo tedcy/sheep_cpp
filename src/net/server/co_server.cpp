@@ -10,10 +10,10 @@ CoServer::CoServer(CoroutineScheduler &scheduler, const std::string &addr,
                    int fd, const connectedHandlerT &handler)
     : server_(scheduler.getLoop(), addr, fd), connectedHandler_(handler) {
     server_.SetConnectedHandler(
-        [this](const std::string &errMsg, TcpConnection &conn) {
+        [this](const std::string &errMsg, std::shared_ptr<TcpConnection> conn) {
             CoroutineScheduler::currentCoroScheduler()->addCoroutine(
-                [this, errMsg, &conn]() {
-                    CoTcpConnection coConn(conn);
+                [this, errMsg, conn]() {
+                    auto coConn = std::make_shared<CoTcpConnection>(conn);
                     connectedHandler_(errMsg, coConn);
                 });
         });

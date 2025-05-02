@@ -15,11 +15,13 @@ class CoTcpConnection {
 public:
     CoTcpConnection() = default;
     CoTcpConnection(TcpConnection &connection);
+    CoTcpConnection(std::shared_ptr<TcpConnection> connection);
     int Write(std::string& errMsg, const char *buf, int len);
     int Read(std::string& errMsg, char *buf, int len);
     void Finish();
 private:
     TcpConnection* connection_ = nullptr;
+    std::shared_ptr<TcpConnection> connection_sptr_;
 };
 
 }

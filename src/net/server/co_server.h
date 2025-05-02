@@ -9,7 +9,7 @@ namespace net{
 
 class CoServer {
 using connectedHandlerT = std::function<void(const std::string &errMsg,
-        CoTcpConnection&)>;
+        std::shared_ptr<CoTcpConnection>)>;
 public:
     CoServer(CoroutineScheduler &scheduler, 
             const std::string &addr, int fd, const connectedHandlerT&);
