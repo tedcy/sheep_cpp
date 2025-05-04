@@ -8,6 +8,7 @@
 #include "intrusive_list.h"
 #include <queue>
 #include "util.h"
+#include "log.h"
 
 using namespace std;
 
@@ -34,11 +35,24 @@ public:
         loop_ = &loop;
     }
     void run() {
-        while(true) {
-            if (loop_) {
+        int64_t loopLastRun = UnixTimeMilliSecond();
+        while(isRunning_) {
+            //为了不让resume唤醒太慢，必须延迟loop_的时间
+            //这会导致网络事件的处理延迟，所以tars的网络线程是纯异步的，不使用协程
+            if (loop_ && UnixTimeMilliSecond() > loopLastRun + 10) {
                 loop_->runOnce();
+                loopLastRun = UnixTimeMilliSecond();
             }
             wakeUpSleep();
+        
+            {
+                unique_lock<mutex> lock(mtx_);
+                while (!resumeQueue_.empty()) {
+                    auto coro = resumeQueue_.front();
+                    resumeQueue_.pop();
+                    moveToResume(coro);
+                }
+            }
 
             auto resumeList = IntrusiveListGetAllNodes(&resumeListHead_);
             for (auto &coro : resumeList) {
@@ -47,11 +61,6 @@ public:
             auto yieldList = IntrusiveListGetAllNodes(&yieldListHead_);
             for (auto &coro : yieldList) {
                 CoroutineInfo::switchTo(coro);
-            }
-            if (resumeList.empty() && yieldList.empty()) {
-                if (!isRunning_) {
-                    break;
-                }
             }
         }
     }
@@ -87,8 +96,13 @@ public:
         CoroutineInfo::switchBack();
     }
 
+    // TODO
+    // 用coro来唤醒，会造成sleep到期的协程，被resume重复唤醒问题，严重的会因为coro已经不存在导致coredump
+    // 应该存在一个suspendID，记录每次休眠的事件ID，如果唤醒的ID和当前ID不一致，就不唤醒
+    // 这样就可以避免重复唤醒的问题
     void resume(CoroutineInfo *coro) {
-        moveToResume(coro);
+        unique_lock<mutex> lock(mtx_);
+        resumeQueue_.push(coro);
     }
 
     void sleep(int ms) {
@@ -138,6 +152,7 @@ private:
         sleepQueue_;
     sheep::net::EventLoop *loop_ = nullptr;
     atomic<bool> isRunning_ = {true};
+    queue<CoroutineInfo *> resumeQueue_;
 };
 
 CoroutineScheduler::CoroutineScheduler() : pimpl_(new CoroutineSchedulerImp) {}

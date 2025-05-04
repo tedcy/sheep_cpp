@@ -3,6 +3,7 @@
 #include "coroutine_scheduler.h"
 #include "net.h"
 #include "log.h"
+#include "coroutine_mutex.h"
 
 using namespace std;
 
@@ -154,4 +155,183 @@ TEST_F(TestCoroutine, TestCoServer) {
     }
     waitDone();
     scheduler.stop();
+}
+
+class TestMutex: public testing::Test{
+    mutex mtx_;
+    condition_variable cv_;
+    vector<bool> needDones_;
+public:
+    void initDone(int num) {
+        needDones_.resize(num);
+    }
+    void setDone() {
+        unique_lock<mutex> lock(mtx_);
+        needDones_.pop_back();
+        cv_.notify_one();
+    }
+    void waitDone() {
+        unique_lock<mutex> lock(mtx_);
+        while(!needDones_.empty()) {
+            cv_.wait(lock);
+        }
+    }
+};
+
+TEST_F(TestMutex, TestMutexInThread) {
+    Mutex my_mutex;
+    int counter = 0;
+    const int kNumThreads = 10;
+    const int kIncrementsPerThread = 100000;
+
+    auto increment_func = [&]() {
+        for (int i = 0; i < kIncrementsPerThread; ++i) {
+            my_mutex.lock();
+            ++counter;
+            my_mutex.unlock();
+        }
+    };
+
+    std::vector<std::thread> threads;
+    for (int i = 0; i < kNumThreads; ++i) {
+        threads.emplace_back(increment_func);
+    }
+
+    for (auto& t : threads) {
+        t.join();
+    }
+
+    EXPECT_EQ(counter, kNumThreads * kIncrementsPerThread);
+}
+
+TEST_F(TestMutex, TestMutexInThreadAndCoroutine) {
+    sheep::net::EventLoop loop;
+    CoroutineScheduler scheduler1(loop);
+    CoroutineScheduler scheduler2(loop);
+    
+    scheduler1.start();
+    scheduler2.start();
+    Mutex my_mutex;
+    int counter = 0;
+    const int kNumThreads = 10;
+    const int kIncrementsPerThread = 100000;
+
+    initDone(10);
+
+    for (int i = 0; i < kNumThreads / 2; ++i) {
+        scheduler1.addCoroutine([&]() {
+            for (int i = 0; i < kIncrementsPerThread; ++i) {
+                my_mutex.lock();
+                ++counter;
+                my_mutex.unlock();
+            }
+            setDone();
+        });
+    }
+    for (int i = 0; i < kNumThreads / 2; ++i) {
+        scheduler2.addCoroutine([&]() {
+            for (int i = 0; i < kIncrementsPerThread; ++i) {
+                my_mutex.lock();
+                ++counter;
+                my_mutex.unlock();
+            }
+            setDone();
+        });
+    }
+
+    waitDone();
+    scheduler1.stop();
+    scheduler2.stop();
+
+    EXPECT_EQ(counter, kNumThreads * kIncrementsPerThread);
+}
+
+TEST_F(TestMutex, TestMutexInCoroutine) {
+    sheep::net::EventLoop loop;
+    CoroutineScheduler scheduler(loop);
+    
+    scheduler.start();
+
+    Mutex my_mutex;
+    int counter = 0;
+    const int kNumThreads = 10;
+    const int kIncrementsPerThread = 100000;
+
+    initDone(kNumThreads / 2);
+
+    for (int i = 0; i < kNumThreads / 2; ++i) {
+        scheduler.addCoroutine([&]() {
+            for (int i = 0; i < kIncrementsPerThread; ++i) {
+                my_mutex.lock();
+                ++counter;
+                my_mutex.unlock();
+            }
+            setDone();
+        });
+    }
+
+    auto increment_func = [&]() {
+        for (int i = 0; i < kIncrementsPerThread; ++i) {
+            my_mutex.lock();
+            ++counter;
+            my_mutex.unlock();
+        }
+    };
+
+    std::vector<std::thread> threads;
+    for (int i = 0; i < kNumThreads / 2; ++i) {
+        threads.emplace_back(increment_func);
+    }
+
+    for (auto& t : threads) {
+        t.join();
+    }
+    
+    waitDone();
+    scheduler.stop();
+
+    EXPECT_EQ(counter, kNumThreads * kIncrementsPerThread);
+}
+
+TEST_F(TestMutex, TestCoMutexInCoroutine) {
+    sheep::net::EventLoop loop;
+    CoroutineScheduler scheduler1(loop);
+    CoroutineScheduler scheduler2(loop);
+    
+    scheduler1.start();
+    scheduler2.start();
+
+    CoroutineMutex my_mutex;
+    int counter = 0;
+    const int kNumThreads = 10;
+    const int kIncrementsPerThread = 100000;
+
+    initDone(kNumThreads);
+
+    for (int i = 0; i < kNumThreads / 2; ++i) {
+        scheduler1.addCoroutine([&]() {
+            for (int i = 0; i < kIncrementsPerThread; ++i) {
+                my_mutex.lock();
+                ++counter;
+                my_mutex.unlock();
+            }
+            setDone();
+        });
+    }
+    for (int i = 0; i < kNumThreads / 2; ++i) {
+        scheduler2.addCoroutine([&]() {
+            for (int i = 0; i < kIncrementsPerThread; ++i) {
+                my_mutex.lock();
+                ++counter;
+                my_mutex.unlock();
+            }
+            setDone();
+        });
+    }
+
+    waitDone();
+    scheduler1.stop();
+    scheduler2.stop();
+
+    EXPECT_EQ(counter, kNumThreads * kIncrementsPerThread);
 }

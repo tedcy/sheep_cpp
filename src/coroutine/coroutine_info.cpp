@@ -134,7 +134,7 @@ void CoroutineInfo::registerFunc(const std::function<void()> &func,
 void CoroutineInfo::switchTo(CoroutineInfo *to) {
     CoroutineScheduler::currentCoro() = to;
 
-    LOG(INFO) << "switchTo|" << to << endl;
+    // LOG(INFO) << "switchTo|" << to << endl;
 
 #ifdef ADDRESS_SANITIZER
     void *fake_stack;
@@ -148,7 +148,7 @@ void CoroutineInfo::switchTo(CoroutineInfo *to) {
     __sanitizer_finish_switch_fiber(fake_stack, nullptr, nullptr);
 #endif
     
-    LOG(INFO) << "switchToEnd|" << to << endl;
+    // LOG(INFO) << "switchToEnd|" << to << endl;
 }
 
 void CoroutineInfo::switchBack() {
