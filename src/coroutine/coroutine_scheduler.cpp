@@ -30,9 +30,9 @@ public:
         IntrusiveListInit(&resumeListHead_);
         IntrusiveListInit(&yieldListHead_);
     }
-    CoroutineSchedulerImp(sheep::net::EventLoop &loop, int coroNum = 10240)
+    CoroutineSchedulerImp(sheep::net::EventLoop *loop, int coroNum = 10240)
         : CoroutineSchedulerImp(coroNum) {
-        loop_ = &loop;
+        loop_ = loop;
     }
     void run() {
         int64_t loopLastRun = UnixTimeMilliSecond();
@@ -156,7 +156,7 @@ private:
 };
 
 CoroutineScheduler::CoroutineScheduler() : pimpl_(new CoroutineSchedulerImp) {}
-CoroutineScheduler::CoroutineScheduler(sheep::net::EventLoop &loop)
+CoroutineScheduler::CoroutineScheduler(sheep::net::EventLoop *loop)
     : pimpl_(new CoroutineSchedulerImp(loop)) {}
 CoroutineScheduler::~CoroutineScheduler() = default;
 

@@ -9,7 +9,7 @@
 class CoroutineScheduler {
 public:
     CoroutineScheduler();
-    explicit CoroutineScheduler(sheep::net::EventLoop& loop);
+    explicit CoroutineScheduler(sheep::net::EventLoop* loop);
     ~CoroutineScheduler();
     
     static CoroutineInfo*& currentCoro() {

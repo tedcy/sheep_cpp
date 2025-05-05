@@ -4,6 +4,7 @@
 #include "net.h"
 #include "log.h"
 #include "coroutine_mutex.h"
+#include "util.h"
 
 using namespace std;
 
@@ -74,7 +75,7 @@ TEST_F(TestCoroutine, TestCoroutineSuspend) {
 
 TEST_F(TestCoroutine, TestCoClient) {
     sheep::net::EventLoop loop;
-    CoroutineScheduler scheduler(loop);
+    CoroutineScheduler scheduler(&loop);
     
     scheduler.start();
     scheduler.addCoroutine([this]() {
@@ -108,7 +109,7 @@ TEST_F(TestCoroutine, TestCoClient) {
 
 TEST_F(TestCoroutine, TestCoServer) {
     sheep::net::EventLoop loop;
-    CoroutineScheduler scheduler(loop);
+    CoroutineScheduler scheduler(&loop);
     
     scheduler.start();
 
@@ -205,9 +206,8 @@ TEST_F(TestMutex, TestMutexInThread) {
 }
 
 TEST_F(TestMutex, TestMutexInThreadAndCoroutine) {
-    sheep::net::EventLoop loop;
-    CoroutineScheduler scheduler1(loop);
-    CoroutineScheduler scheduler2(loop);
+    CoroutineScheduler scheduler1(nullptr);
+    CoroutineScheduler scheduler2(nullptr);
     
     scheduler1.start();
     scheduler2.start();
@@ -247,8 +247,7 @@ TEST_F(TestMutex, TestMutexInThreadAndCoroutine) {
 }
 
 TEST_F(TestMutex, TestMutexInCoroutine) {
-    sheep::net::EventLoop loop;
-    CoroutineScheduler scheduler(loop);
+    CoroutineScheduler scheduler(nullptr);
     
     scheduler.start();
 
@@ -294,14 +293,13 @@ TEST_F(TestMutex, TestMutexInCoroutine) {
 }
 
 TEST_F(TestMutex, TestCoMutexInCoroutine) {
-    sheep::net::EventLoop loop;
-    CoroutineScheduler scheduler1(loop);
-    CoroutineScheduler scheduler2(loop);
+    CoroutineScheduler scheduler1(nullptr);
+    CoroutineScheduler scheduler2(nullptr);
     
     scheduler1.start();
     scheduler2.start();
 
-    CoroutineMutex my_mutex;
+    CoMutex my_mutex;
     int counter = 0;
     const int kNumThreads = 10;
     const int kIncrementsPerThread = 100000;
@@ -334,4 +332,32 @@ TEST_F(TestMutex, TestCoMutexInCoroutine) {
     scheduler2.stop();
 
     EXPECT_EQ(counter, kNumThreads * kIncrementsPerThread);
+}
+
+class TestAsync : public testing::Test{
+};
+
+TEST_F(TestAsync, TestOneTask) {
+    Async async(4);
+    auto now = UnixTimeMilliSecond();
+    auto future = async.async([]() {
+        CoroutineScheduler::currentCoroScheduler()->sleep(100);
+        return 1;
+    });
+    EXPECT_EQ(future.wait(), 1);
+    EXPECT_EQ(UnixTimeMilliSecond() - now >= 100, true);
+}
+
+TEST_F(TestAsync, TestTasks) {
+    Async async(4);
+    vector<Future<int>> futures;
+    for (int i = 0; i < 10000; ++i) {
+        futures.push_back(async.async([i]() {
+            CoroutineScheduler::currentCoroScheduler()->sleep(100);
+            return i * i;
+        }));
+    }
+    for (int i = 0; i < 10000; ++i) {
+        EXPECT_EQ(futures[i].wait(), i * i);
+    }
 }

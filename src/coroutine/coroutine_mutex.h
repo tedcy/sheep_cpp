@@ -33,7 +33,7 @@ struct CoroutineWaiter {
     }
 };
 
-class CoroutineConditionVariable {
+class CoConditionVariable {
 public:
     void wait(std::unique_lock<std::mutex>& lock, int milliseconds = -1) {
         CoroutineWaiter waiter;
@@ -67,7 +67,7 @@ private:
     std::queue<CoroutineWaiter> waiters_;
 };
 
-class CoroutineMutex {
+class CoMutex {
     std::mutex mtx_;
     std::atomic<bool> isLock_ = {false};
     std::queue<CoroutineWaiter> waiters_;
@@ -118,7 +118,7 @@ public:
 };
 
 class ConditionVariable {
-    CoroutineConditionVariable coCv_;
+    CoConditionVariable coCv_;
     std::condition_variable cv_;
 
 public:
@@ -167,5 +167,159 @@ public:
         if (waitings_ > 0) {
             cond_.notify_one();  // 唤醒一个等待者
         }
+    }
+};
+
+namespace internal {
+class SharedStateBase {
+protected:
+    std::mutex mtx_;
+    ConditionVariable cond_;
+    std::exception_ptr eptr_;
+    bool isReady_ = false;
+public:
+    void setException(std::exception_ptr eptr) {
+        std::unique_lock<std::mutex> lock(mtx_);
+        eptr_ = eptr;
+        isReady_ = true;
+        cond_.notify_all();
+    }
+    void wait() {
+        std::unique_lock<std::mutex> lock(mtx_);
+        while (!isReady_) {
+            cond_.wait(lock);
+        }
+    }
+    
+};
+}
+
+template <typename T>
+class SharedState : public internal::SharedStateBase {
+    T value_;
+public:
+    void setValue(T&& value) {
+        std::unique_lock<std::mutex> lock(mtx_);
+        value_ = value;
+        isReady_ = true;
+        cond_.notify_all();
+    }
+    T getValue() {
+        std::unique_lock<std::mutex> lock(mtx_);
+        if (!this->isReady_) {
+            throw std::runtime_error(
+                "CoroutineSharedState::getValue() must be called after wait()");
+        }
+        if (eptr_) {
+            std::rethrow_exception(eptr_);
+        }
+        return value_;
+    }
+};
+
+template <>
+class SharedState<void> : public internal::SharedStateBase {
+public:
+    void setValue() {
+        std::unique_lock<std::mutex> lock(mtx_);
+        isReady_ = true;
+        cond_.notify_all();
+    }
+};
+
+template <typename T>
+class Future {
+    std::shared_ptr<SharedState<T>> state_;
+public:
+    explicit Future(const std::shared_ptr<SharedState<T>>& state)
+        : state_(state) {}
+    template <typename U = T,
+              typename std::enable_if<!std::is_void<U>::value>::type* = nullptr>
+    T wait() {
+        state_->wait();
+        return state_->getValue();
+    }
+    template <typename U = T,
+              typename std::enable_if<std::is_void<U>::value>::type* = nullptr>
+    void wait() {
+        state_->wait();
+    }
+};
+
+template <typename T>
+class Promise {
+    std::shared_ptr<SharedState<T>> state_ = std::make_shared<SharedState<T>>();
+public:
+    template <typename U = T,
+              typename std::enable_if<!std::is_void<U>::value>::type* = nullptr>
+    void setValue(T&& value) {
+        state_->setValue(std::move(value));
+    }
+    template <typename U = T,
+              typename std::enable_if<std::is_void<U>::value>::type* = nullptr>
+    void setValue() {
+        state_->setValue();
+    }
+    void setException(std::exception_ptr eptr) {
+        state_->setException(eptr);
+    }
+    Future<T> getFuture() {
+        return Future<T>(state_);
+    }
+};
+
+class Async {
+    std::vector<std::shared_ptr<CoroutineScheduler>> schedulers_;
+    int getIndex() {
+        static std::atomic<int64_t> index = {0};
+        return index++ % schedulers_.size();
+    }
+public:
+    static int& getThreadNum() {
+        static int threads_ = 8;
+        return threads_;
+    }
+    Async& getInstance() {
+        static Async instance(getThreadNum());
+        return instance;
+    }
+    Async(int threads) {
+        for (int i = 0; i < threads; ++i) {
+            schedulers_.emplace_back(std::make_shared<CoroutineScheduler>());
+            schedulers_[i]->start();
+        }
+    }
+    ~Async() {
+        for (auto& scheduler : schedulers_) {
+            scheduler->stop();
+        }
+    }
+    template <typename F, typename T = decltype(std::declval<F>()()),
+              typename std::enable_if<!std::is_void<T>::value>::type* = nullptr>
+    Future<T> async(F&& f) {
+        auto promise = std::make_shared<Promise<T>>();
+        schedulers_[getIndex()]->addCoroutine([f = std::move(f), promise]() {
+            try {
+                auto result = f();
+                promise->setValue(std::move(result));
+            } catch (...) {
+                promise->setException(std::current_exception());
+            }
+        });
+        return promise->getFuture();
+    }
+    template <typename F, typename T = decltype(std::declval<F>()()),
+              typename std::enable_if<std::is_void<T>::value>::type* = nullptr>
+    Future<T> async(F&& f) {
+        auto promise = std::make_shared<Promise<T>>();
+        schedulers_[getIndex()]->addCoroutine([f = std::move(f), promise]() {
+            try {
+                f();
+                promise->setValue();
+            } catch (...) {
+                promise->setException(std::current_exception());
+            }
+        });
+        return promise->getFuture();
     }
 };
